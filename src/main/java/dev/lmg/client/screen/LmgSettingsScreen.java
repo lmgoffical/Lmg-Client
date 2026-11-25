@@ -194,6 +194,9 @@ public class LmgSettingsScreen extends Screen {
 		if (tab == 1) {
 			// Configs: saved setups and share codes
 			r.add(SettingRow.button("Saved configs", "Open", () -> minecraft.gui.setScreen(new ConfigsScreen(this))));
+			r.add(SettingRow.button("Browse configs online", "Website", () ->
+					net.minecraft.client.gui.screens.ConfirmLinkScreen.confirmLinkNow(this,
+							java.net.URI.create("https://lmgoffical.github.io/Lmg-Client/#/configs"))));
 			r.add(SettingRow.button("Share my setup", "Get code", () -> {
 				String longCode = ConfigProfiles.codeForCurrent("My config");
 				toast("Uploading...", "Getting a short code for your setup.");

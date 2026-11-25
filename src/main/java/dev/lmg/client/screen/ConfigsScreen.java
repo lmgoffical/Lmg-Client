@@ -110,7 +110,7 @@ public class ConfigsScreen extends Screen {
 		pendingDelete = null;
 		try {
 			ConfigProfiles.delete(name);
-			say("Deleted \"" + name + "\"", true);
+			say("Removed \"" + name + "\" from your saved configs (shared codes keep working)", true);
 		} catch (Exception e) {
 			say("Couldn't delete \"" + name + "\"", false);
 		}

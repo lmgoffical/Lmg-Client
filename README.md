@@ -20,6 +20,10 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 
   Switches turn things on/off; for options click `<` / `>` (or left/right-click the row). Settings are saved in `.minecraft/config/lmgclient.json`. The key can be changed in Minecraft's **Controls** settings.
 
+## Website
+
+Community site with accounts, a forum, announcements and a config gallery: <https://lmgoffical.github.io/Lmg-Client/> (source in `docs/`).
+
 ## Installing it (Windows), the easy way
 
 1. Open the Minecraft Launcher once and sign in, then close it.

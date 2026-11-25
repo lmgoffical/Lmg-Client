@@ -1,0 +1,18 @@
+-- The forum schema (profiles + roles, categories, threads, replies, rate limits, site stats)
+-- was applied to the Supabase project 'lmg-client' as migration 20261125223136_forum.
+--
+-- To export the exact SQL that was applied, run this in the Supabase SQL editor:
+--   select statements[1] from supabase_migrations.schema_migrations where name = 'forum';
+--
+-- Summary of what it creates:
+--   profiles(id, username, role[owner|admin|moderator|member], bio, created_at)
+--     - public read; users may only edit their own bio; roles change only via set_user_role() (owner only)
+--     - a trigger creates the profile on sign-up (username from the sign-up form)
+--   categories(id, name, description, sort, staff_only) - seeded: announcements (staff only),
+--     configs, general, support, suggestions
+--   threads(id, category_id, author_id, title, body, config_code LMG-XXXXXX, pinned, locked, reply_count, ...)
+--     - members post in non-staff categories; pin/lock only via set_thread_flags() (staff)
+--     - authors edit title/body/code; authors or staff delete
+--   posts(id, thread_id, author_id, body, ...) - replies; blocked on locked threads unless staff
+--   rate limits: 3 threads / 2 min, 8 replies / min (staff exempt)
+--   functions: username_available, is_staff, is_owner, set_user_role, set_thread_flags, site_stats

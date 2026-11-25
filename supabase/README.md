@@ -15,3 +15,11 @@ Short share codes (`LMG-ABC234`) are stored in the Supabase project **lmg-client
   in the Supabase dashboard. Long `LMG1:` codes always work offline.
 
 The schema is in `migrations/`.
+
+## Community website
+
+`docs/` is the Lmg Client website (GitHub Pages): home, download, forum, config gallery, accounts.
+It uses Supabase Auth (email + password) and the forum tables from `0002_forum.sql`.
+Every permission is enforced in the database with row-level security, so the site can't be used
+to give yourself powers. Roles: owner > admin > moderator > member. Only the owner can change roles
+(Owner panel on the site, or `update public.profiles set role = 'owner' where username = '...'` in SQL).
