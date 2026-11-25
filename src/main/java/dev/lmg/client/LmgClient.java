@@ -29,6 +29,7 @@ public class LmgClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LmgConfig.load();
+		UpdateChecker.start();
 		KeyMappingHelper.registerKeyMapping(OPEN_MENU_KEY);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("hud_pill"), new HudPill());
 

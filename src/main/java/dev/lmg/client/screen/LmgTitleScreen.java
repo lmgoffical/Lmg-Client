@@ -2,6 +2,7 @@ package dev.lmg.client.screen;
 
 import dev.lmg.client.LmgClient;
 import dev.lmg.client.LmgConfig;
+import dev.lmg.client.UpdateChecker;
 import dev.lmg.client.mixin.PlayerSkinWidgetAccessor;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
@@ -109,6 +110,16 @@ public class LmgTitleScreen extends Screen {
 		}
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+
+		// Version in the corner, plus a notice when an update is out.
+		String version = LmgClient.CLIENT_NAME + " " + UpdateChecker.currentVersion();
+		g.text(font, version, width - font.width(version) - 6, height - 12, Draw.withAlpha(0x6E6E78, intro), false);
+		String update = UpdateChecker.newerVersion();
+		if (update != null) {
+			String msg = "Update " + update + " is out! Run Install-Lmg-Client.bat to get it.";
+			float pulse = 0.75f + 0.25f * (float) Math.sin(time * 2.5f);
+			g.text(font, msg, 6, height - 12, Draw.withAlpha(Theme.accentSoft(), intro * pulse), false);
+		}
 
 		if (fadeFromBlack) {
 			float black = 1f - Draw.easeOutCubic(Theme.progress(openedAt, 600f));

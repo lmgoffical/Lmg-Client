@@ -13,22 +13,29 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 
   Left-click a setting for the next option, right-click for the previous one. Settings are saved in `.minecraft/config/lmgclient.json`. The key can be changed in Minecraft's **Controls** settings.
 
-## Playing it (Windows)
+## Installing it (Windows), the easy way
 
-1. Install **Fabric Loader** for Minecraft 26.3 with the installer from <https://fabricmc.net/use/installer/>.
-2. Download both jars from the [`download`](download) folder: `lmg-client-*.jar` and `fabric-api-*.jar`.
-3. Put them into `%appdata%\.minecraft\mods`.
-4. Open the Minecraft Launcher, choose the **fabric-loader-26.3** profile, and press Play.
+1. Open the Minecraft Launcher once and sign in, then close it.
+2. Download [`installer/Install-Lmg-Client.bat`](https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat) and double-click it.
+   If Windows shows "Windows protected your PC", click **More info → Run anyway**.
+3. Open the Minecraft Launcher, pick **Lmg Client** next to the Play button, and press Play.
 
-### More FPS (optional, recommended)
+The installer sets up Fabric and downloads Lmg Client, Fabric API, **Sodium** (FPS), **Lithium** (smoother ticks) and **Iris** (shaders). The mod versions are pinned to a set known to work together. Everything goes into its own folder, `%appdata%\.lmgclient`, so it never clashes with other mods. Your worlds and resource packs are shared with normal Minecraft.
 
-Put these into the same `mods` folder:
+**To update**, run `Install-Lmg-Client.bat` again. It always fetches the newest version and removes old files. The main menu tells you when an update is out.
 
-| Mod | What it does | Download (26.3) |
-|---|---|---|
-| **Sodium** | Much faster rendering, usually the biggest FPS boost. Currently a beta for 26.3. | [sodium-fabric-0.9.4-beta.2+mc26.3.jar](https://cdn.modrinth.com/data/AANobbMI/versions/B2hHu7Uv/sodium-fabric-0.9.4-beta.2%2Bmc26.3.jar) |
-| **Lithium** | Faster game logic, smoother ticks | [lithium-fabric-0.26.4+mc26.3.jar](https://cdn.modrinth.com/data/gvQqBUqZ/versions/Lal8mJGR/lithium-fabric-0.26.4%2Bmc26.3.jar) |
-| **Iris** | Shader support (needs Sodium) | [iris-fabric-1.11.7+mc26.3.jar](https://cdn.modrinth.com/data/YL57xq9U/versions/vTN4NRGW/iris-fabric-1.11.7%2Bmc26.3.jar) |
+### Manual install
+
+1. Install **Fabric Loader** for Minecraft 26.3 from <https://fabricmc.net/use/installer/>.
+2. Download the jars listed in [`download/manifest.json`](download/manifest.json): `lmg-client-*.jar` from the [`download`](download) folder, plus the other mods from the URLs in the manifest.
+3. Put them into `%appdata%\.minecraft\mods`, then launch the **fabric-loader-26.3** profile.
+
+## Releasing a new version
+
+1. Bump `version` in `gradle.properties`.
+2. `gradlew build`
+3. `python tools/release.py`: copies the jar to `download/` and rewrites `download/manifest.json`, including the pinned mods from `tools/modpack.json`.
+4. Commit and push. Players get it by rerunning the installer.
 
 ## Building it yourself (Windows)
 

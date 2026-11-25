@@ -1,0 +1,38 @@
+{
+  "version": "0.3.0",
+  "minecraft": "26.3",
+  "lmgClient": {
+    "file": "lmg-client-0.3.0.jar",
+    "sha1": "f4eb73cb015bf550ab4fc7aa7e15e083dadd345b"
+  },
+  "mods": [
+    {
+      "name": "Fabric API",
+      "pattern": "fabric-api-*.jar",
+      "file": "fabric-api-0.167.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/lPHkrIVF/fabric-api-0.167.0%2B26.3.jar",
+      "sha1": "5784ccebbac7ad1729da9c4f7207d2f2e96e73ee"
+    },
+    {
+      "name": "Sodium",
+      "pattern": "sodium-*.jar",
+      "file": "sodium-fabric-0.9.2+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/AANobbMI/versions/bAZQdGpg/sodium-fabric-0.9.2%2Bmc26.3.jar",
+      "sha1": "9acfe851e36f4fb27d7c5baa224e8bd4e0334283"
+    },
+    {
+      "name": "Lithium",
+      "pattern": "lithium-*.jar",
+      "file": "lithium-fabric-0.26.4+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/Lal8mJGR/lithium-fabric-0.26.4%2Bmc26.3.jar",
+      "sha1": "b87fcae581c1ff1b3aac8314004c9d7616f90827"
+    },
+    {
+      "name": "Iris",
+      "pattern": "iris-*.jar",
+      "file": "iris-fabric-1.11.7+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/vTN4NRGW/iris-fabric-1.11.7%2Bmc26.3.jar",
+      "sha1": "fa03640ba1e4ef2f7ae3619c6373a06e46d0ba2c"
+    }
+  ]
+}
