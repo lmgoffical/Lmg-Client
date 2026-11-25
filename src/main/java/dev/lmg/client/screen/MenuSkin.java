@@ -21,10 +21,22 @@ public final class MenuSkin {
 	static final int SK_TEXT = 0xCBCBCB, SK_TEXT_DIM = 0x5C5C5C;
 	static final int SK_ACCENT = 0x95B806;
 	// Neverlose palette
-	static final int NL_BG = 0xFF0C1020, NL_SIDEBAR = 0xFF080B17, NL_BORDER = 0xFF1E2742;
-	static final int NL_CARD = 0xFF11162A, NL_CARD_BORDER = 0xFF1C2440, NL_FIELD = 0xFF1A2238, NL_FIELD_BORDER = 0xFF243052;
-	static final int NL_TEXT = 0xC9CFE3, NL_TEXT_DIM = 0x6B7593;
-	static final int NL_ACCENT = 0x3A8DFF;
+	// (colours taken from a Neverlose menu remake used as reference)
+	static final int NL_BG = 0xFF030D1A, NL_SIDEBAR = 0xFF03050D, NL_BORDER = 0xFF173253;
+	static final int NL_CARD = 0xFF041224, NL_CARD_BORDER = 0xFF173253, NL_FIELD = 0xFF001C38, NL_FIELD_BORDER = 0xFF2B4376;
+	static final int NL_TEXT = 0xEFF8F6, NL_TEXT_DIM = 0x4A5761;
+	static final int NL_ACCENT = 0x1499FF;
+	static final int NL_HOVER = 0x0A1F3A, NL_TAB_ACTIVE = 0x001C38;
+
+	/** A titled group box (Skeet style): x0, y0, x1, y1 and a title. */
+	public record Group(int x0, int y0, int x1, int y1, String title) {}
+
+	private static java.util.List<Group> groups = java.util.List.of();
+
+	/** The settings screen tells us where its group boxes are (Skeet style). */
+	public static void setGroups(java.util.List<Group> list) {
+		groups = list;
+	}
 
 	private MenuSkin() {}
 
@@ -108,14 +120,16 @@ public final class MenuSkin {
 		g.fill(x0 + sidebarW, y0 + headerH, x1, y0 + headerH + 1, fade(SK_BORDER_DARK, a));
 		g.fill(x0 + sidebarW, y0 + headerH + 1, x1, y0 + headerH + 2, fade(SK_GROUP_IN, a));
 
-		// group box around the settings, titled with the category name
-		int gx0 = x0 + sidebarW + 6, gy0 = y0 + headerH + 8, gx1 = x1 - 6, gy1 = y1 - footerH;
-		g.fill(gx0, gy0, gx1, gy1, fade(SK_GROUP_OUT, a));
-		g.fill(gx0 + 1, gy0 + 1, gx1 - 1, gy1 - 1, fade(SK_GROUP_IN, a));
-		g.fill(gx0 + 2, gy0 + 2, gx1 - 2, gy1 - 2, fade(0xFF171717, a));
-		int lw = font.width(tabName);
-		g.fill(gx0 + 8, gy0 - 1, gx0 + 12 + lw, gy0 + 3, fade(SK_BG, a));
-		g.text(font, tabName, gx0 + 10, gy0 - 3, Draw.withAlpha(SK_TEXT, a), false);
+		// titled group boxes (two side by side, like gamesense)
+		for (Group gb : groups) {
+			g.fill(gb.x0(), gb.y0(), gb.x1(), gb.y1(), fade(SK_GROUP_OUT, a));
+			g.fill(gb.x0() + 1, gb.y0() + 1, gb.x1() - 1, gb.y1() - 1, fade(SK_GROUP_IN, a));
+			g.fill(gb.x0() + 2, gb.y0() + 2, gb.x1() - 2, gb.y1() - 2, fade(0xFF171717, a));
+			int lw = font.width(gb.title());
+			g.fill(gb.x0() + 8, gb.y0() - 1, gb.x0() + 12 + lw, gb.y0() + 3, fade(SK_BG, a));
+			g.text(font, gb.title(), gb.x0() + 10, gb.y0() - 3, Draw.withAlpha(0xFFFFFF, a), false);
+			g.text(font, gb.title(), gb.x0() + 11, gb.y0() - 3, Draw.withAlpha(0xFFFFFF, a), false); // bold
+		}
 	}
 
 	private static void neverlosePanel(GuiGraphicsExtractor g, Font font, int x0, int y0, int x1, int y1,
@@ -184,7 +198,7 @@ public final class MenuSkin {
 			}
 			case NEVERLOSE -> {
 				float bg = Math.max(active, hover * 0.5f);
-				if (bg > 0.01f) Draw.roundRect(g, x, y, x + w, y + h, 4, Draw.withAlpha(0x1C2540, bg));
+				if (bg > 0.01f) Draw.roundRect(g, x, y, x + w, y + h, 4, Draw.withAlpha(NL_TAB_ACTIVE, bg));
 				if (active > 0.01f) {
 					int cy = y + h / 2;
 					Draw.roundRect(g, x + 5, cy - 2, x + 9, cy + 2, 2, Draw.withAlpha(accent(), active));
@@ -218,7 +232,7 @@ public final class MenuSkin {
 				g.centeredText(font, label, cx, ty, Draw.withAlpha(Draw.lerpRgb(SK_TEXT, 0xFFFFFF, hover), a));
 			}
 			case NEVERLOSE -> {
-				Draw.roundRect(g, x, y, x + w, y + h, 4, Draw.withAlpha(Draw.lerpRgb(0x1A2238, 0x24305A, hover), a));
+				Draw.roundRect(g, x, y, x + w, y + h, 4, Draw.withAlpha(Draw.lerpRgb(0x001C38, 0x0A2A52, hover), a));
 				g.centeredText(font, label, cx, ty, Draw.withAlpha(Draw.lerpRgb(NL_TEXT, 0xFFFFFF, hover), a));
 			}
 		}

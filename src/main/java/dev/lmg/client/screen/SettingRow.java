@@ -204,62 +204,64 @@ public class SettingRow extends AbstractWidget {
 	// ---- Skeet style: checkbox on the left, dropdown-like boxes on the right ----------------------
 
 	private void drawSkeet(GuiGraphicsExtractor g, Font font, int x, int y, int mouseX, float appear, float dt) {
-		int textY = y + (height - font.lineHeight) / 2 + 1;
 		int labelX = x + 18;
 		int labelColor = Draw.withAlpha(Draw.lerpRgb(MenuSkin.SK_TEXT, 0xFFFFFF, hover), appear);
 		int acc = MenuSkin.accent();
+		int right = x + width - 6;
 		switch (kind) {
 			case TOGGLE -> {
 				animateKnob(dt);
-				int bx = x + 6, by = y + (height - 8) / 2;
-				g.fill(bx, by, bx + 8, by + 8, Draw.withAlpha(0x000000, appear));
+				int textY = y + (height - font.lineHeight) / 2 + 1;
+				int bx = x + 6, by = y + (height - 7) / 2;
+				g.fill(bx, by, bx + 7, by + 7, Draw.withAlpha(0x000000, appear));
 				int top = Draw.lerpRgb(0x4B4B4B, acc, knob);
-				int bottom = Draw.lerpRgb(0x333333, Draw.lerpRgb(0x000000, acc, 0.65f), knob);
-				g.fillGradient(bx + 1, by + 1, bx + 7, by + 7, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				int bottom = Draw.lerpRgb(0x333333, Draw.lerpRgb(0x000000, acc, 0.7f), knob);
+				g.fillGradient(bx + 1, by + 1, bx + 6, by + 6, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
 				g.text(font, getMessage(), labelX, textY, labelColor, false);
 			}
-			case DROPDOWN -> {
-				g.text(font, getMessage(), labelX, textY, labelColor, false);
-				int bw = Math.min(110, width / 2 + 10);
-				boxX1 = x + width - 6; boxX0 = boxX1 - bw; boxY0 = y + 1; boxY1 = y + height - 1;
-				g.fill(boxX0, boxY0, boxX1, boxY1, Draw.withAlpha(0x000000, appear));
+			case BUTTON -> {
+				// full-width button with the label in the middle
+				int bx0 = labelX, by0 = y + 1, by1 = y + height - 1;
+				g.fill(bx0, by0, right, by1, Draw.withAlpha(0x000000, appear));
+				int top = Draw.lerpRgb(0x2A2A2A, 0x343434, hover), bottom = Draw.lerpRgb(0x222222, 0x2B2B2B, hover);
+				g.fillGradient(bx0 + 1, by0 + 1, right - 1, by1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				g.centeredText(font, getMessage(), (bx0 + right) / 2, y + (height - font.lineHeight) / 2 + 1, labelColor);
+			}
+			case CHOICE, DROPDOWN -> {
+				// label on its own line, value box underneath (like gamesense dropdowns)
+				g.text(font, getMessage(), labelX, y + 1, labelColor, false);
+				int bx0 = labelX, by0 = y + 11, by1 = y + height - 1;
+				g.fill(bx0, by0, right, by1, Draw.withAlpha(0x000000, appear));
 				int top = Draw.lerpRgb(0x232323, 0x2C2C2C, hover), bottom = Draw.lerpRgb(0x1D1D1D, 0x242424, hover);
-				g.fillGradient(boxX0 + 1, boxY0 + 1, boxX1 - 1, boxY1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
-				int sw = swatchFor(selected());
-				int tx = boxX0 + 5;
+				g.fillGradient(bx0 + 1, by0 + 1, right - 1, by1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				int ty = by0 + (by1 - by0 - font.lineHeight) / 2 + 1;
+				int tx = bx0 + 6;
+				int sw = kind == Kind.DROPDOWN ? swatchFor(selected()) : (swatch != null ? swatch.getAsInt() : -1);
 				if (sw != -1) {
-					g.fill(tx, textY, tx + 5, textY + 5, Draw.withAlpha(sw, appear));
-					tx += 8;
+					g.fill(tx, ty, tx + 5, ty + 5, Draw.withAlpha(sw, appear));
+					tx += 9;
 				}
-				g.text(font, value.get(), tx, textY, Draw.withAlpha(Draw.lerpRgb(0x989898, 0xFFFFFF, hover), appear), false);
-				g.text(font, "v", boxX1 - 9, textY - 1, Draw.withAlpha(0x6A6A6A, appear), false);
-			}
-			case CHOICE, BUTTON -> {
-				g.text(font, getMessage(), labelX, textY, labelColor, false);
-				int bw = Math.min(96, width / 2);
-				int bx1 = x + width - 6, bx0 = bx1 - bw, by0 = y + 1, by1 = y + height - 1;
-				g.fill(bx0, by0, bx1, by1, Draw.withAlpha(0x000000, appear));
-				int top = Draw.lerpRgb(0x232323, 0x2C2C2C, hover), bottom = Draw.lerpRgb(0x1D1D1D, 0x242424, hover);
-				g.fillGradient(bx0 + 1, by0 + 1, bx1 - 1, by1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
 				String v = value.get();
-				if (kind == Kind.BUTTON) {
-					g.centeredText(font, v, (bx0 + bx1) / 2, textY, Draw.withAlpha(0xD0D0D0, appear));
+				int room = right - tx - 22;
+				String shown = font.width(v) > room ? font.plainSubstrByWidth(v, room - 6) + ".." : v;
+				g.text(font, shown, tx, ty, Draw.withAlpha(Draw.lerpRgb(0x989898, 0xFFFFFF, hover), appear), false);
+				if (kind == Kind.DROPDOWN) {
+					g.text(font, "v", right - 9, ty - 1, Draw.withAlpha(0x8A8A8A, appear), false);
+					boxX0 = bx0; boxY0 = by0; boxX1 = right; boxY1 = by1;
 				} else {
-					int tx = bx0 + 12;
-					if (swatch != null) {
-						g.fill(bx0 + 4, textY, bx0 + 9, textY + 5, Draw.withAlpha(swatch.getAsInt(), appear));
-						tx = bx0 + 13;
-					}
-					String shown = font.width(v) > bw - 26 ? font.plainSubstrByWidth(v, bw - 30) + ".." : v;
-					g.text(font, shown, tx + (swatch != null ? 0 : -6), textY, Draw.withAlpha(Draw.lerpRgb(0x989898, 0xFFFFFF, hover), appear), false);
-					boolean overPrev = isHovered && mouseX >= bx0 && mouseX < bx0 + bw / 3;
-					g.text(font, "<", bx1 - 18, textY, Draw.withAlpha(overPrev ? 0xFFFFFF : 0x6A6A6A, appear), false);
-					g.text(font, ">", bx1 - 9, textY, Draw.withAlpha(!overPrev && isHovered ? 0xFFFFFF : 0x6A6A6A, appear), false);
+					boolean overPrev = isHovered && mouseX >= bx0 && mouseX < bx0 + (right - bx0) / 3;
+					g.text(font, "<", right - 18, ty, Draw.withAlpha(overPrev ? 0xFFFFFF : 0x6A6A6A, appear), false);
+					g.text(font, ">", right - 9, ty, Draw.withAlpha(!overPrev && isHovered ? 0xFFFFFF : 0x6A6A6A, appear), false);
 					prevArrowX0 = bx0;
-					prevArrowX1 = bx0 + bw / 3;
+					prevArrowX1 = bx0 + (right - bx0) / 3;
 				}
 			}
 		}
+	}
+
+	/** Skeet draws options as label + box underneath, so those rows are taller there. */
+	public boolean isTallInSkeet() {
+		return kind == Kind.CHOICE || kind == Kind.DROPDOWN;
 	}
 
 	// ---- Neverlose style: pill switches and rounded fields ---------------------------------------
@@ -268,14 +270,14 @@ public class SettingRow extends AbstractWidget {
 		int textY = y + (height - font.lineHeight) / 2 + 1;
 		int right = x + width - 6;
 		int acc = MenuSkin.accent();
-		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.withAlpha(0x161D33, hover * appear));
+		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.withAlpha(MenuSkin.NL_HOVER, hover * appear));
 		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_TEXT, 0xFFFFFF, hover), appear), false);
 		switch (kind) {
 			case TOGGLE -> {
 				animateKnob(dt);
 				int tw = 16, th = 8;
 				int tx = right - tw, ty = y + (height - th) / 2;
-				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 4, Draw.withAlpha(Draw.lerpRgb(0x2A324D, acc, knob), appear));
+				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 4, Draw.withAlpha(Draw.lerpRgb(0x173253, acc, knob), appear));
 				int kx = tx + 1 + Math.round(knob * (tw - th));
 				Draw.roundRect(g, kx, ty + 1, kx + th - 2, ty + th - 1, 3,
 						Draw.withAlpha(Draw.lerpRgb(0x8A93B0, 0xFFFFFF, knob), appear));
@@ -307,7 +309,7 @@ public class SettingRow extends AbstractWidget {
 				int bw = Math.min(110, width / 2 + 10);
 				boxX1 = right; boxX0 = boxX1 - bw; boxY0 = y + 1; boxY1 = y + height - 1;
 				Draw.roundRect(g, boxX0 - 1, boxY0 - 1, boxX1 + 1, boxY1 + 1, 4, Draw.withAlpha(MenuSkin.NL_FIELD_BORDER, appear));
-				Draw.roundRect(g, boxX0, boxY0, boxX1, boxY1, 3, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_FIELD, 0x222B47, hover), appear));
+				Draw.roundRect(g, boxX0, boxY0, boxX1, boxY1, 3, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_FIELD, 0x0A2A52, hover), appear));
 				int sw = swatchFor(selected());
 				int tx = boxX0 + 6;
 				if (sw != -1) {

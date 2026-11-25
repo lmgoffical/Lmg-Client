@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 public class LmgSettingsScreen extends Screen {
 	private static final String[] TABS = {"Style", "Theme", "World", "Avatar", "Effects", "Target", "PvP", "Items", "Menus", "HUD"};
 	private static final int PANEL_W = 300;
+	private static final int PANEL_W_SKEET = 380; // skeet uses two columns of group boxes
 	private static final int SIDEBAR_W = 74;
 	private static final int HEADER_H = 24;
 	private static final int ROW_H = 14;
@@ -54,15 +55,19 @@ public class LmgSettingsScreen extends Screen {
 		this.parent = parent;
 	}
 
+	private static int panelW() {
+		return MenuSkin.style() == LmgConfig.MenuStyle.SKEET ? PANEL_W_SKEET : PANEL_W;
+	}
+
 	private static int panelH() {
 		return HEADER_H + 6 + MenuSkin.contentTopPad() + MAX_ROWS * ROW_GAP + FOOTER_H;
 	}
 
 	private void computePanel() {
 		LmgConfig c = LmgConfig.get();
-		panelX = width / 2 - PANEL_W / 2 + c.menuOffsetX;
+		panelX = width / 2 - panelW() / 2 + c.menuOffsetX;
 		panelY = height / 2 - panelH() / 2 + c.menuOffsetY;
-		panelX = Math.max(4, Math.min(panelX, width - PANEL_W - 4));
+		panelX = Math.max(4, Math.min(panelX, width - panelW() - 4));
 		panelY = Math.max(4, Math.min(panelY, height - panelH() - 4));
 	}
 
@@ -75,9 +80,9 @@ public class LmgSettingsScreen extends Screen {
 
 		// Header buttons (Neverlose keeps its logo top-left, so Back moves to the right there)
 		boolean nl = MenuSkin.style() == LmgConfig.MenuStyle.NEVERLOSE;
-		int backX = nl ? panelX + PANEL_W - 64 - 48 : panelX + 6;
+		int backX = nl ? panelX + panelW() - 64 - 48 : panelX + 6;
 		addRenderableWidget(new SkinButton(backX, panelY + 6, 44, 13, Component.literal("< Back"), openedAt, this::onClose));
-		addRenderableWidget(new SkinButton(panelX + PANEL_W - 62, panelY + 6, 56, 13, Component.literal("Edit HUD"), openedAt,
+		addRenderableWidget(new SkinButton(panelX + panelW() - 62, panelY + 6, 56, 13, Component.literal("Edit HUD"), openedAt,
 				() -> minecraft.gui.setScreen(new HudEditorScreen(this))));
 
 		// Sidebar
@@ -96,12 +101,11 @@ public class LmgSettingsScreen extends Screen {
 
 		// Settings for the selected category
 		List<SettingRow> rows = rowsFor(lastTab, c);
-		int inset = MenuSkin.contentInset();
-		int rx = panelX + SIDEBAR_W + 2 + inset;
-		int rw = PANEL_W - SIDEBAR_W - 8 - inset * 2;
-		int ry = sy + MenuSkin.contentTopPad();
-		for (int i = 0; i < rows.size(); i++) {
-			addRenderableWidget(rows.get(i).at(rx, ry + i * ROW_GAP, rw, ROW_H, t + i * 25L).onOpen(row -> dropdown = row));
+		if (MenuSkin.style() == LmgConfig.MenuStyle.SKEET) {
+			layoutSkeet(rows, t);
+		} else {
+			MenuSkin.setGroups(List.of());
+			layoutSingle(rows, sy, t);
 		}
 
 		// Footer: reset (asks twice)
@@ -119,6 +123,55 @@ public class LmgSettingsScreen extends Screen {
 			}
 		});
 		addRenderableWidget(reset[0]);
+	}
+
+	private void layoutSingle(List<SettingRow> rows, int sy, long t) {
+		int inset = MenuSkin.contentInset();
+		int rx = panelX + SIDEBAR_W + 2 + inset;
+		int rw = panelW() - SIDEBAR_W - 8 - inset * 2;
+		int ry = sy + MenuSkin.contentTopPad();
+		for (int i = 0; i < rows.size(); i++) {
+			addRenderableWidget(rows.get(i).at(rx, ry + i * ROW_GAP, rw, ROW_H, t + i * 25L).onOpen(row -> dropdown = row));
+		}
+
+	}
+
+	/** Skeet: two titled group boxes side by side; rows are shared out so both columns are about even. */
+	private void layoutSkeet(List<SettingRow> rows, long t) {
+		int areaX0 = panelX + SIDEBAR_W + 6, areaX1 = panelX + panelW() - 6;
+		int gap = 8;
+		int colW = (areaX1 - areaX0 - gap) / 2;
+		int boxTop = panelY + HEADER_H + 10;
+		int boxBottom = panelY + panelH() - FOOTER_H;
+		int[] h = new int[rows.size()];
+		int total = 0;
+		for (int i = 0; i < rows.size(); i++) {
+			h[i] = rows.get(i).isTallInSkeet() ? 27 : 15;
+			total += h[i];
+		}
+		// pick the split that makes the two columns closest in height
+		int split = rows.size(), best = Integer.MAX_VALUE, acc = 0;
+		for (int k = 0; k <= rows.size(); k++) {
+			int worst = Math.max(acc, total - acc);
+			if (worst < best) { best = worst; split = k; }
+			if (k < rows.size()) acc += h[k];
+		}
+		boolean twoColumns = split > 0 && split < rows.size() && rows.size() > 3;
+		if (!twoColumns) split = rows.size();
+		int col1X1 = twoColumns ? areaX0 + colW : areaX1;
+		List<MenuSkin.Group> groups = new ArrayList<>();
+		groups.add(new MenuSkin.Group(areaX0, boxTop, col1X1, boxBottom, TABS[lastTab]));
+		if (twoColumns) groups.add(new MenuSkin.Group(areaX1 - colW, boxTop, areaX1, boxBottom, "More"));
+		MenuSkin.setGroups(groups);
+
+		int y = boxTop + 8;
+		for (int i = 0; i < rows.size(); i++) {
+			if (i == split) y = boxTop + 8;
+			int colX0 = i < split ? areaX0 : areaX1 - colW;
+			int colX1 = i < split ? col1X1 : areaX1;
+			addRenderableWidget(rows.get(i).at(colX0 + 2, y, colX1 - colX0 - 4, h[i] - 2, t + i * 25L).onOpen(row -> dropdown = row));
+			y += h[i];
+		}
 	}
 
 	private List<SettingRow> rowsFor(int tab, LmgConfig c) {
@@ -269,7 +322,7 @@ public class LmgSettingsScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		float intro = Draw.easeOutCubic(Theme.progress(openedAt, 320f));
-		int x0 = panelX, y0 = panelY, x1 = panelX + PANEL_W, y1 = panelY + panelH();
+		int x0 = panelX, y0 = panelY, x1 = panelX + panelW(), y1 = panelY + panelH();
 
 		MenuSkin.panel(g, font, x0, y0, x1, y1, HEADER_H, SIDEBAR_W, FOOTER_H, TABS[lastTab], intro);
 
@@ -322,8 +375,8 @@ public class LmgSettingsScreen extends Screen {
 				g.fill(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, 0xFF1A1A1A);
 			}
 			case NEVERLOSE -> {
-				Draw.roundRect(g, r[0] - 1, r[1] - 1, r[2] + 1, r[3] + 1, 5, 0xFF243052);
-				Draw.roundRect(g, r[0], r[1], r[2], r[3], 4, 0xFF141B30);
+				Draw.roundRect(g, r[0] - 1, r[1] - 1, r[2] + 1, r[3] + 1, 5, 0xFF2B4376);
+				Draw.roundRect(g, r[0], r[1], r[2], r[3], 4, 0xFF001C38);
 			}
 			default -> {
 				Draw.roundRect(g, r[0] - 1, r[1] - 1, r[2] + 1, r[3] + 1, 5, Draw.white(0.10f));
@@ -335,7 +388,7 @@ public class LmgSettingsScreen extends Screen {
 			if (i == hovered) {
 				switch (style) {
 					case SKEET -> g.fill(r[0] + 1, iy, r[2] - 1, iy + ITEM_H, 0xFF262626);
-					case NEVERLOSE -> Draw.roundRect(g, r[0] + 2, iy, r[2] - 2, iy + ITEM_H, 3, 0xFF222B47);
+					case NEVERLOSE -> Draw.roundRect(g, r[0] + 2, iy, r[2] - 2, iy + ITEM_H, 3, 0xFF0A2A52);
 					default -> Draw.roundRect(g, r[0] + 2, iy, r[2] - 2, iy + ITEM_H, 3, Draw.withAlpha(acc, 0.16f));
 				}
 			}
@@ -348,6 +401,9 @@ public class LmgSettingsScreen extends Screen {
 			}
 			int color = i == selected ? acc : (i == hovered ? 0xFFFFFF : (style == LmgConfig.MenuStyle.SKEET ? 0x989898 : 0xC9CFE3));
 			g.text(font, dropdown.options().get(i), tx, ty, 0xFF000000 | color, false);
+			if (i == selected && style == LmgConfig.MenuStyle.SKEET) {
+				g.text(font, dropdown.options().get(i), tx + 1, ty, 0xFF000000 | color, false); // bold, like gamesense
+			}
 		}
 	}
 
@@ -356,7 +412,7 @@ public class LmgSettingsScreen extends Screen {
 	// ---------------------------------------------------------------------------------------------
 
 	private boolean inHeader(double mx, double my) {
-		return mx >= panelX && mx < panelX + PANEL_W && my >= panelY && my < panelY + HEADER_H;
+		return mx >= panelX && mx < panelX + panelW() && my >= panelY && my < panelY + HEADER_H;
 	}
 
 	@Override
