@@ -124,6 +124,56 @@ public final class LmgConfig {
 		}
 	}
 
+	/** Color choice shared by the avatar cosmetics (wings, halo, ears, China hat). */
+	public enum CosmeticColor {
+		OFF("Off", 0),
+		WHITE("White", 0xF6F6FF),
+		BLACK("Black", 0x24222B),
+		GOLD("Gold", 0xFFD36A),
+		PINK("Pink", 0xFFB3CF),
+		ACCENT("Accent", -1),
+		RAINBOW("Rainbow", -2);
+
+		public final String label;
+		private final int rgb;
+
+		CosmeticColor(String label, int rgb) {
+			this.label = label;
+			this.rgb = rgb;
+		}
+
+		/** RGB for this choice at the given time in ticks (Rainbow cycles, Accent follows the theme). */
+		public int rgb(float ticks) {
+			if (rgb == -1) return LmgConfig.get().accent.rgb;
+			if (rgb == -2) return java.awt.Color.HSBtoRGB((ticks / 120f) % 1f, 0.55f, 1f) & 0xFFFFFF;
+			return rgb;
+		}
+	}
+
+	public enum Trail {
+		OFF("Off"), SPARKLE("Sparkle"), ACCENT_DUST("Accent dust"), HEARTS("Hearts"),
+		NOTES("Notes"), SOUL_FLAMES("Soul flames"), SPARKS("Sparks");
+
+		public final String label;
+
+		Trail(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum Ambient {
+		OFF("Off"), FIREFLIES("Fireflies"), PETALS("Petals"), STARDUST("Stardust"),
+		SNOW("Snow"), ASH("Ash"), SPORES("Spores");
+
+		public final String label;
+
+		Ambient(String label) {
+			this.label = label;
+		}
+	}
+
+	public static final String[] AMOUNT_LABELS = {"Low", "Normal", "High"};
+
 	public static final float[] ANIMATION_SPEEDS = {0.5f, 1f, 1.5f, 2f};
 	public static final String[] ANIMATION_SPEED_LABELS = {"Slow", "Normal", "Fast", "Very fast"};
 	public static final int[] SPARKLE_AMOUNTS = {0, 12, 26, 45};
@@ -150,6 +200,19 @@ public final class LmgConfig {
 	public CloudMode clouds = CloudMode.VANILLA;
 	public boolean alwaysStars = false;
 	public boolean showWeather = true;
+
+	// ---- avatar cosmetics (only you see them) ----
+	public boolean cape = true;
+	public CosmeticColor wings = CosmeticColor.OFF;
+	public CosmeticColor halo = CosmeticColor.OFF;
+	public boolean crown = false;
+	public CosmeticColor catEars = CosmeticColor.OFF;
+	public CosmeticColor chinaHat = CosmeticColor.OFF;
+
+	// ---- effects (client-side particles) ----
+	public Trail trail = Trail.OFF;
+	public Ambient ambient = Ambient.OFF;
+	public int ambientAmount = 1; // index into AMOUNT_LABELS
 
 	// ---- HUD bar ----
 	public boolean hudEnabled = true;
@@ -204,6 +267,13 @@ public final class LmgConfig {
 		if (timeOfDay == null) timeOfDay = d.timeOfDay;
 		if (fog == null) fog = d.fog;
 		if (clouds == null) clouds = d.clouds;
+		if (wings == null) wings = d.wings;
+		if (halo == null) halo = d.halo;
+		if (catEars == null) catEars = d.catEars;
+		if (chinaHat == null) chinaHat = d.chinaHat;
+		if (trail == null) trail = d.trail;
+		if (ambient == null) ambient = d.ambient;
+		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);

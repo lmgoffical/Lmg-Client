@@ -8,6 +8,9 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 - **HUD bar**: a smooth, animated bar showing your name, server, FPS, ping, clock and (optionally) coordinates.
 - **Lmg menu**: press **Right Shift** anywhere (or main menu → **Client**). Three tabs:
   - **Theme**: accent color, background style, animation speed
+  - **World**: sky theme, time of day, fog, clouds, stars, rain & snow
+  - **Avatar**: Lmg Client cape, wings, halo, crown, cat ears, China hat (only you see them)
+  - **Effects**: walking trails and ambient particles (fireflies, petals, stardust, snow, ash, spores)
   - **Menus**: splash screen, themed menus, light curtains, sparkle amount, skin spin
   - **HUD**: on/off, position, size, background opacity, and which info to show
 
