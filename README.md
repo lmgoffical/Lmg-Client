@@ -27,7 +27,7 @@ Community site with accounts, a forum, announcements and a config gallery: <http
 ## Installing it (Windows), the easy way
 
 1. Open the Minecraft Launcher once and sign in, then close it.
-2. Download [`installer/Install-Lmg-Client.bat`](https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat) and double-click it.
+2. Download [**Lmg-Client-Installer.zip**](https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/download/Lmg-Client-Installer.zip), open it and double-click `Install-Lmg-Client.bat`.
    If Windows shows "Windows protected your PC", click **More info → Run anyway**.
 3. Open the Minecraft Launcher, pick **Lmg Client** next to the Play button, and press Play.
 

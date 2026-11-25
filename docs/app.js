@@ -6,7 +6,7 @@
 const SUPABASE_URL = "https://fieakrewvbyubtyxpqhr.supabase.co";
 const SUPABASE_KEY = "sb_publishable__GJAqv2bWvhtt3UdGgAr2Q_NFI8TyG1"; // publishable key: meant to be public
 const REPO_RAW = "https://raw.githubusercontent.com/lmgoffical/Lmg-Client/claude/modest-cray-bg98zr";
-const INSTALLER_URL = REPO_RAW + "/installer/Install-Lmg-Client.bat";
+const INSTALLER_URL = REPO_RAW + "/download/Lmg-Client-Installer.zip";
 const CODE_RE = /^LMG-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/;
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -233,14 +233,14 @@ async function pageDownload() {
         <div class="label" id="version">java edition</div>
         <h1 style="margin-top:8px">Get Lmg Client</h1>
         <p class="muted">One small installer. It sets up Fabric, adds an <b>Lmg Client</b> profile to your launcher, and grabs Sodium, Lithium and Iris so the game runs well. Your normal Minecraft isn't touched.</p>
-        <a class="btn primary" href="${INSTALLER_URL}">Download installer (.bat)</a>
+        <a class="btn primary" href="${INSTALLER_URL}">Download installer</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the script isn't signed &mdash; click <i>More info &rarr; Run anyway</i>.</p>
       </div>
       <div class="card">
         <h3>Installing</h3>
         <ol class="muted" style="padding-left:20px;margin:0">
           <li>Open the Minecraft Launcher once and sign in, then close it.</li>
-          <li>Run <b>Install-Lmg-Client.bat</b>.</li>
+          <li>Open the zip and double-click <b>Install-Lmg-Client.bat</b>.</li>
           <li>In the launcher, pick <b>Lmg Client</b> next to Play.</li>
           <li>In game, press <b>Right Shift</b>.</li>
         </ol>
