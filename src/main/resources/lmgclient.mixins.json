@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "dev.lmg.client.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"GuiMixin",
+		"PlayerSkinWidgetAccessor",
+		"ScreenBackgroundMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

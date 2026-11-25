@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "lmgclient",
+	"version": "${version}",
+	"name": "Lmg Client",
+	"description": "Custom visuals, menus and HUD for Minecraft.",
+	"authors": ["lmgoffical"],
+	"contact": {
+		"sources": "https://github.com/lmgoffical/Lmg-Client"
+	},
+	"license": "All-Rights-Reserved",
+	"icon": "assets/lmgclient/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": ["dev.lmg.client.LmgClient"]
+	},
+	"mixins": ["lmgclient.mixins.json"],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
