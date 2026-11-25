@@ -114,75 +114,154 @@ function renderUserbox() {
 // pages
 // ---------------------------------------------------------------------------
 
+// Real release history, newest first (keep this updated when you release).
+const CHANGELOG = [
+  ["0.15", "<b>Website + forum.</b> Accounts, threads, a config gallery, and a link to it from the in-game Configs menu."],
+  ["0.14", "<b>Short config codes.</b> Share a setup as <code>LMG-ABC234</code> instead of a wall of text."],
+  ["0.13", "<b>Saved configs.</b> Save as many setups as you want and swap between them."],
+  ["0.12", "Skeet and Neverlose styles redone after comparing them with reference screenshots."],
+  ["0.10", "<b>Menu styles.</b> The Lmg menu can now look like Skeet or Neverlose."],
+  ["0.9", "Smaller, cleaner menu. Drag your HUD anywhere."],
+  ["0.8", "Smaller held items for PvP, and a Star of David totem."],
+  ["0.7", "Glowing outline on whatever you're aiming at, plus their health and gear."],
+  ["0.6", "Block overlay, aurora in the night sky, kill effects, fullbright."],
+  ["0.5", "Wings, halo, crown, cat ears and the Lmg cape."],
+];
+
+const FAQ = [
+  ["Is this a hack client?", "No. Everything is visual and client-side: skies, cosmetics, HUD, menus. There's no aim assist, reach or anything that plays the game for you."],
+  ["Will I get banned for using it?", "Visual mods are fine on almost every server. A few competitive servers don't allow fullbright or ore textures, so turn those off there if their rules say so."],
+  ["Is it free?", "Yes, and it's going to stay free."],
+  ["Can other people see my wings and cape?", "Not yet - right now cosmetics only show on your screen. Showing them to other Lmg users is on the list."],
+  ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
+];
+
 async function pageHome() {
   setActiveNav("home");
   render(`
     <section class="hero">
-      <img src="logo.svg" alt="">
-      <h1><span class="lmg">LMG</span> CLIENT</h1>
-      <p>Custom skies, cosmetics, PvP visuals and a fully themeable menu for Minecraft. Share your setup with a single code.</p>
-      <div class="row" style="justify-content:center">
-        <a class="btn primary" href="#/download">Download</a>
-        <a class="btn" href="#/forum">Community forum</a>
+      <div>
+        <div class="meta-line" id="meta-line">free &middot; java edition &middot; fabric</div>
+        <h1>Minecraft, but it looks <span class="squiggle">how you want.<svg viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9 C 30 2, 55 13, 85 7 S 140 2, 170 8 S 192 10, 198 5" fill="none" stroke="#f2c14e" stroke-width="3" stroke-linecap="round"/></svg></span></h1>
+        <p>I got bored of every client looking the same, so I made my own. Change the sky, put wings on your back, restyle the whole menu &mdash; then send your setup to a friend with one short code.</p>
+        <div class="actions">
+          <a class="btn primary" href="#/download">Download for Windows</a>
+          <a href="#/configs">or browse people's configs &rarr;</a>
+        </div>
+        <div class="stat-line" id="stat-line"></div>
+      </div>
+      <div class="shot" aria-label="Screenshot-style mockup of the Lmg menu">
+        <div class="hud"><span style="color:#f2c14e">&#10017;</span><b>lmg</b><i></i>hypixel.net<i></i>240 fps<i></i>21:04</div>
+        <div class="menu">
+          <div class="rainbow"></div>
+          <div class="side"><span>Style</span><span>Configs</span><span>Theme</span><span class="on">World</span><span>Avatar</span><span>Effects</span><span>PvP</span></div>
+          <div class="body">
+            <div class="box"><b>World</b>
+              <div class="opt"><span class="cb"></span>Sky theme</div><div class="dd"><span>Midnight</span><span>v</span></div>
+              <div class="opt"><span class="cb"></span>Fog</div><div class="dd"><span>None</span><span>v</span></div>
+              <div class="opt"><span class="cb on"></span>Always show stars</div>
+            </div>
+            <div class="box"><b>More</b>
+              <div class="opt"><span class="cb"></span>Aurora</div><div class="dd"><span>Purple</span><span>v</span></div>
+              <div class="opt"><span class="cb on"></span>Rain &amp; snow</div>
+              <div class="opt"><span class="cb"></span>Clouds</div>
+            </div>
+          </div>
+        </div>
+        <div class="sticker">it's free</div>
       </div>
     </section>
-    <div class="grid four" id="stats"></div>
-    <div class="section-title">Announcements</div>
-    <div class="card list" id="announcements"><div class="empty">Loading...</div></div>
-    <div class="section-title">What's inside</div>
-    <div class="grid three">
-      ${feature("Sky & world", "Sky themes, time changer, fog, clouds, an animated aurora and stars.")}
-      ${feature("Cosmetics", "Lmg cape, animated wings, halo, crown, cat ears, China hat and an energy shield.")}
-      ${feature("PvP visuals", "Block overlay, target outline & info, hit/kill effects, fullbright, smaller items.")}
-      ${feature("Menu styles", "Pick the original Lmg look, a Skeet-style or a Neverlose-style menu.")}
-      ${feature("Draggable HUD", "Smooth HUD bar, potion list and target panel you can put anywhere.")}
-      ${feature("Config codes", "Save setups and share them as short codes like LMG-ABC234.")}
-    </div>`);
+
+    <section class="section" id="announce-section" hidden>
+      <div class="section-head"><h2>News</h2><a class="small" href="#/c/announcements">all announcements</a></div>
+      <div class="card list" id="announcements"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>What you can change</h2><span class="label">press right shift in game</span></div>
+      <div class="does">
+        <div><h3>The sky</h3><p>Sunset, inferno, midnight or a void. Pin the time to night, kill the fog, add an aurora.</p></div>
+        <div><h3>Your character</h3><p>Wings that flap faster when you sprint, a halo, a crown, cat ears and the Lmg cape.</p></div>
+        <div><h3>PvP stuff</h3><p>Smaller swords, a cleaner block outline, a glow on whoever you're fighting and their health next to your crosshair.</p></div>
+        <div><h3>The menu itself</h3><p>Keep the Lmg look or switch it to a Skeet or Neverlose style. It's only looks, the settings are the same.</p></div>
+        <div><h3>Your HUD</h3><p>FPS, ping and potion timers that don't jitter. Drag everything where you want it.</p></div>
+        <div><h3>Sharing</h3><p>Save setups, then share them as <code>LMG-ABC234</code>. Your friend types it in and they've got your look.</p></div>
+      </div>
+    </section>
+
+    <section class="section grid two">
+      <div>
+        <div class="section-head"><h2>Recent updates</h2><a class="small" href="https://github.com/lmgoffical/Lmg-Client/commits">full history</a></div>
+        <ul class="changelog">${CHANGELOG.map(([v, what]) => `<li><span class="v">v${v}</span><span class="what">${what}</span></li>`).join("")}</ul>
+      </div>
+      <div>
+        <div class="section-head"><h2>Questions</h2></div>
+        ${FAQ.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}
+      </div>
+    </section>`);
 
   sb.rpc("site_stats").then(({ data }) => {
     const s = data || {};
-    document.getElementById("stats").innerHTML = [["Members", s.members], ["Threads", s.threads], ["Replies", s.replies], ["Shared configs", s.configs]]
-      .map(([l, n]) => `<div class="card stat"><div class="num">${esc(n ?? "-")}</div><div class="label">${l}</div></div>`).join("");
+    const parts = [];
+    if (s.members > 0) parts.push(`${s.members} ${s.members === 1 ? "person has" : "people have"} joined`);
+    if (s.configs > 0) parts.push(`${s.configs} configs shared`);
+    const el = document.getElementById("stat-line");
+    if (el) el.textContent = parts.join(" · ");
   });
+  fetch(REPO_RAW + "/download/manifest.json", { cache: "no-store" }).then(r => r.json()).then(m => {
+    const el = document.getElementById("meta-line");
+    if (el) el.innerHTML = `v${esc(m.version)} &middot; free &middot; minecraft ${esc(m.minecraft)} &middot; fabric`;
+  }).catch(() => {});
 
-  const { data, error } = await sb.from("threads")
-    .select("id,title,created_at,pinned,reply_count,author:profiles(username,role)")
-    .eq("category_id", "announcements").order("pinned", { ascending: false }).order("created_at", { ascending: false }).limit(4);
-  const box = document.getElementById("announcements");
-  if (!box) return;
-  if (error) { box.innerHTML = `<div class="empty">${esc(friendlyError(error))}</div>`; return; }
-  box.innerHTML = data.length ? data.map(threadRow).join("") : `<div class="empty">No announcements yet.</div>`;
-}
-
-function feature(title, text) {
-  return `<div class="card feature"><h3><span class="dot"></span>${esc(title)}</h3><div class="muted">${esc(text)}</div></div>`;
+  const { data } = await sb.from("threads")
+    .select("id,title,created_at,pinned,locked,config_code,reply_count,author:profiles(username,role)")
+    .eq("category_id", "announcements").order("pinned", { ascending: false }).order("created_at", { ascending: false }).limit(3);
+  if (data && data.length && document.getElementById("announcements")) {
+    document.getElementById("announcements").innerHTML = data.map(threadRow).join("");
+    document.getElementById("announce-section").hidden = false;
+  }
 }
 
 async function pageDownload() {
   setActiveNav("download");
   render(`
-    <div class="card" style="max-width:720px;margin:0 auto">
-      <h1>Download Lmg Client</h1>
-      <p class="muted" id="version">Checking latest version...</p>
-      <a class="btn primary" href="${INSTALLER_URL}">Download installer (.bat)</a>
-      <div class="section-title">How to install (Windows)</div>
-      <ol class="muted">
-        <li>Open the Minecraft Launcher once and sign in, then close it.</li>
-        <li>Run <b>Install-Lmg-Client.bat</b>. If Windows warns you, click <i>More info &rarr; Run anyway</i>.</li>
-        <li>Open the launcher, pick <b>Lmg Client</b> next to Play, and press Play.</li>
-        <li>Press <b>Right Shift</b> in game to open the Lmg menu.</li>
-      </ol>
-      <p class="muted small">Run the installer again any time to update. It sets up Fabric, Sodium, Lithium and Iris for you.</p>
+    <div class="grid two">
+      <div>
+        <div class="label" id="version">java edition</div>
+        <h1 style="margin-top:8px">Get Lmg Client</h1>
+        <p class="muted">One small installer. It sets up Fabric, adds an <b>Lmg Client</b> profile to your launcher, and grabs Sodium, Lithium and Iris so the game runs well. Your normal Minecraft isn't touched.</p>
+        <a class="btn primary" href="${INSTALLER_URL}">Download installer (.bat)</a>
+        <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the script isn't signed &mdash; click <i>More info &rarr; Run anyway</i>.</p>
+      </div>
+      <div class="card">
+        <h3>Installing</h3>
+        <ol class="muted" style="padding-left:20px;margin:0">
+          <li>Open the Minecraft Launcher once and sign in, then close it.</li>
+          <li>Run <b>Install-Lmg-Client.bat</b>.</li>
+          <li>In the launcher, pick <b>Lmg Client</b> next to Play.</li>
+          <li>In game, press <b>Right Shift</b>.</li>
+        </ol>
+        <p class="muted small" style="margin-bottom:0">To update later, just run the installer again.</p>
+      </div>
     </div>`);
   try {
     const m = await (await fetch(REPO_RAW + "/download/manifest.json", { cache: "no-store" })).json();
-    document.getElementById("version").textContent = `Latest: v${m.version} for Minecraft ${m.minecraft}`;
-  } catch { document.getElementById("version").textContent = "For Minecraft Java Edition."; }
+    document.getElementById("version").textContent = `v${m.version} · minecraft ${m.minecraft}`;
+  } catch { /* keep the default label */ }
 }
+
+// little hand-drawn style icons for the forum categories
+const CAT_ICONS = {
+  announcements: `<svg viewBox="0 0 24 24" fill="none" stroke="#f2c14e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>`,
+  configs: `<svg viewBox="0 0 24 24" fill="none" stroke="#3d9bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>`,
+  general: `<svg viewBox="0 0 24 24" fill="none" stroke="#a3b0c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>`,
+  support: `<svg viewBox="0 0 24 24" fill="none" stroke="#4fd49a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.5V14"/><path d="M12 17.5h0"/></svg>`,
+  suggestions: `<svg viewBox="0 0 24 24" fill="none" stroke="#ff8fa3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>`,
+};
 
 async function pageForum() {
   setActiveNav("forum");
-  render(`<h1>Forum</h1><div class="card list" id="cats"><div class="empty">Loading...</div></div>`);
+  render(`<div class="section-head" style="margin-top:0"><h1 style="margin:0">Forum</h1><span class="muted small">Be decent. Staff can lock or remove anything that isn't.</span></div><div class="card list" id="cats"><div class="empty">Loading...</div></div>`);
   const [{ data: cats }, { data: recent }] = await Promise.all([
     sb.from("categories").select("*").order("sort"),
     sb.from("threads").select("id,title,category_id,last_activity").order("last_activity", { ascending: false }).limit(60),
@@ -193,7 +272,7 @@ async function pageForum() {
   for (const t of recent || []) if (!latest[t.category_id]) latest[t.category_id] = t;
   document.getElementById("cats").innerHTML = (cats || []).map((c, i) => `
     <a class="cat-row" href="#/c/${esc(c.id)}">
-      <div class="cat-icon">${esc(c.name[0])}</div>
+      <div class="cat-icon">${CAT_ICONS[c.id] || CAT_ICONS.general}</div>
       <div class="grow">
         <div class="title-line">${esc(c.name)} ${c.staff_only ? `<span class="tag pinned">staff</span>` : ""}</div>
         <div class="meta">${esc(c.description)}</div>
@@ -227,7 +306,7 @@ async function pageCategory(id) {
     .select("id,title,pinned,locked,config_code,reply_count,created_at,last_activity,author:profiles(username,role)")
     .eq("category_id", id).order("pinned", { ascending: false }).order("last_activity", { ascending: false }).limit(100);
   document.getElementById("threads").innerHTML = error ? `<div class="empty">${esc(friendlyError(error))}</div>`
-    : data.length ? data.map(threadRow).join("") : `<div class="empty">No threads yet. Be the first!</div>`;
+    : data.length ? data.map(threadRow).join("") : `<div class="empty">Quiet in here. Start something?</div>`;
 }
 
 async function pageThread(id) {
@@ -269,7 +348,7 @@ async function pageThread(id) {
           </div>
         </div>
       </div>`).join("")}
-    ${canReply ? `<div class="card"><label>Write a reply</label><textarea id="reply" maxlength="5000" placeholder="Be nice :)"></textarea>
+    ${canReply ? `<div class="card"><label>Write a reply</label><textarea id="reply" maxlength="5000" placeholder="Say something..."></textarea>
       <div class="row" style="margin-top:10px"><button class="btn primary" id="send-reply">Reply</button><span class="error" id="reply-error"></span></div></div>`
       : state.me ? `<div class="empty">This thread is locked.</div>` : `<div class="empty"><a href="#/login">Log in</a> to reply.</div>`}`);
 
@@ -361,7 +440,7 @@ async function pageConfigs() {
       <div class="meta">by ${t.author ? esc(t.author.username) : "deleted user"}${t.author ? roleBadge(t.author.role) : ""} &middot; ${esc(timeAgo(t.created_at))}</div>
       <p class="muted small">${esc(t.body.length > 140 ? t.body.slice(0, 140) + "..." : t.body)}</p>
       <div class="row between"><span class="code">${esc(t.config_code)}</span><button class="btn small primary" data-copy="${esc(t.config_code)}">Copy</button></div>
-    </div>`).join("") : `<div class="empty">No configs shared yet.</div>`;
+    </div>`).join("") : `<div class="empty">No configs yet &mdash; share yours and you'll be first on the board.</div>`;
   grid.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => copy(b.dataset.copy));
 }
 
