@@ -20,8 +20,8 @@ import java.util.List;
  * Three tabs: Theme, Menus and HUD.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "PvP", "Menus", "HUD"};
-	private static final int PANEL_W = 310;
+	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "Target", "PvP", "Menus", "HUD"};
+	private static final int PANEL_W = 320;
 	private static final int ROW_H = 15;
 	private static final int ROW_GAP = 16;
 	private static final int MAX_ROWS = 9;
@@ -53,7 +53,7 @@ public class LmgSettingsScreen extends Screen {
 
 		// Tabs
 		int tabY = panelTop + 22;
-		int tabW = 44;
+		int tabW = 40;
 		int tabsLeft = width / 2 - (tabW * TABS.length) / 2;
 		for (int i = 0; i < TABS.length; i++) {
 			final int index = i;
@@ -137,14 +137,8 @@ public class LmgSettingsScreen extends Screen {
 						null, 0));
 			}
 			case 4 -> {
-				rows.add(new SettingRow(x, 0, w, ROW_H, "Block overlay", () -> c.blockOverlay.label,
-						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, 1),
-						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, -1),
-						null, 0));
-				rows.add(new SettingRow(x, 0, w, ROW_H, "Overlay color", () -> c.overlayColor.label,
-						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, 1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
-						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, -1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
-						() -> c.overlayColor.rgb(Util.getMillis() / 50f), 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Glowing outline on target", () -> c.targetOutline, v -> c.targetOutline = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Target info (health, gear, effects)", () -> c.targetHud, v -> c.targetHud = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Target reticle", () -> c.targetReticle, v -> c.targetReticle = v, 0));
 				rows.add(new SettingRow(x, 0, w, ROW_H, "Hit effect", () -> c.hitEffect.label,
 						() -> c.hitEffect = cycle(LmgConfig.HitEffect.values(), c.hitEffect, 1),
@@ -154,12 +148,24 @@ public class LmgSettingsScreen extends Screen {
 						() -> c.killEffect = cycle(LmgConfig.KillEffect.values(), c.killEffect, 1),
 						() -> c.killEffect = cycle(LmgConfig.KillEffect.values(), c.killEffect, -1),
 						null, 0));
+			}
+			case 5 -> {
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Block overlay", () -> c.blockOverlay.label,
+						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, 1),
+						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Overlay color", () -> c.overlayColor.label,
+						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, 1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
+						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, -1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
+						() -> c.overlayColor.rgb(Util.getMillis() / 50f), 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Fullbright", () -> c.fullbright, v -> c.fullbright = v, 0));
-				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Ore outlines", OreOutlines::isEnabled, OreOutlines::setEnabled, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Ore edges (texture pack)", OreOutlines::isEnabled, OreOutlines::setEnabled, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Ore glow in the dark", () -> c.oreGlow, v -> c.oreGlow = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Potion effects HUD", () -> c.potionHud, v -> c.potionHud = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Low fire", () -> c.lowFire, v -> c.lowFire = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "No hurt camera shake", () -> c.noHurtCam, v -> c.noHurtCam = v, 0));
 			}
-			case 5 -> {
+			case 6 -> {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Splash screen", () -> c.showSplash, v -> c.showSplash = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Themed vanilla menus", () -> c.themedMenus, v -> c.themedMenus = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Light curtains", () -> c.curtains, v -> c.curtains = v, 0));

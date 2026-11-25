@@ -3,7 +3,7 @@ package dev.lmg.client.world;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.lmg.client.LmgClient;
 import dev.lmg.client.LmgConfig;
-import dev.lmg.client.cosmetic.Combat;
+import dev.lmg.client.hud.Targeting;
 import dev.lmg.client.render.Quads;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
@@ -79,8 +79,9 @@ public final class WorldRender {
 	public static void targetReticle(LevelRenderContext ctx) {
 		if (!LmgConfig.get().targetReticle) return;
 		Minecraft mc = Minecraft.getInstance();
-		Entity target = mc.crosshairPickEntity instanceof LivingEntity ? mc.crosshairPickEntity : Combat.recentTarget();
-		if (!(target instanceof LivingEntity living) || !living.isAlive() || target == mc.player) return;
+		LivingEntity living = Targeting.current();
+		if (living == null || living == mc.player) return;
+		Entity target = living;
 
 		float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
 		Vec3 cam = ctx.levelState().cameraRenderState.pos;

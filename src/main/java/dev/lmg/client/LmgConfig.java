@@ -268,6 +268,10 @@ public final class LmgConfig {
 	public BlockOverlay blockOverlay = BlockOverlay.VANILLA;
 	public CosmeticColor overlayColor = CosmeticColor.ACCENT;
 	public boolean targetReticle = false;
+	public boolean targetOutline = true;
+	public boolean targetHud = true;
+	public boolean potionHud = true;
+	public boolean oreGlow = false;
 	public boolean fullbright = false;
 	public boolean lowFire = false;
 	public boolean noHurtCam = false;

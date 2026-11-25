@@ -5,7 +5,11 @@ import dev.lmg.client.cosmetic.Combat;
 import dev.lmg.client.cosmetic.CosmeticsLayer;
 import dev.lmg.client.cosmetic.Effects;
 import dev.lmg.client.hud.HudPill;
+import dev.lmg.client.hud.PotionHud;
+import dev.lmg.client.hud.TargetHud;
+import dev.lmg.client.hud.Targeting;
 import dev.lmg.client.screen.LmgSettingsScreen;
+import dev.lmg.client.world.OreGlow;
 import dev.lmg.client.world.WorldRender;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -49,6 +53,12 @@ public class LmgClient implements ClientModInitializer {
 		UpdateChecker.start();
 		KeyMappingHelper.registerKeyMapping(OPEN_MENU_KEY);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("hud_pill"), new HudPill());
+		HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, id("target_hud"), new TargetHud());
+		HudElementRegistry.attachElementAfter(VanillaHudElements.MOB_EFFECTS, id("potion_hud"), new PotionHud());
+		// Our potion list replaces the vanilla effect icons in the top-right while it's on.
+		HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
+			if (!LmgConfig.get().potionHud) vanilla.extractRenderState(graphics, delta);
+		});
 
 		// Wings, halo, crown, cat ears and China hat on player models (only drawn for you).
 		LivingEntityRenderLayerRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
@@ -69,6 +79,7 @@ public class LmgClient implements ClientModInitializer {
 		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
 			WorldRender.aurora(context);
 			WorldRender.targetReticle(context);
+			OreGlow.render(context);
 		});
 
 		// Hit / kill effects: remember what YOU hit (client side only, never cancels the attack).
@@ -80,6 +91,8 @@ public class LmgClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			Effects.tick(mc);
 			Combat.tick(mc);
+			Targeting.tick(mc);
+			OreGlow.tick(mc);
 			while (OPEN_MENU_KEY.consumeClick()) {
 				if (mc.gui.screen() == null) mc.gui.setScreen(new LmgSettingsScreen(null));
 			}

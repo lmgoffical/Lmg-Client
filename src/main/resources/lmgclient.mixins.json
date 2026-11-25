@@ -6,6 +6,7 @@
 		"AvatarRendererMixin",
 		"ClientClockInstanceMixin",
 		"ClientClockManagerMixin",
+		"EntityRendererMixin",
 		"EnvironmentAttributeProbeMixin",
 		"FogRendererMixin",
 		"GameRendererMixin",
