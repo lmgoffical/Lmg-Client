@@ -66,6 +66,64 @@ public final class LmgConfig {
 		}
 	}
 
+	public enum SkyTheme {
+		VANILLA("Vanilla"),
+		SUNSET("Sunset"),
+		INFERNO("Inferno"),
+		MIDNIGHT("Midnight"),
+		COTTON_CANDY("Cotton candy"),
+		ACCENT("Match accent"),
+		VOID("Void");
+
+		public final String label;
+
+		SkyTheme(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum TimeOfDay {
+		VANILLA("Vanilla", -1),
+		SUNRISE("Sunrise", 23300),
+		DAY("Day", 6000),
+		SUNSET("Sunset", 12600),
+		NIGHT("Night", 18000);
+
+		public final String label;
+		/** Ticks into the 24000-tick day, or -1 to leave the real time alone. */
+		public final long ticks;
+
+		TimeOfDay(String label, long ticks) {
+			this.label = label;
+			this.ticks = ticks;
+		}
+	}
+
+	public enum FogLevel {
+		VANILLA("Vanilla"),
+		LIGHT("Light"),
+		NONE("None"),
+		THICK("Thick");
+
+		public final String label;
+
+		FogLevel(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum CloudMode {
+		VANILLA("Vanilla"),
+		THEMED("Themed"),
+		HIDDEN("Hidden");
+
+		public final String label;
+
+		CloudMode(String label) {
+			this.label = label;
+		}
+	}
+
 	public static final float[] ANIMATION_SPEEDS = {0.5f, 1f, 1.5f, 2f};
 	public static final String[] ANIMATION_SPEED_LABELS = {"Slow", "Normal", "Fast", "Very fast"};
 	public static final int[] SPARKLE_AMOUNTS = {0, 12, 26, 45};
@@ -84,6 +142,14 @@ public final class LmgConfig {
 	public boolean curtains = true;
 	public int sparkles = 2; // index into SPARKLE_AMOUNTS
 	public boolean skinSpin = true;
+
+	// ---- world visuals (client-side only) ----
+	public SkyTheme skyTheme = SkyTheme.VANILLA;
+	public TimeOfDay timeOfDay = TimeOfDay.VANILLA;
+	public FogLevel fog = FogLevel.VANILLA;
+	public CloudMode clouds = CloudMode.VANILLA;
+	public boolean alwaysStars = false;
+	public boolean showWeather = true;
 
 	// ---- HUD bar ----
 	public boolean hudEnabled = true;
@@ -134,6 +200,10 @@ public final class LmgConfig {
 		if (accent == null) accent = d.accent;
 		if (backdrop == null) backdrop = d.backdrop;
 		if (hudPosition == null) hudPosition = d.hudPosition;
+		if (skyTheme == null) skyTheme = d.skyTheme;
+		if (timeOfDay == null) timeOfDay = d.timeOfDay;
+		if (fog == null) fog = d.fog;
+		if (clouds == null) clouds = d.clouds;
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);

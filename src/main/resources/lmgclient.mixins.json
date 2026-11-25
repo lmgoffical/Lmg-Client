@@ -3,9 +3,15 @@
 	"package": "dev.lmg.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"ClientClockInstanceMixin",
+		"ClientClockManagerMixin",
+		"EnvironmentAttributeProbeMixin",
+		"FogRendererMixin",
 		"GuiMixin",
+		"OptionsMixin",
 		"PlayerSkinWidgetAccessor",
-		"ScreenBackgroundMixin"
+		"ScreenBackgroundMixin",
+		"WeatherEffectRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

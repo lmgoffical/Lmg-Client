@@ -19,13 +19,13 @@ import java.util.List;
  * Three tabs: Theme, Menus and HUD.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "Menus", "HUD"};
+	private static final String[] TABS = {"Theme", "World", "Menus", "HUD"};
 	private static final int PANEL_W = 260;
 	private static final int ROW_H = 15;
 	private static final int ROW_GAP = 16;
 	private static final int MAX_ROWS = 9;
 
-	private static int lastTab = 0;
+	private static int lastTab = 1; // open on World first, since it's used most in-game
 
 	private final Screen parent;
 	private final long openedAt = Util.getMillis();
@@ -52,7 +52,7 @@ public class LmgSettingsScreen extends Screen {
 
 		// Tabs
 		int tabY = panelTop + 22;
-		int tabW = 70;
+		int tabW = 64;
 		int tabsLeft = width / 2 - (tabW * TABS.length) / 2;
 		for (int i = 0; i < TABS.length; i++) {
 			final int index = i;
@@ -89,6 +89,26 @@ public class LmgSettingsScreen extends Screen {
 						null, 0));
 			}
 			case 1 -> {
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Sky theme", () -> c.skyTheme.label,
+						() -> c.skyTheme = cycle(LmgConfig.SkyTheme.values(), c.skyTheme, 1),
+						() -> c.skyTheme = cycle(LmgConfig.SkyTheme.values(), c.skyTheme, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Time of day", () -> c.timeOfDay.label,
+						() -> c.timeOfDay = cycle(LmgConfig.TimeOfDay.values(), c.timeOfDay, 1),
+						() -> c.timeOfDay = cycle(LmgConfig.TimeOfDay.values(), c.timeOfDay, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Fog", () -> c.fog.label,
+						() -> c.fog = cycle(LmgConfig.FogLevel.values(), c.fog, 1),
+						() -> c.fog = cycle(LmgConfig.FogLevel.values(), c.fog, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Clouds", () -> c.clouds.label,
+						() -> c.clouds = cycle(LmgConfig.CloudMode.values(), c.clouds, 1),
+						() -> c.clouds = cycle(LmgConfig.CloudMode.values(), c.clouds, -1),
+						null, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Always show stars", () -> c.alwaysStars, v -> c.alwaysStars = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Rain & snow", () -> c.showWeather, v -> c.showWeather = v, 0));
+			}
+			case 2 -> {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Splash screen", () -> c.showSplash, v -> c.showSplash = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Themed vanilla menus", () -> c.themedMenus, v -> c.themedMenus = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Light curtains", () -> c.curtains, v -> c.curtains = v, 0));
