@@ -69,10 +69,14 @@ public class LmgClient implements ClientModInitializer {
 			}
 		});
 
-		// Built-in resource pack with outlined ore textures (toggled from the PvP tab).
-		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(mod ->
-				ResourceLoader.registerBuiltinPack(id("ore_outlines"), mod,
-						Component.literal("Lmg Ore Outlines"), PackActivationType.NORMAL));
+		// Built-in resource packs: ore edges and the Lmg totem (toggled from the PvP tab).
+		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(mod -> {
+			ResourceLoader.registerBuiltinPack(id("ore_outlines"), mod,
+					Component.literal("Lmg Ore Edges"), PackActivationType.NORMAL);
+			// The Star of David totem is on by default (toggle in the PvP tab).
+			ResourceLoader.registerBuiltinPack(id("lmg_totem"), mod,
+					Component.literal("Lmg Totem"), PackActivationType.DEFAULT_ENABLED);
+		});
 
 		// Things drawn in the world: custom block overlay, target reticle, aurora.
 		LevelRenderEvents.BEFORE_BLOCK_OUTLINE.register(WorldRender::blockOutline);

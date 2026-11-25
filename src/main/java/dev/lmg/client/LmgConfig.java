@@ -216,6 +216,8 @@ public final class LmgConfig {
 		}
 	}
 
+	public static final float[] ITEM_SCALES = {1f, 0.85f, 0.7f, 0.55f};
+
 	public static final String[] AMOUNT_LABELS = {"Low", "Normal", "High"};
 
 	public static final float[] ANIMATION_SPEEDS = {0.5f, 1f, 1.5f, 2f};
@@ -272,6 +274,9 @@ public final class LmgConfig {
 	public boolean targetHud = true;
 	public boolean potionHud = true;
 	public boolean oreGlow = false;
+	public int itemScale = 0; // index into ITEM_SCALES
+	public boolean lowerItems = false;
+	public boolean lmgTotem = true;
 	public boolean fullbright = false;
 	public boolean lowFire = false;
 	public boolean noHurtCam = false;
@@ -341,6 +346,7 @@ public final class LmgConfig {
 		if (overlayColor == null || overlayColor == CosmeticColor.OFF) overlayColor = d.overlayColor;
 		if (aurora == null) aurora = d.aurora;
 		if (ambient == null) ambient = d.ambient;
+		itemScale = clampIndex(itemScale, ITEM_SCALES.length, d.itemScale);
 		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);

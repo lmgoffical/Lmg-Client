@@ -12,7 +12,7 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
   - **Avatar**: Lmg Client cape, wings, halo, crown, cat ears, China hat, energy shield (only you see them)
   - **Effects**: walking trails and ambient particles (fireflies, petals, stardust, snow, ash, spores)
   - **Target**: glowing outline on what you aim at (up to 32 blocks, line of sight only), target info panel (health, absorption, armor, held items, known effects), target reticle, hit & kill effects
-  - **PvP**: custom block overlay, fullbright, ore edges (built-in resource pack, made by `tools/make_ore_outlines.py`), ore glow in the dark (only ores you can see), potion effects HUD, low fire, no hurt-camera shake
+  - **PvP**: custom block overlay, fullbright, ore edges (built-in resource pack, made by `tools/make_ore_outlines.py`), ore glow in the dark (only ores you can see), potion effects HUD, low fire, no hurt-camera shake, smaller / lower held items, Lmg totem (Star of David, built-in pack made by `tools/make_totem.py`, gold totem particles)
   - **Menus**: splash screen, themed menus, light curtains, sparkle amount, skin spin
   - **HUD**: on/off, position, size, background opacity, and which info to show
 

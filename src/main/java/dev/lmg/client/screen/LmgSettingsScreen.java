@@ -22,9 +22,9 @@ import java.util.List;
 public class LmgSettingsScreen extends Screen {
 	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "Target", "PvP", "Menus", "HUD"};
 	private static final int PANEL_W = 320;
-	private static final int ROW_H = 15;
-	private static final int ROW_GAP = 16;
-	private static final int MAX_ROWS = 9;
+	private static final int ROW_H = 14;
+	private static final int ROW_GAP = 15;
+	private static final int MAX_ROWS = 11;
 
 	private static int lastTab = 1; // open on World first, since it's used most in-game
 
@@ -164,6 +164,13 @@ public class LmgSettingsScreen extends Screen {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Potion effects HUD", () -> c.potionHud, v -> c.potionHud = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Low fire", () -> c.lowFire, v -> c.lowFire = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "No hurt camera shake", () -> c.noHurtCam, v -> c.noHurtCam = v, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Held item size", () -> Math.round(LmgConfig.ITEM_SCALES[c.itemScale] * 100) + "%",
+						() -> c.itemScale = step(c.itemScale, LmgConfig.ITEM_SCALES.length, 1),
+						() -> c.itemScale = step(c.itemScale, LmgConfig.ITEM_SCALES.length, -1),
+						null, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Lower held items", () -> c.lowerItems, v -> c.lowerItems = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Lmg totem (Star of David)", () -> OreOutlines.isEnabled(OreOutlines.TOTEM),
+						v -> { c.lmgTotem = v; OreOutlines.setEnabled(OreOutlines.TOTEM, v); }, 0));
 			}
 			case 6 -> {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Splash screen", () -> c.showSplash, v -> c.showSplash = v, 0));

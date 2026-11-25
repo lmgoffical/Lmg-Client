@@ -8,6 +8,7 @@
 		"ClientClockManagerMixin",
 		"EntityRendererMixin",
 		"EnvironmentAttributeProbeMixin",
+		"FirstPersonItemMixin",
 		"FogRendererMixin",
 		"GameRendererMixin",
 		"GuiMixin",
@@ -16,6 +17,7 @@
 		"PlayerSkinWidgetAccessor",
 		"ScreenBackgroundMixin",
 		"ScreenEffectRendererMixin",
+		"TotemParticleMixin",
 		"WeatherEffectRendererMixin"
 	],
 	"injectors": {
