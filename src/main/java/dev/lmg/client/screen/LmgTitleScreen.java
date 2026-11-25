@@ -82,6 +82,13 @@ public class LmgTitleScreen extends Screen {
 		MenuBackground.draw(g, width, height, true);
 	}
 
+	/** "evening, Steve." - changes with your clock, so the menu feels a bit less like a machine. */
+	private String greeting() {
+		int hour = java.time.LocalTime.now().getHour();
+		String hi = hour < 5 ? "up late" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+		return hi + ", " + minecraft.getGameProfile().name() + (hour < 5 ? "?" : ".");
+	}
+
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		long now = Util.getMillis();
@@ -101,6 +108,7 @@ public class LmgTitleScreen extends Screen {
 		float glow = 0.85f + 0.15f * (float) Math.sin(time * 2.2f);
 		Draw.logo(g, columnX, columnTop + 17 + bob, 34f, (float) Math.sin(time * 0.8f) * 0.05f, intro * glow);
 		Draw.scaledText(g, font, LmgClient.CLIENT_NAME, columnX, columnTop + 34 + 8, 1.5f, Draw.white(intro));
+		g.centeredText(font, greeting(), columnX, columnTop + 34 + 8 + 16, Draw.withAlpha(0x7C8BA3, intro));
 
 		// Name tag above the skin.
 		if (skin != null) {
@@ -116,7 +124,7 @@ public class LmgTitleScreen extends Screen {
 
 		// Version in the corner, plus a notice when an update is out.
 		String version = LmgClient.CLIENT_NAME + " " + UpdateChecker.currentVersion();
-		g.text(font, version, width - font.width(version) - 6, height - 12, Draw.withAlpha(0x6E6E78, intro), false);
+		g.text(font, version, width - font.width(version) - 6, height - 12, Draw.withAlpha(0xF2C14E, 0.7f * intro), false);
 		String update = UpdateChecker.newerVersion();
 		if (update != null) {
 			String msg = "Update " + update + " is out! Run Install-Lmg-Client.bat to get it.";

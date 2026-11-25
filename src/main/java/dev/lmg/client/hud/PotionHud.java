@@ -53,7 +53,7 @@ public class PotionHud implements HudElement {
 		int panelW = 18 + 8 + width + 8;
 		int totalH = effects.size() * (ROW + 2) - 2;
 		int[] at = HudLayout.place(HudLayout.Element.POTIONS, g.guiWidth() - panelW - 5,
-				g.guiHeight() / 3 - totalH / 2, panelW, totalH, g.guiWidth(), g.guiHeight());
+				Math.max(g.guiHeight() / 3 - totalH / 2, MinimapHud.defaultBottom() + 6), panelW, totalH, g.guiWidth(), g.guiHeight());
 		HudLayout.report(HudLayout.Element.POTIONS, at[0], at[1], panelW, totalH);
 		int x = at[0];
 		int y = at[1];

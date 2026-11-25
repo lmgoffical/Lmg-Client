@@ -24,11 +24,12 @@ import java.util.function.Supplier;
  *  - button: runs an action
  */
 public class SettingRow extends AbstractWidget {
-	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN }
+	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN, KEY }
 
-	private static final int LABEL = 0xB9B9C4;
-	private static final int VALUE = 0xEDEDF2;
-	private static final int DIM = 0x6E6E7A;
+	// same text colours as the website: muted labels, bright values, faint arrows
+	private static final int LABEL = 0xA3B0C4;
+	private static final int VALUE = 0xE8EDF5;
+	private static final int DIM = 0x7C8BA3;
 
 	private final Kind kind;
 	private final Supplier<Boolean> isOn;
@@ -49,6 +50,8 @@ public class SettingRow extends AbstractWidget {
 	private java.util.function.IntConsumer pick;
 	private Consumer<SettingRow> opener;
 	private int boxX0, boxY0, boxX1, boxY1;
+	private String hint = "";
+	private java.util.function.BooleanSupplier waiting = () -> false;
 
 	private SettingRow(Kind kind, String label, Supplier<Boolean> isOn, Supplier<String> value,
 					   Runnable next, Runnable previous, IntSupplier swatch) {
@@ -105,6 +108,27 @@ public class SettingRow extends AbstractWidget {
 		return index < optionColors.size() ? optionColors.get(index) : -1;
 	}
 
+	/** A key binding: shows the key in a little keycap; clicking it waits for a new key. */
+	public static SettingRow key(String label, Supplier<String> keyName, java.util.function.BooleanSupplier waiting, Runnable onPress) {
+		SettingRow row = new SettingRow(Kind.KEY, label, null, keyName, onPress, onPress, null);
+		row.waiting = waiting;
+		return row;
+	}
+
+	/** A short, plain-English explanation shown at the bottom of the menu while you hover the row. */
+	public SettingRow withHint(String hint) {
+		this.hint = hint == null ? "" : hint;
+		return this;
+	}
+
+	public String hint() {
+		return hint;
+	}
+
+	public boolean hovered() {
+		return isHovered;
+	}
+
 	public static SettingRow button(String label, String action, Runnable onPress) {
 		return new SettingRow(Kind.BUTTON, label, null, () -> action, onPress, onPress, null);
 	}
@@ -128,6 +152,10 @@ public class SettingRow extends AbstractWidget {
 
 		Font font = Minecraft.getInstance().font;
 		int x = getX(), y = getY() + Math.round((1 - appear) * 4);
+		if (kind == Kind.KEY) {
+			drawKey(g, font, x, y, appear);
+			return;
+		}
 		switch (MenuSkin.style()) {
 			case SKEET -> drawSkeet(g, font, x, y, mouseX, appear, dt);
 			case NEVERLOSE -> drawNeverlose(g, font, x, y, mouseX, appear, dt);
@@ -143,6 +171,46 @@ public class SettingRow extends AbstractWidget {
 		boolean on = on();
 		if (knob < 0) knob = on ? 1 : 0;
 		knob = Draw.approach(knob, on ? 1f : 0f, 18f * Theme.speed(), dt);
+	}
+
+	// ---- key binding rows (all styles) -----------------------------------------------------------
+
+	private void drawKey(GuiGraphicsExtractor g, Font font, int x, int y, float appear) {
+		LmgConfig.MenuStyle style = MenuSkin.style();
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int right = x + width - 6;
+		int labelX = style == LmgConfig.MenuStyle.SKEET ? x + 18 : x + 6;
+		int labelRgb = switch (style) {
+			case SKEET -> MenuSkin.SK_TEXT;
+			case NEVERLOSE -> MenuSkin.NL_TEXT;
+			default -> LABEL;
+		};
+		if (style == LmgConfig.MenuStyle.LMG && hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
+		g.text(font, getMessage(), labelX, textY, Draw.withAlpha(Draw.lerpRgb(labelRgb, 0xFFFFFF, hover), appear), false);
+		boolean wait = waiting.getAsBoolean();
+		String v = wait ? "press a key" : value.get();
+		int kw = Math.max(22, font.width(v) + 10);
+		int kx1 = right + 2, kx0 = kx1 - kw, ky0 = y + 1, ky1 = y + height - 1;
+		int acc = MenuSkin.accent();
+		float pulse = wait ? 0.5f + 0.5f * (float) Math.sin(Util.getMillis() / 120.0) : 0f;
+		switch (style) {
+			case SKEET -> {
+				g.fill(kx0, ky0, kx1, ky1, Draw.withAlpha(0x000000, appear));
+				g.fill(kx0 + 1, ky0 + 1, kx1 - 1, ky1 - 1, Draw.withAlpha(wait ? Draw.lerpRgb(0x262626, acc, 0.3f * pulse) : Draw.lerpRgb(0x1F1F1F, 0x2A2A2A, hover), appear));
+			}
+			case NEVERLOSE -> {
+				Draw.roundRect(g, kx0 - 1, ky0 - 1, kx1 + 1, ky1 + 1, 4, Draw.withAlpha(wait ? acc : MenuSkin.NL_FIELD_BORDER & 0xFFFFFF, appear));
+				Draw.roundRect(g, kx0, ky0, kx1, ky1, 3, Draw.withAlpha(MenuSkin.NL_FIELD & 0xFFFFFF, appear));
+			}
+			default -> {
+				// a little keycap: lighter top, darker lip at the bottom
+				Draw.roundRect(g, kx0, ky0, kx1, ky1, 3, Draw.withAlpha(wait ? acc : 0x1C2943, appear * (wait ? 0.35f + 0.4f * pulse : 1f)));
+				Draw.roundRect(g, kx0, ky0, kx1, ky1 - 2, 3, Draw.withAlpha(wait ? acc : Draw.lerpRgb(0x111A2E, 0x1C2943, hover), appear * (wait ? 0.25f + 0.3f * pulse : 1f)));
+			}
+		}
+		boolean unbound = "none".equals(v);
+		int col = wait ? 0xFFFFFF : unbound ? DIM : (style == LmgConfig.MenuStyle.LMG ? 0xF2C14E : VALUE);
+		g.centeredText(font, v, (kx0 + kx1) / 2, textY - (style == LmgConfig.MenuStyle.LMG ? 1 : 0), Draw.withAlpha(col, appear));
 	}
 
 	// ---- Lmg style ------------------------------------------------------------------------------

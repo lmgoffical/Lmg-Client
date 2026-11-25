@@ -31,7 +31,7 @@ public abstract class AvatarRendererMixin {
 		// equipped cape from the cosmetics catalog
 		dev.lmg.client.cosmetic.CosmeticModel cape = dev.lmg.client.cosmetic.CosmeticRegistry.get(LmgConfig.get().equipped.get("capes"));
 		ClientAsset.Texture capeTex = skin.cape();
-		if (cape != null && cape.capeTexture != null) {
+		if (cape != null && cape.capeTexture != null && !LmgConfig.get().hideCosmetics) {
 			capeTex = lmg$capes.computeIfAbsent(cape.capeTexture, tex -> new ClientAsset.ResourceTexture(
 					LmgClient.id("cosmetic/" + tex), LmgClient.id("textures/cosmetic/" + tex)));
 		}

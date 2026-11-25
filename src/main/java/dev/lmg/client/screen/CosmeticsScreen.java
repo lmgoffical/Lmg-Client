@@ -200,7 +200,7 @@ public class CosmeticsScreen extends Screen {
 			case NEVERLOSE -> new Pal(MenuSkin.NL_SIDEBAR, MenuSkin.NL_CARD, 0xFF06182F, MenuSkin.NL_BORDER,
 					MenuSkin.NL_TEXT, 0x6F8091, MenuSkin.accent(), MenuSkin.NL_FIELD);
 			case SKEET -> new Pal(0xFF0C0C0C, 0xFF191919, 0xFF202020, 0xFF2B2B2B, MenuSkin.SK_TEXT, 0x7A7A7A, MenuSkin.accent(), 0xFF262626);
-			default -> new Pal(0x40000000, 0x0DFFFFFF, 0x17FFFFFF, 0x14FFFFFF, 0xE4E4EC, 0x7E7E8A, Theme.accent() & 0xFFFFFF, 0x1AFFFFFF);
+			default -> new Pal(0xFF0A101D, 0xFF111A2E, 0xFF16213A, 0xFF1C2943, 0xE8EDF5, 0x7C8BA3, Theme.accent() & 0xFFFFFF, 0xFF1C2943);
 		};
 	}
 

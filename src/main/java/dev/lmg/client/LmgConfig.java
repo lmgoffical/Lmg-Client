@@ -311,6 +311,32 @@ public final class LmgConfig {
 	public boolean hudShowClock = true;
 	public boolean hudShowCoords = false;
 
+	// ---- keys & tools ----
+	public static final float[] ZOOM_LEVELS = {2.5f, 4f, 6f, 10f};
+	public static final String[] ZOOM_LABELS = {"A bit", "Normal", "Far", "Spyglass"};
+	public static final double[] FREECAM_SPEEDS = {0.25, 0.5, 1.0, 2.0};
+	public static final String[] FREECAM_SPEED_LABELS = {"Slow", "Normal", "Fast", "Very fast"};
+	public int zoomLevel = 1;
+	public boolean smoothZoom = true;
+	public int freecamSpeed = 1;
+	public boolean freecamOnServers = false;
+	public boolean hideCosmetics = false;
+
+	// ---- maps ----
+	public static final int[] MINIMAP_SIZES = {64, 84, 104, 128};
+	public static final String[] MINIMAP_SIZE_LABELS = {"Small", "Normal", "Big", "Huge"};
+	public static final float[] MINIMAP_ZOOMS = {0.5f, 1f, 2f, 4f};
+	public static final String[] MINIMAP_ZOOM_LABELS = {"Far out", "Normal", "Close", "Very close"};
+	public boolean minimap = true;
+	public int minimapSize = 1;
+	public int minimapZoom = 1;
+	public boolean minimapRotate = false;
+	public boolean minimapRound = true;
+	public boolean minimapCoords = true;
+	public boolean minimapWaypoints = true;
+	public boolean deathWaypoint = true;
+	public float minimapX = -1, minimapY = -1;
+
 	public static LmgConfig get() {
 		return instance;
 	}
@@ -393,6 +419,10 @@ public final class LmgConfig {
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);
 		hudOpacity = clampIndex(hudOpacity, HUD_OPACITIES.length, d.hudOpacity);
+		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
+		freecamSpeed = clampIndex(freecamSpeed, FREECAM_SPEEDS.length, d.freecamSpeed);
+		minimapSize = clampIndex(minimapSize, MINIMAP_SIZES.length, d.minimapSize);
+		minimapZoom = clampIndex(minimapZoom, MINIMAP_ZOOMS.length, d.minimapZoom);
 		return this;
 	}
 

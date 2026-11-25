@@ -30,7 +30,7 @@ public class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
 
 	@Override
 	public void submit(PoseStack pose, SubmitNodeCollector nodes, int light, AvatarRenderState state, float yRot, float xRot) {
-		if (state.isInvisible || !isYou(state)) return;
+		if (state.isInvisible || !isYou(state) || LmgConfig.get().hideCosmetics) return;
 		boolean elytra = state.chestEquipment.is(Items.ELYTRA) || state.isFallFlying;
 		for (Map.Entry<String, String> e : LmgConfig.get().equipped.entrySet()) {
 			if ("capes".equals(e.getKey())) continue;

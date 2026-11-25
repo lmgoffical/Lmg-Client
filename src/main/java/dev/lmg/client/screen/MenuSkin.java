@@ -54,7 +54,7 @@ public final class MenuSkin {
 	/** Extra space above the rows (room for the group box / card title). */
 	public static int contentTopPad() {
 		return switch (style()) {
-			case LMG -> 0;
+			case LMG -> 14;
 			case SKEET -> 10;
 			case NEVERLOSE -> 16;
 		};
@@ -80,15 +80,29 @@ public final class MenuSkin {
 
 	private static void lmgPanel(GuiGraphicsExtractor g, Font font, int x0, int y0, int x1, int y1,
 								 int headerH, int sidebarW, float a) {
-		Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 9, Draw.white(0.07f * a));
-		Draw.roundRect(g, x0, y0, x1, y1, 8, Draw.withAlpha(0x101015, 0.94f * a));
-		g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, Draw.white(0.06f * a));
-		g.fill(x0 + sidebarW - 2, y0 + headerH + 6, x0 + sidebarW - 1, y1 - 6, Draw.white(0.05f * a));
-		String title = LmgClient.CLIENT_NAME;
-		int tw = font.width(title);
-		int cx = (x0 + x1) / 2;
-		Draw.logo(g, cx - tw / 2f - 8, y0 + headerH / 2f, 12f, 0, a);
-		g.text(font, title, cx - tw / 2 + 2, y0 + (headerH - font.lineHeight) / 2 + 1, Draw.white(a), false);
+		// Same colours as the website: navy panel, thin lines, no glow.
+		Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7, Draw.withAlpha(0x1C2943, a));
+		Draw.roundRect(g, x0, y0, x1, y1, 6, Draw.withAlpha(0x0C1322, 0.97f * a));
+		Draw.roundRect(g, x0, y0, x0 + sidebarW - 2, y1, 6, Draw.withAlpha(0x0A101D, 0.97f * a));
+		g.fill(x0 + sidebarW - 8, y0, x0 + sidebarW - 2, y1, Draw.withAlpha(0x0A101D, 0.97f * a));
+		g.fill(x0 + sidebarW - 2, y0 + 6, x0 + sidebarW - 1, y1 - 6, Draw.withAlpha(0x1C2943, a));
+		g.fill(x0 + sidebarW - 1, y0 + headerH, x1 - 8, y0 + headerH + 1, Draw.withAlpha(0x1C2943, a));
+		// name on the left with the version in gold, like the site's header
+		int ty = y0 + (headerH - font.lineHeight) / 2 + 1;
+		int tx = x0 + sidebarW + 4;
+		g.text(font, LmgClient.CLIENT_NAME, tx, ty, Draw.withAlpha(0xE8EDF5, a), false);
+		g.text(font, "v" + version(), tx + font.width(LmgClient.CLIENT_NAME) + 5, ty, Draw.withAlpha(0xF2C14E, 0.85f * a), false);
+	}
+
+	private static String version;
+
+	static String version() {
+		if (version == null) {
+			version = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(LmgClient.MOD_ID)
+					.map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("dev");
+			if (version.endsWith(".0")) version = version.substring(0, version.length() - 2);
+		}
+		return version;
 	}
 
 	private static void skeetPanel(GuiGraphicsExtractor g, Font font, int x0, int y0, int x1, int y1,
@@ -182,12 +196,10 @@ public final class MenuSkin {
 				g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, fade(NL_BORDER, a));
 			}
 			default -> {
-				Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 9, Draw.white(0.07f * a));
-				Draw.roundRect(g, x0, y0, x1, y1, 8, Draw.withAlpha(0x101015, 0.94f * a));
-				int tw = font.width(title);
-				Draw.logo(g, cx - tw / 2f - 8, y0 + headerH / 2f, 12f, 0, a);
-				g.text(font, title, cx - tw / 2 + 2, ty, Draw.white(a), false);
-				g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, Draw.white(0.06f * a));
+				Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7, Draw.withAlpha(0x1C2943, a));
+				Draw.roundRect(g, x0, y0, x1, y1, 6, Draw.withAlpha(0x0C1322, 0.97f * a));
+				g.text(font, title, cx - font.width(title) / 2, ty, Draw.withAlpha(0xE8EDF5, a), false);
+				g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, Draw.withAlpha(0x1C2943, a));
 			}
 		}
 	}
@@ -197,7 +209,7 @@ public final class MenuSkin {
 		return switch (style()) {
 			case SKEET -> new int[]{SK_TEXT, 0x6A6A6A};
 			case NEVERLOSE -> new int[]{NL_TEXT, NL_TEXT_DIM};
-			default -> new int[]{0xD8D8E0, 0x6E6E7A};
+			default -> new int[]{0xE8EDF5, 0x7C8BA3};
 		};
 	}
 

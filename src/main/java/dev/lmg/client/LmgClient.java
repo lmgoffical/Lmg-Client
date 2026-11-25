@@ -42,11 +42,7 @@ public class LmgClient implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(CLIENT_NAME);
 
 	/** Right Shift by default; can be changed in Minecraft's Controls settings. */
-	public static final KeyMapping OPEN_MENU_KEY = new KeyMapping(
-			"key.lmgclient.open_menu",
-			InputConstants.Type.KEYBOARD,
-			InputConstants.KEY_RSHIFT,
-			KeyMapping.Category.register(id("main")));
+	public static final KeyMapping OPEN_MENU_KEY = dev.lmg.client.feature.LmgKeys.OPEN_MENU;
 
 	@Override
 	public void onInitializeClient() {
@@ -55,10 +51,13 @@ public class LmgClient implements ClientModInitializer {
 		// Blockbench models need the texture manager, so load them once the game is up.
 		ClientLifecycleEvents.CLIENT_STARTED.register(mc -> dev.lmg.client.cosmetic.CustomModels.reload());
 		UpdateChecker.start();
-		KeyMappingHelper.registerKeyMapping(OPEN_MENU_KEY);
+		dev.lmg.client.feature.LmgKeys.register();
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("hud_pill"), new HudPill());
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, id("target_hud"), new TargetHud());
 		HudElementRegistry.attachElementAfter(VanillaHudElements.MOB_EFFECTS, id("potion_hud"), new PotionHud());
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("minimap"), new dev.lmg.client.hud.MinimapHud());
+		// Save the map when you leave a world or close the game.
+		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> dev.lmg.client.map.MapData.saveAll());
 		// Our potion list replaces the vanilla effect icons in the top-right while it's on.
 		HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
 			if (!LmgConfig.get().potionHud) vanilla.extractRenderState(graphics, delta);
@@ -101,9 +100,8 @@ public class LmgClient implements ClientModInitializer {
 			Combat.tick(mc);
 			Targeting.tick(mc);
 			OreGlow.tick(mc);
-			while (OPEN_MENU_KEY.consumeClick()) {
-				if (mc.gui.screen() == null) mc.gui.setScreen(new LmgSettingsScreen(null));
-			}
+			dev.lmg.client.feature.LmgKeys.tick(mc);
+			dev.lmg.client.map.MapData.tick(mc);
 		});
 		LOGGER.info("{} loaded", CLIENT_NAME);
 	}
