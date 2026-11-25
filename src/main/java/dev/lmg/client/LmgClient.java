@@ -12,6 +12,7 @@ import dev.lmg.client.screen.LmgSettingsScreen;
 import dev.lmg.client.world.OreGlow;
 import dev.lmg.client.world.WorldRender;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
@@ -50,6 +51,9 @@ public class LmgClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LmgConfig.load();
+		dev.lmg.client.cosmetic.CosmeticRegistry.loadBuiltIn();
+		// Blockbench models need the texture manager, so load them once the game is up.
+		ClientLifecycleEvents.CLIENT_STARTED.register(mc -> dev.lmg.client.cosmetic.CustomModels.reload());
 		UpdateChecker.start();
 		KeyMappingHelper.registerKeyMapping(OPEN_MENU_KEY);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("hud_pill"), new HudPill());
@@ -60,7 +64,7 @@ public class LmgClient implements ClientModInitializer {
 			if (!LmgConfig.get().potionHud) vanilla.extractRenderState(graphics, delta);
 		});
 
-		// Wings, halo, crown, cat ears and China hat on player models (only drawn for you).
+		// Equipped cosmetics (wings, hats, glasses, ears, auras, imported models) - only drawn for you.
 		LivingEntityRenderLayerRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
 			if (renderer instanceof AvatarRenderer<?> avatar) {
 				@SuppressWarnings("unchecked")

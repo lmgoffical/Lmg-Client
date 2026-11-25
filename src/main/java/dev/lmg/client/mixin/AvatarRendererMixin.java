@@ -14,18 +14,27 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Gives YOUR player the Lmg Client cape (vanilla cape physics, only on your screen). */
+/** Gives YOUR player the equipped Lmg cape and your custom skin (vanilla cape physics, only on your screen). */
 @Mixin(AvatarRenderer.class)
 public abstract class AvatarRendererMixin {
 	@Unique
-	private static final ClientAsset.Texture LMG_CAPE = new ClientAsset.ResourceTexture(
-			LmgClient.id("cosmetic/cape"), LmgClient.id("textures/cosmetic/cape.png"));
+	private static final java.util.Map<String, ClientAsset.Texture> lmg$capes = new java.util.HashMap<>();
 
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
 			at = @At("TAIL"))
 	private void lmg$cape(Avatar entity, AvatarRenderState state, float partialTick, CallbackInfo ci) {
-		if (!LmgConfig.get().cape || entity != Minecraft.getInstance().player || state.skin == null) return;
+		if (entity != Minecraft.getInstance().player || state.skin == null) return;
 		PlayerSkin skin = state.skin;
-		state.skin = new PlayerSkin(skin.body(), LMG_CAPE, skin.elytra(), skin.model(), skin.secure());
+		// custom skin (from config/lmgclient-skins)
+		PlayerSkin custom = dev.lmg.client.cosmetic.CustomSkins.current();
+		if (custom != null) skin = new PlayerSkin(custom.body(), skin.cape(), skin.elytra(), custom.model(), skin.secure());
+		// equipped cape from the cosmetics catalog
+		dev.lmg.client.cosmetic.CosmeticModel cape = dev.lmg.client.cosmetic.CosmeticRegistry.get(LmgConfig.get().equipped.get("capes"));
+		ClientAsset.Texture capeTex = skin.cape();
+		if (cape != null && cape.capeTexture != null) {
+			capeTex = lmg$capes.computeIfAbsent(cape.capeTexture, tex -> new ClientAsset.ResourceTexture(
+					LmgClient.id("cosmetic/" + tex), LmgClient.id("textures/cosmetic/" + tex)));
+		}
+		state.skin = new PlayerSkin(skin.body(), capeTex, skin.elytra(), skin.model(), skin.secure());
 	}
 }

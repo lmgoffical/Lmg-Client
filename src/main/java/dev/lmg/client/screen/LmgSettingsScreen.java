@@ -258,13 +258,7 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.toggle("Rain & snow", () -> c.showWeather, v -> c.showWeather = v));
 			}
 			case 2 -> {
-				r.add(SettingRow.toggle("Lmg cape", () -> c.cape, v -> c.cape = v));
-				r.add(colorRow("Wings", () -> c.wings, v -> c.wings = v));
-				r.add(colorRow("Halo", () -> c.halo, v -> c.halo = v));
-				r.add(SettingRow.toggle("Crown", () -> c.crown, v -> c.crown = v));
-				r.add(colorRow("Cat ears", () -> c.catEars, v -> c.catEars = v));
-				r.add(colorRow("China hat", () -> c.chinaHat, v -> c.chinaHat = v));
-				r.add(colorRow("Energy shield", () -> c.shield, v -> c.shield = v));
+				r.add(SettingRow.button("Cosmetics & skins", "Open", () -> minecraft.gui.setScreen(new CosmeticsScreen(this))));
 			}
 			case 3 -> {
 				r.add(enumRow("Trail", LmgConfig.Trail.values(), () -> c.trail, v -> c.trail = v, v -> v.label));

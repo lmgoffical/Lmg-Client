@@ -261,15 +261,14 @@ public final class LmgConfig {
 	public boolean showWeather = true;
 	public Aurora aurora = Aurora.OFF;
 
-	// ---- avatar cosmetics (only you see them) ----
-	public boolean cape = true;
-	public CosmeticColor wings = CosmeticColor.OFF;
-	public CosmeticColor halo = CosmeticColor.OFF;
-	public boolean crown = false;
-	public CosmeticColor catEars = CosmeticColor.OFF;
-	public CosmeticColor chinaHat = CosmeticColor.OFF;
-
-	public CosmeticColor shield = CosmeticColor.OFF;
+	// ---- cosmetics (only you see them) ----
+	/** Equipped item per category, e.g. "wings" -> "wings_angel". Missing = nothing equipped. */
+	public java.util.Map<String, String> equipped = new java.util.HashMap<>(java.util.Map.of("capes", "cape_lmg"));
+	/** Colour per item: "#RRGGBB", "accent" or "rainbow". Missing = the item's own colour. */
+	public java.util.Map<String, String> cosmeticColors = new java.util.HashMap<>();
+	/** File name in config/lmgclient-skins/ to wear instead of your account skin (null = off). */
+	public String customSkin = null;
+	public boolean customSkinSlim = false;
 
 	// ---- effects (client-side particles) ----
 	public Trail trail = Trail.OFF;
@@ -344,8 +343,12 @@ public final class LmgConfig {
 	public static void load() {
 		if (Files.exists(FILE)) {
 			try (Reader reader = Files.newBufferedReader(FILE)) {
-				LmgConfig loaded = GSON.fromJson(reader, LmgConfig.class);
-				if (loaded != null) instance = loaded.sanitized();
+				com.google.gson.JsonElement raw = com.google.gson.JsonParser.parseReader(reader);
+				LmgConfig loaded = GSON.fromJson(raw, LmgConfig.class);
+				if (loaded != null) {
+					instance = loaded.sanitized();
+					if (raw.isJsonObject()) dev.lmg.client.cosmetic.CosmeticRegistry.migrate(instance, raw.getAsJsonObject());
+				}
 			} catch (Exception e) {
 				LmgClient.LOGGER.warn("Could not read {}, using defaults", FILE, e);
 			}
@@ -375,12 +378,9 @@ public final class LmgConfig {
 		if (timeOfDay == null) timeOfDay = d.timeOfDay;
 		if (fog == null) fog = d.fog;
 		if (clouds == null) clouds = d.clouds;
-		if (wings == null) wings = d.wings;
-		if (halo == null) halo = d.halo;
-		if (catEars == null) catEars = d.catEars;
-		if (chinaHat == null) chinaHat = d.chinaHat;
+		if (equipped == null) equipped = d.equipped;
+		if (cosmeticColors == null) cosmeticColors = d.cosmeticColors;
 		if (trail == null) trail = d.trail;
-		if (shield == null) shield = d.shield;
 		if (hitEffect == null) hitEffect = d.hitEffect;
 		if (killEffect == null) killEffect = d.killEffect;
 		if (blockOverlay == null) blockOverlay = d.blockOverlay;

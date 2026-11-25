@@ -1,0 +1,197 @@
+{
+ "format": 1,
+ "items": [
+  {
+   "id": "aura_halo",
+   "name": "Halo",
+   "category": "auras",
+   "description": "A glowing halo that floats above your head.",
+   "tintable": true,
+   "defaultColor": "#FFE08A"
+  },
+  {
+   "id": "aura_shield",
+   "name": "Energy Shield",
+   "category": "auras",
+   "description": "A turning cage of glowing hex panels.",
+   "tintable": true,
+   "defaultColor": "#4FC3FF"
+  },
+  {
+   "id": "aura_stars",
+   "name": "Star Orbit",
+   "category": "auras",
+   "description": "Three glowing Stars of David orbit around you.",
+   "tintable": true,
+   "defaultColor": "#6AA8FF"
+  },
+  {
+   "id": "cape_lmg",
+   "name": "Lmg Cape",
+   "category": "capes",
+   "description": "The original - a glowing Star of David over LMG.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_aurora",
+   "name": "Aurora",
+   "category": "capes",
+   "description": "Northern lights over snowy peaks.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_royal",
+   "name": "Royal",
+   "category": "capes",
+   "description": "Purple velvet, ermine collar and gold trim.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_void",
+   "name": "Void",
+   "category": "capes",
+   "description": "A purple galaxy swirling into the dark.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_sunset",
+   "name": "Sunset",
+   "category": "capes",
+   "description": "Synthwave sun over a neon grid.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_cherry",
+   "name": "Cherry Blossom",
+   "category": "capes",
+   "description": "Pink blossoms under the moon.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "ears_cat",
+   "name": "Cat Ears",
+   "category": "ears",
+   "description": "Soft cat ears that twitch every now and then.",
+   "tintable": true,
+   "defaultColor": "#2B2530"
+  },
+  {
+   "id": "ears_fox",
+   "name": "Fox Ears",
+   "category": "ears",
+   "description": "Tall fox ears with dark tips and fluffy insides.",
+   "tintable": true,
+   "defaultColor": "#E8752C"
+  },
+  {
+   "id": "ears_bunny",
+   "name": "Bunny Ears",
+   "category": "ears",
+   "description": "Long bunny ears - the left one flops over.",
+   "tintable": true,
+   "defaultColor": "#F2EEF4"
+  },
+  {
+   "id": "glasses_aviator",
+   "name": "Aviators",
+   "category": "glasses",
+   "description": "Gold aviators - the colour sets the lens tint.",
+   "tintable": true,
+   "defaultColor": "#3A2A1A"
+  },
+  {
+   "id": "glasses_pixel",
+   "name": "Pixel Shades",
+   "category": "glasses",
+   "description": "Deal with it.",
+   "tintable": true,
+   "defaultColor": "#101014"
+  },
+  {
+   "id": "glasses_3d",
+   "name": "3D Glasses",
+   "category": "glasses",
+   "description": "Retro cinema red/cyan glasses.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "glasses_visor",
+   "name": "Cyber Visor",
+   "category": "glasses",
+   "description": "Glowing wrap-around visor with a sweeping scan line.",
+   "tintable": true,
+   "defaultColor": "#FF3B6B"
+  },
+  {
+   "id": "hat_crown",
+   "name": "Royal Crown",
+   "category": "hats",
+   "description": "Gold crown with gems and a velvet cap.",
+   "tintable": false,
+   "defaultColor": "#E7B43C"
+  },
+  {
+   "id": "hat_top",
+   "name": "Top Hat",
+   "category": "hats",
+   "description": "A tall classy top hat - the band stays red.",
+   "tintable": true,
+   "defaultColor": "#1E1E26"
+  },
+  {
+   "id": "hat_china",
+   "name": "China Hat",
+   "category": "hats",
+   "description": "The classic see-through PvP cone.",
+   "tintable": true,
+   "defaultColor": "#E8C77A"
+  },
+  {
+   "id": "hat_beanie",
+   "name": "Beanie",
+   "category": "hats",
+   "description": "Cosy knitted beanie with a pom-pom.",
+   "tintable": true,
+   "defaultColor": "#D94848"
+  },
+  {
+   "id": "wings_angel",
+   "name": "Angel Wings",
+   "category": "wings",
+   "description": "Feathered wings that fold at the wrist when they flap.",
+   "tintable": true,
+   "defaultColor": "#F6F6FF"
+  },
+  {
+   "id": "wings_demon",
+   "name": "Demon Wings",
+   "category": "wings",
+   "description": "Bat-style wings with bones, claws and a stretched membrane.",
+   "tintable": true,
+   "defaultColor": "#5E1828"
+  },
+  {
+   "id": "wings_butterfly",
+   "name": "Butterfly Wings",
+   "category": "wings",
+   "description": "Fluttering patterned wings - pick any colour.",
+   "tintable": true,
+   "defaultColor": "#4FB6FF"
+  },
+  {
+   "id": "wings_neon",
+   "name": "Neon Wings",
+   "category": "wings",
+   "description": "Blades of light that glow in the dark.",
+   "tintable": true,
+   "defaultColor": "#45E0FF"
+  }
+ ]
+}
