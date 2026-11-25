@@ -316,6 +316,26 @@ public final class LmgConfig {
 		return instance;
 	}
 
+	/** Replaces the current settings with {@code other} (keeps where you've dragged the menu to). */
+	public static void apply(LmgConfig other) {
+		other.menuOffsetX = instance.menuOffsetX;
+		other.menuOffsetY = instance.menuOffsetY;
+		instance = other.sanitized();
+		save();
+	}
+
+	/** A copy of the current settings as JSON (used for saved configs and share codes). */
+	public static com.google.gson.JsonElement toJsonTree() {
+		return GSON.toJsonTree(instance);
+	}
+
+	/** Reads settings from JSON; unknown or missing values fall back to defaults. */
+	public static LmgConfig fromJsonTree(com.google.gson.JsonElement json) {
+		LmgConfig parsed = GSON.fromJson(json, LmgConfig.class);
+		if (parsed == null) throw new IllegalArgumentException("empty config");
+		return parsed.sanitized();
+	}
+
 	public static void reset() {
 		instance = new LmgConfig();
 		save();

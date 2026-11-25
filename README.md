@@ -7,6 +7,7 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 - **Themed menus**: the server list, world list and options get the same dark background (outside of a world).
 - **HUD bar**: a smooth, animated bar showing your name, server, FPS, ping, clock and (optionally) coordinates.
 - **Lmg menu**: press **Right Shift** anywhere (or main menu → **Client**). A compact panel with a sidebar; drag its title bar to move it (double-click the title bar to re-centre). **Edit HUD** lets you drag the HUD bar, target info and potion list anywhere (right-click one to reset it). Categories:
+  - **Configs**: save as many named setups as you like (stored in `config/lmgclient-profiles/`), load or delete them, and share them as codes (`LMG1:...`) - copy a code, send it to a friend, they press *Import from clipboard*
   - **Style**: a dropdown to pick the menu look - Lmg Client (original), Skeet or Neverlose - plus whether the menu uses your accent color
   - **Theme**: accent color, background style, animation speed
   - **World**: sky theme, time of day, fog, clouds, stars, rain & snow, animated aurora

@@ -156,6 +156,51 @@ public final class MenuSkin {
 		g.fill(cx0 + 8, cy0 + 15, cx1 - 8, cy0 + 16, fade(NL_CARD_BORDER, a));
 	}
 
+	/** A plain panel with a title (used by the config manager), drawn in the current style. */
+	public static void simplePanel(GuiGraphicsExtractor g, Font font, int x0, int y0, int x1, int y1,
+								   int headerH, String title, float a) {
+		int ty = y0 + (headerH - font.lineHeight) / 2 + 1;
+		int cx = (x0 + x1) / 2;
+		switch (style()) {
+			case SKEET -> {
+				g.fill(x0 - 5, y0 - 5, x1 + 5, y1 + 5, fade(SK_BORDER_DARK, a));
+				g.fill(x0 - 4, y0 - 4, x1 + 4, y1 + 4, fade(SK_BORDER_LIGHT, a));
+				g.fill(x0 - 3, y0 - 3, x1 + 3, y1 + 3, fade(SK_FRAME, a));
+				g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, fade(SK_BORDER_LIGHT, a));
+				g.fill(x0, y0, x1, y1, fade(SK_BG, a));
+				for (int y = y0 + 3; y < y1; y += 3) g.fill(x0, y, x1, y + 1, fade(SK_BG_LINE, a));
+				rainbow(g, x0, y0, x1, a, 1f);
+				rainbow(g, x0, y0 + 1, x1, a, 0.5f);
+				g.centeredText(font, title, cx, ty + 1, Draw.withAlpha(0xFFFFFF, a));
+				g.fill(x0, y0 + headerH, x1, y0 + headerH + 1, fade(SK_BORDER_DARK, a));
+				g.fill(x0, y0 + headerH + 1, x1, y0 + headerH + 2, fade(SK_GROUP_IN, a));
+			}
+			case NEVERLOSE -> {
+				Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 8, fade(NL_BORDER, a));
+				Draw.roundRect(g, x0, y0, x1, y1, 7, fade(NL_BG, a));
+				g.centeredText(font, title.toUpperCase(), cx, ty, Draw.withAlpha(accent(), a));
+				g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, fade(NL_BORDER, a));
+			}
+			default -> {
+				Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 9, Draw.white(0.07f * a));
+				Draw.roundRect(g, x0, y0, x1, y1, 8, Draw.withAlpha(0x101015, 0.94f * a));
+				int tw = font.width(title);
+				Draw.logo(g, cx - tw / 2f - 8, y0 + headerH / 2f, 12f, 0, a);
+				g.text(font, title, cx - tw / 2 + 2, ty, Draw.white(a), false);
+				g.fill(x0 + 8, y0 + headerH, x1 - 8, y0 + headerH + 1, Draw.white(0.06f * a));
+			}
+		}
+	}
+
+	/** Text colours for the current style: {normal, dim}. */
+	public static int[] textColors() {
+		return switch (style()) {
+			case SKEET -> new int[]{SK_TEXT, 0x6A6A6A};
+			case NEVERLOSE -> new int[]{NL_TEXT, NL_TEXT_DIM};
+			default -> new int[]{0xD8D8E0, 0x6E6E7A};
+		};
+	}
+
 	/** Skeet-style horizontal rainbow: blue -> pink -> yellow. */
 	private static void rainbow(GuiGraphicsExtractor g, int x0, int y, int x1, float a, float brightness) {
 		int w = x1 - x0;

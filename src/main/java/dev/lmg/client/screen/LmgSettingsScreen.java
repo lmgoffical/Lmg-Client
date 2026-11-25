@@ -2,6 +2,7 @@ package dev.lmg.client.screen;
 
 import dev.lmg.client.LmgClient;
 import dev.lmg.client.LmgConfig;
+import dev.lmg.client.config.ConfigProfiles;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
@@ -26,7 +27,7 @@ import java.util.function.Supplier;
  * Drag the header to move the panel; its position is remembered.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Style", "Theme", "World", "Avatar", "Effects", "Target", "PvP", "Items", "Menus", "HUD"};
+	private static final String[] TABS = {"Style", "Configs", "Theme", "World", "Avatar", "Effects", "Target", "PvP", "Items", "Menus", "HUD"};
 	private static final int PANEL_W = 300;
 	private static final int PANEL_W_SKEET = 380; // skeet uses two columns of group boxes
 	private static final int SIDEBAR_W = 74;
@@ -36,8 +37,8 @@ public class LmgSettingsScreen extends Screen {
 	private static final int MAX_ROWS = 9;
 	private static final int FOOTER_H = 18;
 
-	private static int lastTab = 2; // World
-	private static final int TAB_GAP = 14;
+	private static int lastTab = 3; // World
+	private static final int TAB_GAP = 13;
 
 	private final Screen parent;
 	private final long openedAt = Util.getMillis();
@@ -89,7 +90,7 @@ public class LmgSettingsScreen extends Screen {
 		int sy = panelY + HEADER_H + 6;
 		for (int i = 0; i < TABS.length; i++) {
 			final int index = i;
-			addRenderableWidget(new SideTab(panelX + 6, sy + i * TAB_GAP, SIDEBAR_W - 10, 13, TABS[i],
+			addRenderableWidget(new SideTab(panelX + 6, sy + i * TAB_GAP, SIDEBAR_W - 10, 12, TABS[i],
 					() -> lastTab == index, () -> {
 						if (lastTab != index) {
 							lastTab = index;
@@ -189,7 +190,26 @@ public class LmgSettingsScreen extends Screen {
 					() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, -1), () -> c.accent.rgb));
 			return r;
 		}
-		switch (tab - 1) {
+		if (tab == 1) {
+			// Configs: saved setups and share codes
+			r.add(SettingRow.button("Saved configs", "Open", () -> minecraft.gui.setScreen(new ConfigsScreen(this))));
+			r.add(SettingRow.button("Share my setup", "Copy code", () -> {
+				minecraft.keyboardHandler.setClipboard(ConfigProfiles.codeForCurrent("My config"));
+				toast("Code copied!", "Paste it to a friend - they import it in Configs.");
+			}));
+			r.add(SettingRow.button("Import a code", "Paste", () -> {
+				try {
+					ConfigProfiles.Profile p = ConfigProfiles.decode(minecraft.keyboardHandler.getClipboard());
+					LmgConfig.apply(p.config());
+					toast("Imported \"" + p.name() + "\"", "Save it in Configs > Saved configs to keep it.");
+					rebuildWidgets();
+				} catch (IllegalArgumentException e) {
+					toast("Couldn't import", e.getMessage());
+				}
+			}));
+			return r;
+		}
+		switch (tab - 2) {
 			case 0 -> {
 				r.add(SettingRow.choice("Accent color", () -> c.accent.label,
 						() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, 1),
@@ -280,6 +300,14 @@ public class LmgSettingsScreen extends Screen {
 			}
 		}
 		return r;
+	}
+
+	private static final net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId LMG_TOAST =
+			new net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId();
+
+	private void toast(String title, String message) {
+		net.minecraft.client.gui.components.toasts.SystemToast.addOrUpdate(minecraft.gui.toastManager(), LMG_TOAST,
+				Component.literal(title), Component.literal(message));
 	}
 
 	private static <E extends Enum<E>> SettingRow enumRow(String label, E[] values, Supplier<E> get, Consumer<E> set,
