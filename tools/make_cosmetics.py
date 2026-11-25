@@ -72,43 +72,56 @@ def cape():
     img.save(OUT / "cape.png")
 
 
-def feather(big, ox, oy, ang, length, width):
-    """Points of a rounded feather (long ellipse) starting at (ox, oy) pointing at angle ang."""
+def feather(ox, oy, ang, length, width, steps=48):
+    """Outline points of one rounded feather starting at (ox, oy), pointing at angle ang."""
     pts = []
-    for k in range(40):
-        a = math.pi * 2 * k / 40
-        lx = (1 + math.cos(a)) / 2 * length           # 0..length along the feather
-        ly = math.sin(a) * width / 2 * (0.35 + 0.65 * math.sin(math.pi * (lx / length) ** 0.8))
+    for k in range(steps):
+        a = math.pi * 2 * k / steps
+        t = (1 + math.cos(a)) / 2                      # 0 at the quill, 1 at the tip
+        half = width / 2 * (math.sin(math.pi * min(1.0, t * 1.05)) ** 0.55)
+        ly = math.sin(a) * half / max(1e-6, abs(math.sin(a))) * abs(math.sin(a)) if half else 0
+        lx = t * length
         pts.append((ox + lx * math.cos(ang) - ly * math.sin(ang), oy + lx * math.sin(ang) + ly * math.cos(ang)))
     return pts
 
 
 def wing():
-    # One wing, light grey/white (tinted in-game). Shoulder at the top-left, spreading right and down.
+    """One wing, near-white so in-game tints work. The shoulder is at the top-left corner;
+    the game splits it into an inner half (u < 0.42) and an outer half that folds."""
     size, sup = 128, 4
     big = size * sup
     img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    rnd = random.Random(11)
-    ox, oy = big * 0.05, big * 0.12
-    # (feathers, reach, width, shade, start angle, end angle) - back rows first
+    rnd = random.Random(5)
+    ox, oy = big * 0.04, big * 0.09
+    # rows from the back (long primaries) to the front (small coverts)
     rows = [
-        (11, 0.95, 0.16, 200, -12, 72),   # primaries
-        (10, 0.70, 0.17, 218, -8, 62),    # secondaries
-        (9, 0.47, 0.17, 236, -4, 52),     # coverts
-        (7, 0.27, 0.17, 250, 0, 42),      # small coverts
+        # count, reach, width, angle from, angle to, base shade
+        (9, 0.98, 0.17, 4, 62, 232),
+        (8, 0.70, 0.18, 2, 56, 242),
+        (7, 0.46, 0.18, 0, 48, 250),
+        (6, 0.26, 0.18, -2, 38, 255),
     ]
-    for count, reach, width, shade, a0, a1 in rows:
+    for count, reach, width, a0, a1, shade in rows:
+        layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+        d = ImageDraw.Draw(layer)
         for i in range(count):
             t = i / max(1, count - 1)
-            ang = math.radians(a0 + t * (a1 - a0))
-            length = big * reach * (1.0 - 0.28 * t)
-            c = shade - rnd.randint(0, 10)
-            pts = feather(big, ox, oy, ang, length, big * width * (1 - 0.25 * t))
+            ang = math.radians(a0 + t * (a1 - a0) + rnd.uniform(-1.5, 1.5))
+            length = big * reach * (1.0 - 0.30 * t)
+            w = big * width * (1.0 - 0.25 * t)
+            pts = feather(ox, oy, ang, length, w)
+            c = shade - rnd.randint(0, 6)
             d.polygon(pts, fill=(c, c, c, 255))
-            d.line(pts + [pts[0]], fill=(c - 45, c - 45, c - 45, 255), width=sup)
-            ex, ey = ox + math.cos(ang) * length * 0.92, oy + math.sin(ang) * length * 0.92
-            d.line([(ox, oy), (ex, ey)], fill=(c - 30, c - 30, c - 30, 160), width=sup)
+            d.line(pts + [pts[0]], fill=(150, 150, 158, 255), width=sup * 2)
+            # quill: a soft darker line down the middle of the feather
+            ex, ey = ox + math.cos(ang) * length * 0.85, oy + math.sin(ang) * length * 0.85
+            d.line([(ox, oy), (ex, ey)], fill=(205, 205, 212, 255), width=sup * 2)
+        # small drop shadow so each row reads as sitting on top of the one behind it
+        shadow = layer.split()[3].point(lambda a: 70 if a > 0 else 0)
+        sh = Image.new("RGBA", (big, big), (40, 40, 48, 0))
+        sh.putalpha(shadow.filter(ImageFilter.GaussianBlur(sup * 2)))
+        img.alpha_composite(sh, (sup * 2, sup * 3))
+        img.alpha_composite(layer)
     img = img.resize((size, size), Image.LANCZOS)
     img.save(OUT / "wing.png")
 

@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.16", "<b>Better cosmetics.</b> Wings bend and fold when they flap, a real 3D halo, crown and cat ears, and a nicer China hat."],
   ["0.15", "<b>Website + forum.</b> Accounts, threads, a config gallery, and a link to it from the in-game Configs menu."],
   ["0.14", "<b>Short config codes.</b> Share a setup as <code>LMG-ABC234</code> instead of a wall of text."],
   ["0.13", "<b>Saved configs.</b> Save as many setups as you want and swap between them."],

@@ -41,6 +41,10 @@ The installer sets up Fabric and downloads Lmg Client, Fabric API, **Sodium** (F
 2. Download the jars listed in [`download/manifest.json`](download/manifest.json): `lmg-client-*.jar` from the [`download`](download) folder, plus the other mods from the URLs in the manifest.
 3. Put them into `%appdata%\.minecraft\mods`, then launch the **fabric-loader-26.3** profile.
 
+## Previewing cosmetics
+
+`tools/cosmetic-preview/` renders the cosmetics in a browser with the same sizes and transforms as `CosmeticsLayer.java`. Serve the repo root (`python -m http.server`) and open `tools/cosmetic-preview/index.html?view=back&wings=WHITE&halo=GOLD&cape=1`. Change both files together.
+
 ## Releasing a new version
 
 1. Bump `version` in `gradle.properties`.
