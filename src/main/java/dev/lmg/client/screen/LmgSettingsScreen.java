@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * Drag the header to move the panel; its position is remembered.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "Target", "PvP", "Items", "Menus", "HUD"};
+	private static final String[] TABS = {"Style", "Theme", "World", "Avatar", "Effects", "Target", "PvP", "Items", "Menus", "HUD"};
 	private static final int PANEL_W = 300;
 	private static final int SIDEBAR_W = 74;
 	private static final int HEADER_H = 24;
@@ -35,7 +35,8 @@ public class LmgSettingsScreen extends Screen {
 	private static final int MAX_ROWS = 9;
 	private static final int FOOTER_H = 18;
 
-	private static int lastTab = 1;
+	private static int lastTab = 2; // World
+	private static final int TAB_GAP = 14;
 
 	private final Screen parent;
 	private final long openedAt = Util.getMillis();
@@ -44,6 +45,8 @@ public class LmgSettingsScreen extends Screen {
 	private double dragStartX, dragStartY;
 	private int dragOrigOffX, dragOrigOffY;
 	private boolean confirmReset;
+	private SettingRow dropdown; // the dropdown whose list is open, if any
+	private static final int ITEM_H = 13;
 
 	/** @param parent screen to go back to, or {@code null} to return to the game */
 	public LmgSettingsScreen(Screen parent) {
@@ -66,6 +69,7 @@ public class LmgSettingsScreen extends Screen {
 	@Override
 	protected void init() {
 		computePanel();
+		dropdown = null;
 		LmgConfig c = LmgConfig.get();
 		long t = Util.getMillis();
 
@@ -80,7 +84,7 @@ public class LmgSettingsScreen extends Screen {
 		int sy = panelY + HEADER_H + 6;
 		for (int i = 0; i < TABS.length; i++) {
 			final int index = i;
-			addRenderableWidget(new SideTab(panelX + 6, sy + i * 15, SIDEBAR_W - 10, 14, TABS[i],
+			addRenderableWidget(new SideTab(panelX + 6, sy + i * TAB_GAP, SIDEBAR_W - 10, 13, TABS[i],
 					() -> lastTab == index, () -> {
 						if (lastTab != index) {
 							lastTab = index;
@@ -97,7 +101,7 @@ public class LmgSettingsScreen extends Screen {
 		int rw = PANEL_W - SIDEBAR_W - 8 - inset * 2;
 		int ry = sy + MenuSkin.contentTopPad();
 		for (int i = 0; i < rows.size(); i++) {
-			addRenderableWidget(rows.get(i).at(rx, ry + i * ROW_GAP, rw, ROW_H, t + i * 25L));
+			addRenderableWidget(rows.get(i).at(rx, ry + i * ROW_GAP, rw, ROW_H, t + i * 25L).onOpen(row -> dropdown = row));
 		}
 
 		// Footer: reset (asks twice)
@@ -119,7 +123,20 @@ public class LmgSettingsScreen extends Screen {
 
 	private List<SettingRow> rowsFor(int tab, LmgConfig c) {
 		List<SettingRow> r = new ArrayList<>();
-		switch (tab) {
+		if (tab == 0) {
+			// Style: how this menu looks
+			r.add(SettingRow.dropdown("Menu style",
+					List.of("Lmg Client (original)", "Skeet", "Neverlose"),
+					List.of(c.accent.rgb, MenuSkin.SK_ACCENT, MenuSkin.NL_ACCENT),
+					() -> c.menuStyle.ordinal(),
+					i -> { c.menuStyle = LmgConfig.MenuStyle.values()[i]; rebuildWidgets(); }));
+			r.add(SettingRow.toggle("Use my accent color", () -> c.menuUseAccent, v -> c.menuUseAccent = v));
+			r.add(SettingRow.choice("Accent color", () -> c.accent.label,
+					() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, 1),
+					() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, -1), () -> c.accent.rgb));
+			return r;
+		}
+		switch (tab - 1) {
 			case 0 -> {
 				r.add(SettingRow.choice("Accent color", () -> c.accent.label,
 						() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, 1),
@@ -130,10 +147,6 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.choice("Animation speed", () -> LmgConfig.ANIMATION_SPEED_LABELS[c.animationSpeed],
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, 1),
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, -1)));
-				r.add(SettingRow.choice("Menu style", () -> c.menuStyle.label,
-						() -> { c.menuStyle = cycle(LmgConfig.MenuStyle.values(), c.menuStyle, 1); rebuildWidgets(); },
-						() -> { c.menuStyle = cycle(LmgConfig.MenuStyle.values(), c.menuStyle, -1); rebuildWidgets(); }));
-				r.add(SettingRow.toggle("Use my accent in menu", () -> c.menuUseAccent, v -> c.menuUseAccent = v));
 			}
 			case 1 -> {
 				r.add(enumRow("Sky theme", LmgConfig.SkyTheme.values(), () -> c.skyTheme, v -> c.skyTheme = v, v -> v.label));
@@ -270,6 +283,72 @@ public class LmgSettingsScreen extends Screen {
 		g.text(font, hint, x1 - 10 - font.width(hint), y1 - FOOTER_H + 6, Draw.withAlpha(hintColor, intro), false);
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+		if (dropdown != null) drawDropdown(g, mouseX, mouseY);
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// Dropdown list
+	// ---------------------------------------------------------------------------------------------
+
+	/** {x0, y0, x1, y1} of the open list. Opens upwards if there's no room below. */
+	private int[] dropdownRect() {
+		int[] box = dropdown.box();
+		int listW = box[2] - box[0];
+		for (String o : dropdown.options()) listW = Math.max(listW, font.width(o) + 24);
+		int listH = dropdown.options().size() * ITEM_H + 4;
+		int x1 = box[2], x0 = x1 - listW;
+		int y0 = box[3] + 2;
+		if (y0 + listH > height - 2) y0 = box[1] - 2 - listH;
+		return new int[]{x0, y0, x1, y0 + listH};
+	}
+
+	private int dropdownItemAt(double mx, double my) {
+		int[] r = dropdownRect();
+		if (mx < r[0] || mx >= r[2] || my < r[1] + 2 || my >= r[3] - 2) return -1;
+		int i = (int) ((my - r[1] - 2) / ITEM_H);
+		return i < dropdown.options().size() ? i : -1;
+	}
+
+	private void drawDropdown(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+		g.nextStratum(); // on top of everything else
+		int[] r = dropdownRect();
+		int hovered = dropdownItemAt(mouseX, mouseY);
+		int selected = dropdown.selected();
+		int acc = MenuSkin.accent();
+		LmgConfig.MenuStyle style = MenuSkin.style();
+		switch (style) {
+			case SKEET -> {
+				g.fill(r[0], r[1], r[2], r[3], 0xFF000000);
+				g.fill(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, 0xFF1A1A1A);
+			}
+			case NEVERLOSE -> {
+				Draw.roundRect(g, r[0] - 1, r[1] - 1, r[2] + 1, r[3] + 1, 5, 0xFF243052);
+				Draw.roundRect(g, r[0], r[1], r[2], r[3], 4, 0xFF141B30);
+			}
+			default -> {
+				Draw.roundRect(g, r[0] - 1, r[1] - 1, r[2] + 1, r[3] + 1, 5, Draw.white(0.10f));
+				Draw.roundRect(g, r[0], r[1], r[2], r[3], 4, 0xF2141418);
+			}
+		}
+		for (int i = 0; i < dropdown.options().size(); i++) {
+			int iy = r[1] + 2 + i * ITEM_H;
+			if (i == hovered) {
+				switch (style) {
+					case SKEET -> g.fill(r[0] + 1, iy, r[2] - 1, iy + ITEM_H, 0xFF262626);
+					case NEVERLOSE -> Draw.roundRect(g, r[0] + 2, iy, r[2] - 2, iy + ITEM_H, 3, 0xFF222B47);
+					default -> Draw.roundRect(g, r[0] + 2, iy, r[2] - 2, iy + ITEM_H, 3, Draw.withAlpha(acc, 0.16f));
+				}
+			}
+			int tx = r[0] + 6, ty = iy + (ITEM_H - font.lineHeight) / 2 + 1;
+			Integer sw = i < dropdown.optionColors().size() ? dropdown.optionColors().get(i) : null;
+			if (sw != null) {
+				if (style == LmgConfig.MenuStyle.SKEET) g.fill(tx, ty, tx + 5, ty + 5, 0xFF000000 | sw);
+				else Draw.roundRect(g, tx, ty, tx + 5, ty + 5, 2, 0xFF000000 | sw);
+				tx += 9;
+			}
+			int color = i == selected ? acc : (i == hovered ? 0xFFFFFF : (style == LmgConfig.MenuStyle.SKEET ? 0x989898 : 0xC9CFE3));
+			g.text(font, dropdown.options().get(i), tx, ty, 0xFF000000 | color, false);
+		}
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -282,6 +361,14 @@ public class LmgSettingsScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (dropdown != null) {
+			// any click while the list is open either picks an option or just closes it
+			int i = dropdownItemAt(event.x(), event.y());
+			SettingRow row = dropdown;
+			dropdown = null;
+			if (i >= 0) row.choose(i);
+			return true;
+		}
 		if (super.mouseClicked(event, doubleClick)) return true;
 		if (event.button() == 0 && inHeader(event.x(), event.y())) {
 			if (doubleClick) { // double-click the header to put the panel back in the middle
@@ -330,6 +417,10 @@ public class LmgSettingsScreen extends Screen {
 
 	@Override
 	public boolean keyPressed(KeyEvent event) {
+		if (dropdown != null && event.isEscape()) {
+			dropdown = null;
+			return true;
+		}
 		if (LmgClient.OPEN_MENU_KEY.matches(event)) {
 			onClose();
 			return true;

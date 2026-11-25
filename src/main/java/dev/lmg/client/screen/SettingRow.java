@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *  - button: runs an action
  */
 public class SettingRow extends AbstractWidget {
-	private enum Kind { TOGGLE, CHOICE, BUTTON }
+	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN }
 
 	private static final int LABEL = 0xB9B9C4;
 	private static final int VALUE = 0xEDEDF2;
@@ -41,6 +41,14 @@ public class SettingRow extends AbstractWidget {
 	private float knob = -1;
 	private long lastFrame = -1;
 	private int prevArrowX0 = Integer.MIN_VALUE, prevArrowX1 = Integer.MIN_VALUE;
+
+	// dropdown rows
+	private java.util.List<String> options = java.util.List.of();
+	private java.util.List<Integer> optionColors = java.util.List.of();
+	private java.util.function.IntSupplier selectedIndex;
+	private java.util.function.IntConsumer pick;
+	private Consumer<SettingRow> opener;
+	private int boxX0, boxY0, boxX1, boxY1;
 
 	private SettingRow(Kind kind, String label, Supplier<Boolean> isOn, Supplier<String> value,
 					   Runnable next, Runnable previous, IntSupplier swatch) {
@@ -64,6 +72,37 @@ public class SettingRow extends AbstractWidget {
 
 	public static SettingRow choice(String label, Supplier<String> value, Runnable next, Runnable previous, IntSupplier swatch) {
 		return new SettingRow(Kind.CHOICE, label, null, value, next, previous, swatch);
+	}
+
+	/**
+	 * A dropdown: shows the current option in a box; clicking opens a list (drawn by the screen).
+	 * @param colors one preview color per option (or null)
+	 */
+	public static SettingRow dropdown(String label, java.util.List<String> options, java.util.List<Integer> colors,
+									  java.util.function.IntSupplier selected, java.util.function.IntConsumer pick) {
+		SettingRow row = new SettingRow(Kind.DROPDOWN, label, null, () -> options.get(selected.getAsInt()), () -> {}, () -> {}, null);
+		row.options = options;
+		row.optionColors = colors == null ? java.util.List.of() : colors;
+		row.selectedIndex = selected;
+		row.pick = pick;
+		return row;
+	}
+
+	/** The screen sets this so the row can ask it to open the list. */
+	public SettingRow onOpen(Consumer<SettingRow> opener) {
+		this.opener = opener;
+		return this;
+	}
+
+	public java.util.List<String> options() { return options; }
+	public java.util.List<Integer> optionColors() { return optionColors; }
+	public int selected() { return selectedIndex.getAsInt(); }
+	public void choose(int index) { pick.accept(index); LmgConfig.save(); }
+	/** {x0, y0, x1, y1} of the value box, as last drawn. */
+	public int[] box() { return new int[]{boxX0, boxY0, boxX1, boxY1}; }
+
+	private int swatchFor(int index) {
+		return index < optionColors.size() ? optionColors.get(index) : -1;
 	}
 
 	public static SettingRow button(String label, String action, Runnable onPress) {
@@ -145,6 +184,20 @@ public class SettingRow extends AbstractWidget {
 				String v = value.get() + "  >";
 				g.text(font, v, right - font.width(v), textY, Draw.withAlpha(MenuSkin.accent(), appear), false);
 			}
+			case DROPDOWN -> {
+				String v = value.get();
+				int bw = Math.max(70, font.width(v) + 26);
+				boxX1 = right + 2; boxX0 = boxX1 - bw; boxY0 = y + 1; boxY1 = y + height - 1;
+				Draw.roundRect(g, boxX0, boxY0, boxX1, boxY1, 3, Draw.white((0.06f + 0.05f * hover) * appear));
+				int sw = swatchFor(selected());
+				int tx = boxX0 + 5;
+				if (sw != -1) {
+					Draw.roundRect(g, tx, textY, tx + 5, textY + 5, 2, Draw.withAlpha(sw, appear));
+					tx += 8;
+				}
+				g.text(font, v, tx, textY, Draw.withAlpha(VALUE, appear), false);
+				g.text(font, "v", boxX1 - 9, textY - 1, Draw.withAlpha(DIM, appear), false);
+			}
 		}
 	}
 
@@ -164,6 +217,22 @@ public class SettingRow extends AbstractWidget {
 				int bottom = Draw.lerpRgb(0x333333, Draw.lerpRgb(0x000000, acc, 0.65f), knob);
 				g.fillGradient(bx + 1, by + 1, bx + 7, by + 7, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
 				g.text(font, getMessage(), labelX, textY, labelColor, false);
+			}
+			case DROPDOWN -> {
+				g.text(font, getMessage(), labelX, textY, labelColor, false);
+				int bw = Math.min(110, width / 2 + 10);
+				boxX1 = x + width - 6; boxX0 = boxX1 - bw; boxY0 = y + 1; boxY1 = y + height - 1;
+				g.fill(boxX0, boxY0, boxX1, boxY1, Draw.withAlpha(0x000000, appear));
+				int top = Draw.lerpRgb(0x232323, 0x2C2C2C, hover), bottom = Draw.lerpRgb(0x1D1D1D, 0x242424, hover);
+				g.fillGradient(boxX0 + 1, boxY0 + 1, boxX1 - 1, boxY1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				int sw = swatchFor(selected());
+				int tx = boxX0 + 5;
+				if (sw != -1) {
+					g.fill(tx, textY, tx + 5, textY + 5, Draw.withAlpha(sw, appear));
+					tx += 8;
+				}
+				g.text(font, value.get(), tx, textY, Draw.withAlpha(Draw.lerpRgb(0x989898, 0xFFFFFF, hover), appear), false);
+				g.text(font, "v", boxX1 - 9, textY - 1, Draw.withAlpha(0x6A6A6A, appear), false);
 			}
 			case CHOICE, BUTTON -> {
 				g.text(font, getMessage(), labelX, textY, labelColor, false);
@@ -234,6 +303,20 @@ public class SettingRow extends AbstractWidget {
 				prevArrowX0 = bx0;
 				prevArrowX1 = bx0 + 14;
 			}
+			case DROPDOWN -> {
+				int bw = Math.min(110, width / 2 + 10);
+				boxX1 = right; boxX0 = boxX1 - bw; boxY0 = y + 1; boxY1 = y + height - 1;
+				Draw.roundRect(g, boxX0 - 1, boxY0 - 1, boxX1 + 1, boxY1 + 1, 4, Draw.withAlpha(MenuSkin.NL_FIELD_BORDER, appear));
+				Draw.roundRect(g, boxX0, boxY0, boxX1, boxY1, 3, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_FIELD, 0x222B47, hover), appear));
+				int sw = swatchFor(selected());
+				int tx = boxX0 + 6;
+				if (sw != -1) {
+					Draw.roundRect(g, tx, textY, tx + 5, textY + 5, 2, Draw.withAlpha(sw, appear));
+					tx += 8;
+				}
+				g.text(font, value.get(), tx, textY, Draw.withAlpha(0xFFFFFF, appear), false);
+				g.text(font, "v", boxX1 - 9, textY - 1, Draw.withAlpha(acc, appear), false);
+			}
 			case BUTTON -> {
 				String v = value.get();
 				int bw = font.width(v) + 16;
@@ -251,6 +334,10 @@ public class SettingRow extends AbstractWidget {
 
 	@Override
 	public void onClick(MouseButtonEvent event, boolean doubleClick) {
+		if (kind == Kind.DROPDOWN) {
+			if (opener != null) opener.accept(this);
+			return;
+		}
 		boolean back = event.button() == 1 || event.hasShiftDown()
 				|| (kind == Kind.CHOICE && event.x() >= prevArrowX0 && event.x() < prevArrowX1);
 		if (back) previous.run();
