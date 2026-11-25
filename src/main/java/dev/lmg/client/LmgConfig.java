@@ -66,6 +66,17 @@ public final class LmgConfig {
 		}
 	}
 
+	/** How the Lmg menu itself looks. */
+	public enum MenuStyle {
+		LMG("Lmg"), SKEET("Skeet"), NEVERLOSE("Neverlose");
+
+		public final String label;
+
+		MenuStyle(String label) {
+			this.label = label;
+		}
+	}
+
 	public enum SkyTheme {
 		VANILLA("Vanilla"),
 		SUNSET("Sunset"),
@@ -231,6 +242,8 @@ public final class LmgConfig {
 	public Accent accent = Accent.WHITE;
 	public Backdrop backdrop = Backdrop.DARK;
 	public int animationSpeed = 1; // index into ANIMATION_SPEEDS
+	public MenuStyle menuStyle = MenuStyle.LMG;
+	public boolean menuUseAccent = false; // recolor Skeet/Neverlose with your accent color
 
 	// ---- menus ----
 	public boolean showSplash = true;
@@ -338,6 +351,7 @@ public final class LmgConfig {
 		if (backdrop == null) backdrop = d.backdrop;
 		if (hudPosition == null) hudPosition = d.hudPosition;
 		if (skyTheme == null) skyTheme = d.skyTheme;
+		if (menuStyle == null) menuStyle = d.menuStyle;
 		if (timeOfDay == null) timeOfDay = d.timeOfDay;
 		if (fog == null) fog = d.fog;
 		if (clouds == null) clouds = d.clouds;

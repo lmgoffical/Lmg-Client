@@ -34,7 +34,6 @@ public class LmgSettingsScreen extends Screen {
 	private static final int ROW_GAP = 16;
 	private static final int MAX_ROWS = 9;
 	private static final int FOOTER_H = 18;
-	private static final int PANEL_H = HEADER_H + 6 + MAX_ROWS * ROW_GAP + FOOTER_H;
 
 	private static int lastTab = 1;
 
@@ -52,12 +51,16 @@ public class LmgSettingsScreen extends Screen {
 		this.parent = parent;
 	}
 
+	private static int panelH() {
+		return HEADER_H + 6 + MenuSkin.contentTopPad() + MAX_ROWS * ROW_GAP + FOOTER_H;
+	}
+
 	private void computePanel() {
 		LmgConfig c = LmgConfig.get();
 		panelX = width / 2 - PANEL_W / 2 + c.menuOffsetX;
-		panelY = height / 2 - PANEL_H / 2 + c.menuOffsetY;
+		panelY = height / 2 - panelH() / 2 + c.menuOffsetY;
 		panelX = Math.max(4, Math.min(panelX, width - PANEL_W - 4));
-		panelY = Math.max(4, Math.min(panelY, height - PANEL_H - 4));
+		panelY = Math.max(4, Math.min(panelY, height - panelH() - 4));
 	}
 
 	@Override
@@ -66,9 +69,11 @@ public class LmgSettingsScreen extends Screen {
 		LmgConfig c = LmgConfig.get();
 		long t = Util.getMillis();
 
-		// Header buttons
-		addRenderableWidget(new MenuTextButton(panelX + 4, panelY + 5, 44, 14, Component.literal("< Back"), openedAt, this::onClose));
-		addRenderableWidget(new MenuTextButton(panelX + PANEL_W - 64, panelY + 5, 60, 14, Component.literal("Edit HUD"), openedAt,
+		// Header buttons (Neverlose keeps its logo top-left, so Back moves to the right there)
+		boolean nl = MenuSkin.style() == LmgConfig.MenuStyle.NEVERLOSE;
+		int backX = nl ? panelX + PANEL_W - 64 - 48 : panelX + 6;
+		addRenderableWidget(new SkinButton(backX, panelY + 6, 44, 13, Component.literal("< Back"), openedAt, this::onClose));
+		addRenderableWidget(new SkinButton(panelX + PANEL_W - 62, panelY + 6, 56, 13, Component.literal("Edit HUD"), openedAt,
 				() -> minecraft.gui.setScreen(new HudEditorScreen(this))));
 
 		// Sidebar
@@ -87,16 +92,18 @@ public class LmgSettingsScreen extends Screen {
 
 		// Settings for the selected category
 		List<SettingRow> rows = rowsFor(lastTab, c);
-		int rx = panelX + SIDEBAR_W + 2;
-		int rw = PANEL_W - SIDEBAR_W - 8;
+		int inset = MenuSkin.contentInset();
+		int rx = panelX + SIDEBAR_W + 2 + inset;
+		int rw = PANEL_W - SIDEBAR_W - 8 - inset * 2;
+		int ry = sy + MenuSkin.contentTopPad();
 		for (int i = 0; i < rows.size(); i++) {
-			addRenderableWidget(rows.get(i).at(rx, sy + i * ROW_GAP, rw, ROW_H, t + i * 25L));
+			addRenderableWidget(rows.get(i).at(rx, ry + i * ROW_GAP, rw, ROW_H, t + i * 25L));
 		}
 
 		// Footer: reset (asks twice)
-		int fy = panelY + PANEL_H - FOOTER_H + 2;
-		MenuTextButton[] reset = new MenuTextButton[1];
-		reset[0] = new MenuTextButton(panelX + 6, fy, SIDEBAR_W - 10, 14,
+		int fy = panelY + panelH() - FOOTER_H + 2;
+		SkinButton[] reset = new SkinButton[1];
+		reset[0] = new SkinButton(panelX + 6, fy, SIDEBAR_W - 12, 13,
 				Component.literal(confirmReset ? "Sure?" : "Reset all"), openedAt, () -> {
 			if (!confirmReset) {
 				confirmReset = true;
@@ -123,6 +130,10 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.choice("Animation speed", () -> LmgConfig.ANIMATION_SPEED_LABELS[c.animationSpeed],
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, 1),
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, -1)));
+				r.add(SettingRow.choice("Menu style", () -> c.menuStyle.label,
+						() -> { c.menuStyle = cycle(LmgConfig.MenuStyle.values(), c.menuStyle, 1); rebuildWidgets(); },
+						() -> { c.menuStyle = cycle(LmgConfig.MenuStyle.values(), c.menuStyle, -1); rebuildWidgets(); }));
+				r.add(SettingRow.toggle("Use my accent in menu", () -> c.menuUseAccent, v -> c.menuUseAccent = v));
 			}
 			case 1 -> {
 				r.add(enumRow("Sky theme", LmgConfig.SkyTheme.values(), () -> c.skyTheme, v -> c.skyTheme = v, v -> v.label));
@@ -245,25 +256,18 @@ public class LmgSettingsScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		float intro = Draw.easeOutCubic(Theme.progress(openedAt, 320f));
-		int x0 = panelX, y0 = panelY, x1 = panelX + PANEL_W, y1 = panelY + PANEL_H;
+		int x0 = panelX, y0 = panelY, x1 = panelX + PANEL_W, y1 = panelY + panelH();
 
-		// panel with a thin lighter border
-		Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 9, Draw.white(0.07f * intro));
-		Draw.roundRect(g, x0, y0, x1, y1, 8, Draw.withAlpha(0x101015, 0.94f * intro));
-		// header divider and sidebar divider
-		g.fill(x0 + 8, y0 + HEADER_H, x1 - 8, y0 + HEADER_H + 1, Draw.white(0.06f * intro));
-		g.fill(x0 + SIDEBAR_W - 2, y0 + HEADER_H + 6, x0 + SIDEBAR_W - 1, y1 - 6, Draw.white(0.05f * intro));
-
-		// title in the middle of the header (drag here to move the panel)
-		String title = LmgClient.CLIENT_NAME;
-		int tw = font.width(title);
-		int cx = x0 + PANEL_W / 2;
-		Draw.logo(g, cx - tw / 2f - 8, y0 + HEADER_H / 2f, 12f, 0, intro);
-		g.text(font, title, cx - tw / 2 + 2, y0 + (HEADER_H - font.lineHeight) / 2 + 1, Draw.white(intro), false);
+		MenuSkin.panel(g, font, x0, y0, x1, y1, HEADER_H, SIDEBAR_W, FOOTER_H, TABS[lastTab], intro);
 
 		// small hint bottom-right
 		String hint = "Right Shift to close";
-		g.text(font, hint, x1 - 8 - font.width(hint), y1 - FOOTER_H + 6, Draw.withAlpha(0x55555F, intro), false);
+		int hintColor = switch (MenuSkin.style()) {
+			case SKEET -> 0x4A4A4A;
+			case NEVERLOSE -> 0x3E4766;
+			default -> 0x55555F;
+		};
+		g.text(font, hint, x1 - 10 - font.width(hint), y1 - FOOTER_H + 6, Draw.withAlpha(hintColor, intro), false);
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 	}

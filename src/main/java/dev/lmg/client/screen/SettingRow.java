@@ -89,20 +89,36 @@ public class SettingRow extends AbstractWidget {
 
 		Font font = Minecraft.getInstance().font;
 		int x = getX(), y = getY() + Math.round((1 - appear) * 4);
+		switch (MenuSkin.style()) {
+			case SKEET -> drawSkeet(g, font, x, y, mouseX, appear, dt);
+			case NEVERLOSE -> drawNeverlose(g, font, x, y, mouseX, appear, dt);
+			default -> drawLmg(g, font, x, y, mouseX, appear, dt);
+		}
+	}
+
+	private boolean on() {
+		return isOn != null && isOn.get();
+	}
+
+	private void animateKnob(float dt) {
+		boolean on = on();
+		if (knob < 0) knob = on ? 1 : 0;
+		knob = Draw.approach(knob, on ? 1f : 0f, 18f * Theme.speed(), dt);
+	}
+
+	// ---- Lmg style ------------------------------------------------------------------------------
+
+	private void drawLmg(GuiGraphicsExtractor g, Font font, int x, int y, int mouseX, float appear, float dt) {
 		int textY = y + (height - font.lineHeight) / 2 + 1;
 		int right = x + width - 6;
-
 		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
 		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(LABEL, 0xFFFFFF, hover), appear), false);
-
 		switch (kind) {
 			case TOGGLE -> {
-				boolean on = isOn.get();
-				if (knob < 0) knob = on ? 1 : 0;
-				knob = Draw.approach(knob, on ? 1f : 0f, 18f * Theme.speed(), dt);
+				animateKnob(dt);
 				int tw = 18, th = 10;
 				int tx = right - tw, ty = y + (height - th) / 2;
-				int track = Draw.lerpRgb(0x3A3A46, Theme.accent(), knob);
+				int track = Draw.lerpRgb(0x3A3A46, MenuSkin.accent(), knob);
 				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 5, Draw.withAlpha(track, appear * (0.75f + 0.25f * knob)));
 				int kx = tx + 1 + Math.round(knob * (tw - th));
 				Draw.roundRect(g, kx, ty + 1, kx + th - 2, ty + th - 1, 4, Draw.withAlpha(0xFFFFFF, appear));
@@ -112,12 +128,12 @@ public class SettingRow extends AbstractWidget {
 				int vw = font.width(v);
 				boolean overPrev = isHovered && mouseX >= prevArrowX0 && mouseX < prevArrowX1;
 				boolean overNext = isHovered && mouseX >= right - 8 && !overPrev;
-				int nextX = right - font.width("›");
-				g.text(font, "›", nextX, textY, Draw.withAlpha(overNext ? 0xFFFFFF : DIM, appear), false);
+				int nextX = right - font.width(">");
+				g.text(font, ">", nextX, textY, Draw.withAlpha(overNext ? 0xFFFFFF : DIM, appear), false);
 				int vx = nextX - 5 - vw;
 				g.text(font, v, vx, textY, Draw.withAlpha(VALUE, appear), false);
-				int px = vx - 5 - font.width("‹");
-				g.text(font, "‹", px, textY, Draw.withAlpha(overPrev ? 0xFFFFFF : DIM, appear), false);
+				int px = vx - 5 - font.width("<");
+				g.text(font, "<", px, textY, Draw.withAlpha(overPrev ? 0xFFFFFF : DIM, appear), false);
 				prevArrowX0 = px - 4;
 				prevArrowX1 = vx - 1;
 				if (swatch != null) {
@@ -126,8 +142,104 @@ public class SettingRow extends AbstractWidget {
 				}
 			}
 			case BUTTON -> {
-				String v = value.get() + "  ›";
-				g.text(font, v, right - font.width(v), textY, Draw.withAlpha(Theme.accentSoft(), appear), false);
+				String v = value.get() + "  >";
+				g.text(font, v, right - font.width(v), textY, Draw.withAlpha(MenuSkin.accent(), appear), false);
+			}
+		}
+	}
+
+	// ---- Skeet style: checkbox on the left, dropdown-like boxes on the right ----------------------
+
+	private void drawSkeet(GuiGraphicsExtractor g, Font font, int x, int y, int mouseX, float appear, float dt) {
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int labelX = x + 18;
+		int labelColor = Draw.withAlpha(Draw.lerpRgb(MenuSkin.SK_TEXT, 0xFFFFFF, hover), appear);
+		int acc = MenuSkin.accent();
+		switch (kind) {
+			case TOGGLE -> {
+				animateKnob(dt);
+				int bx = x + 6, by = y + (height - 8) / 2;
+				g.fill(bx, by, bx + 8, by + 8, Draw.withAlpha(0x000000, appear));
+				int top = Draw.lerpRgb(0x4B4B4B, acc, knob);
+				int bottom = Draw.lerpRgb(0x333333, Draw.lerpRgb(0x000000, acc, 0.65f), knob);
+				g.fillGradient(bx + 1, by + 1, bx + 7, by + 7, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				g.text(font, getMessage(), labelX, textY, labelColor, false);
+			}
+			case CHOICE, BUTTON -> {
+				g.text(font, getMessage(), labelX, textY, labelColor, false);
+				int bw = Math.min(96, width / 2);
+				int bx1 = x + width - 6, bx0 = bx1 - bw, by0 = y + 1, by1 = y + height - 1;
+				g.fill(bx0, by0, bx1, by1, Draw.withAlpha(0x000000, appear));
+				int top = Draw.lerpRgb(0x232323, 0x2C2C2C, hover), bottom = Draw.lerpRgb(0x1D1D1D, 0x242424, hover);
+				g.fillGradient(bx0 + 1, by0 + 1, bx1 - 1, by1 - 1, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
+				String v = value.get();
+				if (kind == Kind.BUTTON) {
+					g.centeredText(font, v, (bx0 + bx1) / 2, textY, Draw.withAlpha(0xD0D0D0, appear));
+				} else {
+					int tx = bx0 + 12;
+					if (swatch != null) {
+						g.fill(bx0 + 4, textY, bx0 + 9, textY + 5, Draw.withAlpha(swatch.getAsInt(), appear));
+						tx = bx0 + 13;
+					}
+					String shown = font.width(v) > bw - 26 ? font.plainSubstrByWidth(v, bw - 30) + ".." : v;
+					g.text(font, shown, tx + (swatch != null ? 0 : -6), textY, Draw.withAlpha(Draw.lerpRgb(0x989898, 0xFFFFFF, hover), appear), false);
+					boolean overPrev = isHovered && mouseX >= bx0 && mouseX < bx0 + bw / 3;
+					g.text(font, "<", bx1 - 18, textY, Draw.withAlpha(overPrev ? 0xFFFFFF : 0x6A6A6A, appear), false);
+					g.text(font, ">", bx1 - 9, textY, Draw.withAlpha(!overPrev && isHovered ? 0xFFFFFF : 0x6A6A6A, appear), false);
+					prevArrowX0 = bx0;
+					prevArrowX1 = bx0 + bw / 3;
+				}
+			}
+		}
+	}
+
+	// ---- Neverlose style: pill switches and rounded fields ---------------------------------------
+
+	private void drawNeverlose(GuiGraphicsExtractor g, Font font, int x, int y, int mouseX, float appear, float dt) {
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int right = x + width - 6;
+		int acc = MenuSkin.accent();
+		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.withAlpha(0x161D33, hover * appear));
+		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_TEXT, 0xFFFFFF, hover), appear), false);
+		switch (kind) {
+			case TOGGLE -> {
+				animateKnob(dt);
+				int tw = 16, th = 8;
+				int tx = right - tw, ty = y + (height - th) / 2;
+				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 4, Draw.withAlpha(Draw.lerpRgb(0x2A324D, acc, knob), appear));
+				int kx = tx + 1 + Math.round(knob * (tw - th));
+				Draw.roundRect(g, kx, ty + 1, kx + th - 2, ty + th - 1, 3,
+						Draw.withAlpha(Draw.lerpRgb(0x8A93B0, 0xFFFFFF, knob), appear));
+			}
+			case CHOICE -> {
+				int bw = Math.min(92, width / 2);
+				int bx1 = right, bx0 = bx1 - bw, by0 = y + 1, by1 = y + height - 1;
+				Draw.roundRect(g, bx0 - 1, by0 - 1, bx1 + 1, by1 + 1, 4, Draw.withAlpha(MenuSkin.NL_FIELD_BORDER, appear));
+				Draw.roundRect(g, bx0, by0, bx1, by1, 3, Draw.withAlpha(MenuSkin.NL_FIELD, appear));
+				String v = value.get();
+				boolean overPrev = isHovered && mouseX >= bx0 && mouseX < bx0 + 14;
+				boolean overNext = isHovered && mouseX >= bx1 - 14;
+				g.text(font, "<", bx0 + 4, textY, Draw.withAlpha(overPrev ? acc : MenuSkin.NL_TEXT_DIM, appear), false);
+				g.text(font, ">", bx1 - 4 - font.width(">"), textY, Draw.withAlpha(overNext ? acc : MenuSkin.NL_TEXT_DIM, appear), false);
+				String shown = font.width(v) > bw - 28 ? font.plainSubstrByWidth(v, bw - 32) + ".." : v;
+				int cx = (bx0 + bx1) / 2;
+				if (swatch != null) {
+					int sw = font.width(shown) + 8;
+					int sx = cx - sw / 2;
+					Draw.roundRect(g, sx, textY, sx + 5, textY + 5, 2, Draw.withAlpha(swatch.getAsInt(), appear));
+					g.text(font, shown, sx + 8, textY, Draw.withAlpha(0xFFFFFF, appear), false);
+				} else {
+					g.centeredText(font, shown, cx, textY, Draw.withAlpha(0xFFFFFF, appear));
+				}
+				prevArrowX0 = bx0;
+				prevArrowX1 = bx0 + 14;
+			}
+			case BUTTON -> {
+				String v = value.get();
+				int bw = font.width(v) + 16;
+				int bx0 = right - bw;
+				Draw.roundRect(g, bx0, y + 1, right, y + height - 1, 4, Draw.withAlpha(Draw.lerpRgb(acc, 0xFFFFFF, hover * 0.2f), appear));
+				g.centeredText(font, v, bx0 + bw / 2, textY, Draw.withAlpha(0xFFFFFF, appear));
 			}
 		}
 	}

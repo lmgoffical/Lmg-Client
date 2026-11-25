@@ -36,20 +36,7 @@ public class SideTab extends AbstractWidget {
 		active = Draw.approach(active, sel ? 1f : 0f, 16f * Theme.speed(), dt);
 		hover = Draw.approach(hover, isHoveredOrFocused() ? 1f : 0f, 16f * Theme.speed(), dt);
 
-		int x = getX(), y = getY();
-		float bg = Math.max(active * 0.10f, hover * 0.05f);
-		if (bg > 0.005f) {
-			int color = active > 0.5f ? Theme.accent(bg) : Draw.white(bg);
-			Draw.roundRect(g, x, y, x + width, y + height, 4, color);
-		}
-		if (active > 0.01f) {
-			int barH = Math.round((height - 6) * active);
-			int by = y + (height - barH) / 2;
-			g.fill(x, by, x + 2, by + barH, Theme.accent(active));
-		}
-		int rgb = Draw.lerpRgb(0x8E8E9A, 0xFFFFFF, Math.max(active, hover * 0.7f));
-		var font = Minecraft.getInstance().font;
-		g.text(font, getMessage(), x + 8, y + (height - font.lineHeight) / 2 + 1, 0xFF000000 | rgb, false);
+		MenuSkin.tab(g, Minecraft.getInstance().font, getX(), getY(), width, height, getMessage(), active, hover);
 	}
 
 	@Override
