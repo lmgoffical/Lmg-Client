@@ -2,6 +2,7 @@ package dev.lmg.client.screen;
 
 import dev.lmg.client.LmgClient;
 import dev.lmg.client.LmgConfig;
+import dev.lmg.client.config.CloudCodes;
 import dev.lmg.client.config.ConfigProfiles;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
@@ -193,15 +194,38 @@ public class LmgSettingsScreen extends Screen {
 		if (tab == 1) {
 			// Configs: saved setups and share codes
 			r.add(SettingRow.button("Saved configs", "Open", () -> minecraft.gui.setScreen(new ConfigsScreen(this))));
-			r.add(SettingRow.button("Share my setup", "Copy code", () -> {
-				minecraft.keyboardHandler.setClipboard(ConfigProfiles.codeForCurrent("My config"));
-				toast("Code copied!", "Paste it to a friend - they import it in Configs.");
+			r.add(SettingRow.button("Share my setup", "Get code", () -> {
+				String longCode = ConfigProfiles.codeForCurrent("My config");
+				toast("Uploading...", "Getting a short code for your setup.");
+				CloudCodes.share("My config", longCode).whenComplete((code, error) -> minecraft.execute(() -> {
+					if (error == null) {
+						minecraft.keyboardHandler.setClipboard(code);
+						toast("Copied " + code, "Send it to a friend - they type it in Configs.");
+					} else {
+						minecraft.keyboardHandler.setClipboard(longCode);
+						toast("Copied the long code", "Server unreachable: " + CloudCodes.messageOf(error));
+					}
+				}));
 			}));
-			r.add(SettingRow.button("Import a code", "Paste", () -> {
+			r.add(SettingRow.button("Import from clipboard", "Paste", () -> {
+				String text = minecraft.keyboardHandler.getClipboard();
+				if (CloudCodes.isShortCode(text)) {
+					toast("Downloading...", text.trim().toUpperCase());
+					CloudCodes.fetch(text).whenComplete((p, error) -> minecraft.execute(() -> {
+						if (error == null) {
+							LmgConfig.apply(p.config());
+							toast("Imported \"" + p.name() + "\"", "Save it in Saved configs to keep it.");
+							rebuildWidgets();
+						} else {
+							toast("Couldn't import", CloudCodes.messageOf(error));
+						}
+					}));
+					return;
+				}
 				try {
-					ConfigProfiles.Profile p = ConfigProfiles.decode(minecraft.keyboardHandler.getClipboard());
+					ConfigProfiles.Profile p = ConfigProfiles.decode(text);
 					LmgConfig.apply(p.config());
-					toast("Imported \"" + p.name() + "\"", "Save it in Configs > Saved configs to keep it.");
+					toast("Imported \"" + p.name() + "\"", "Save it in Saved configs to keep it.");
 					rebuildWidgets();
 				} catch (IllegalArgumentException e) {
 					toast("Couldn't import", e.getMessage());
