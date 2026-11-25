@@ -50,6 +50,10 @@ public final class WorldVisuals {
 	/** How "daytime" the vanilla sky currently is (0 = night, 1 = full day). Updated as the sky is read. */
 	private static float daylight = 1f;
 
+	public static float daylight() {
+		return daylight;
+	}
+
 	// ---------------------------------------------------------------------------------------------
 	// Environment attributes (sky / fog / glow / cloud colors, stars)
 	// ---------------------------------------------------------------------------------------------

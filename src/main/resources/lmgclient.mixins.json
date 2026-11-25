@@ -8,10 +8,13 @@
 		"ClientClockManagerMixin",
 		"EnvironmentAttributeProbeMixin",
 		"FogRendererMixin",
+		"GameRendererMixin",
 		"GuiMixin",
+		"LightmapMixin",
 		"OptionsMixin",
 		"PlayerSkinWidgetAccessor",
 		"ScreenBackgroundMixin",
+		"ScreenEffectRendererMixin",
 		"WeatherEffectRendererMixin"
 	],
 	"injectors": {

@@ -1,9 +1,9 @@
 {
-  "version": "0.5.0",
+  "version": "0.6.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.5.0.jar",
-    "sha1": "1c1e1ea70ea86957f99ec0d4f7c3ef43906b683a"
+    "file": "lmg-client-0.6.0.jar",
+    "sha1": "5489d8098964d4c6723a4241ec03fa944f45bdbb"
   },
   "mods": [
     {

@@ -61,6 +61,8 @@ public class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
 			pose.popPose();
 		}
 
+		if (cfg.shield != CosmeticColor.OFF) shield(pose, nodes, cfg.shield.rgb(t), t);
+
 		boolean elytra = state.chestEquipment.is(Items.ELYTRA) || state.isFallFlying;
 		if (cfg.wings != CosmeticColor.OFF && !elytra) {
 			pose.pushPose();
@@ -180,6 +182,52 @@ public class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
 				quad(vc, p, 0, tipY, 0, 0, tipY, 0, x1, baseY, z1, x0, baseY, z0, 0, 0, 1, 1, color, light, 0, -1, 0);
 			}
 		});
+	}
+
+	// ------------------------------------------------------------------------------------------
+	// Energy shield: a see-through bubble around you with a glowing band sweeping over it.
+	// ------------------------------------------------------------------------------------------
+
+	private static void shield(PoseStack pose, SubmitNodeCollector nodes, int rgb, float t) {
+		int lat = 14, lon = 28;
+		float r = 19f * PX * (1f + 0.015f * (float) Math.sin(t * 0.15f));
+		float cy = 12f * PX; // middle of the body in model space (y points down)
+		float scan = (float) Math.sin(t * 0.06f);          // -1..1, sweeps up and down
+		pose.pushPose();
+		pose.mulPose(new Matrix4f().rotateY(t * 0.01f));
+		nodes.submitCustomGeometry(pose, RenderTypes.entityTranslucentEmissive(WHITE), (p, vc) -> {
+			for (int i = 0; i < lat; i++) {
+				double th0 = Math.PI * i / lat, th1 = Math.PI * (i + 1) / lat;
+				float yc = (float) Math.cos((th0 + th1) / 2);   // -1..1 height of this ring
+				float band = (float) Math.exp(-Math.pow((yc - scan) / 0.14, 2));
+				float alpha = 0.06f + 0.30f * band;
+				// faint latitude lines for a "hex grid" feel
+				if (i % 2 == 0) alpha += 0.03f;
+				int color = ((int) (alpha * 255) << 24) | rgb;
+				for (int j = 0; j < lon; j++) {
+					double ph0 = Math.PI * 2 * j / lon, ph1 = Math.PI * 2 * (j + 1) / lon;
+					quad(vc, p,
+							sx(r, th0, ph0), cy + sy(r, th0), sz(r, th0, ph0),
+							sx(r, th0, ph1), cy + sy(r, th0), sz(r, th0, ph1),
+							sx(r, th1, ph1), cy + sy(r, th1), sz(r, th1, ph1),
+							sx(r, th1, ph0), cy + sy(r, th1), sz(r, th1, ph0),
+							0, 0, 1, 1, color, FULL_BRIGHT, 0, 1, 0);
+				}
+			}
+		});
+		pose.popPose();
+	}
+
+	private static float sx(float r, double th, double ph) {
+		return (float) (r * Math.sin(th) * Math.cos(ph));
+	}
+
+	private static float sy(float r, double th) {
+		return (float) (-r * Math.cos(th));
+	}
+
+	private static float sz(float r, double th, double ph) {
+		return (float) (r * Math.sin(th) * Math.sin(ph));
 	}
 
 	// ------------------------------------------------------------------------------------------

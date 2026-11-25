@@ -5,6 +5,7 @@ import dev.lmg.client.LmgConfig;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
+import dev.lmg.client.world.OreOutlines;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -19,8 +20,8 @@ import java.util.List;
  * Three tabs: Theme, Menus and HUD.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "Menus", "HUD"};
-	private static final int PANEL_W = 300;
+	private static final String[] TABS = {"Theme", "World", "Avatar", "Effects", "PvP", "Menus", "HUD"};
+	private static final int PANEL_W = 310;
 	private static final int ROW_H = 15;
 	private static final int ROW_GAP = 16;
 	private static final int MAX_ROWS = 9;
@@ -52,7 +53,7 @@ public class LmgSettingsScreen extends Screen {
 
 		// Tabs
 		int tabY = panelTop + 22;
-		int tabW = 50;
+		int tabW = 44;
 		int tabsLeft = width / 2 - (tabW * TABS.length) / 2;
 		for (int i = 0; i < TABS.length; i++) {
 			final int index = i;
@@ -107,6 +108,10 @@ public class LmgSettingsScreen extends Screen {
 						null, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Always show stars", () -> c.alwaysStars, v -> c.alwaysStars = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Rain & snow", () -> c.showWeather, v -> c.showWeather = v, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Aurora (night sky)", () -> c.aurora.label,
+						() -> c.aurora = cycle(LmgConfig.Aurora.values(), c.aurora, 1),
+						() -> c.aurora = cycle(LmgConfig.Aurora.values(), c.aurora, -1),
+						null, 0));
 			}
 			case 2 -> {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Lmg Client cape", () -> c.cape, v -> c.cape = v, 0));
@@ -115,6 +120,7 @@ public class LmgSettingsScreen extends Screen {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Crown", () -> c.crown, v -> c.crown = v, 0));
 				rows.add(colorRow(x, w, "Cat ears", () -> c.catEars, v -> c.catEars = v));
 				rows.add(colorRow(x, w, "China hat", () -> c.chinaHat, v -> c.chinaHat = v));
+				rows.add(colorRow(x, w, "Energy shield", () -> c.shield, v -> c.shield = v));
 			}
 			case 3 -> {
 				rows.add(new SettingRow(x, 0, w, ROW_H, "Trail", () -> c.trail.label,
@@ -131,6 +137,29 @@ public class LmgSettingsScreen extends Screen {
 						null, 0));
 			}
 			case 4 -> {
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Block overlay", () -> c.blockOverlay.label,
+						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, 1),
+						() -> c.blockOverlay = cycle(LmgConfig.BlockOverlay.values(), c.blockOverlay, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Overlay color", () -> c.overlayColor.label,
+						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, 1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
+						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, -1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
+						() -> c.overlayColor.rgb(Util.getMillis() / 50f), 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Target reticle", () -> c.targetReticle, v -> c.targetReticle = v, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Hit effect", () -> c.hitEffect.label,
+						() -> c.hitEffect = cycle(LmgConfig.HitEffect.values(), c.hitEffect, 1),
+						() -> c.hitEffect = cycle(LmgConfig.HitEffect.values(), c.hitEffect, -1),
+						null, 0));
+				rows.add(new SettingRow(x, 0, w, ROW_H, "Kill effect", () -> c.killEffect.label,
+						() -> c.killEffect = cycle(LmgConfig.KillEffect.values(), c.killEffect, 1),
+						() -> c.killEffect = cycle(LmgConfig.KillEffect.values(), c.killEffect, -1),
+						null, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Fullbright", () -> c.fullbright, v -> c.fullbright = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Ore outlines", OreOutlines::isEnabled, OreOutlines::setEnabled, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Low fire", () -> c.lowFire, v -> c.lowFire = v, 0));
+				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "No hurt camera shake", () -> c.noHurtCam, v -> c.noHurtCam = v, 0));
+			}
+			case 5 -> {
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Splash screen", () -> c.showSplash, v -> c.showSplash = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Themed vanilla menus", () -> c.themedMenus, v -> c.themedMenus = v, 0));
 				rows.add(SettingRow.toggle(x, 0, w, ROW_H, "Light curtains", () -> c.curtains, v -> c.curtains = v, 0));

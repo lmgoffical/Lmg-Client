@@ -172,6 +172,50 @@ public final class LmgConfig {
 		}
 	}
 
+	public enum BlockOverlay {
+		VANILLA("Vanilla"), OUTLINE("Outline"), FILLED("Outline + fill"), GLOW("Pulsing glow");
+
+		public final String label;
+
+		BlockOverlay(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum HitEffect {
+		OFF("Off"), SPARKS("Sparks"), CRITS("Crits"), STARS("Stars"), HEARTS("Hearts"), ACCENT("Accent burst");
+
+		public final String label;
+
+		HitEffect(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum KillEffect {
+		OFF("Off"), SOUL_BURST("Soul burst"), STAR_BURST("Star burst"), FIREWORK("Firework"),
+		TOTEM("Totem"), HEARTS("Hearts");
+
+		public final String label;
+
+		KillEffect(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum Aurora {
+		OFF("Off", 0), GREEN("Green", 0x3CFFA0), PURPLE("Purple", 0xB45CFF), BLUE("Blue", 0x4FB8FF),
+		ACCENT("Accent", -1), RAINBOW("Rainbow", -2);
+
+		public final String label;
+		public final int rgb;
+
+		Aurora(String label, int rgb) {
+			this.label = label;
+			this.rgb = rgb;
+		}
+	}
+
 	public static final String[] AMOUNT_LABELS = {"Low", "Normal", "High"};
 
 	public static final float[] ANIMATION_SPEEDS = {0.5f, 1f, 1.5f, 2f};
@@ -200,6 +244,7 @@ public final class LmgConfig {
 	public CloudMode clouds = CloudMode.VANILLA;
 	public boolean alwaysStars = false;
 	public boolean showWeather = true;
+	public Aurora aurora = Aurora.OFF;
 
 	// ---- avatar cosmetics (only you see them) ----
 	public boolean cape = true;
@@ -209,10 +254,23 @@ public final class LmgConfig {
 	public CosmeticColor catEars = CosmeticColor.OFF;
 	public CosmeticColor chinaHat = CosmeticColor.OFF;
 
+	public CosmeticColor shield = CosmeticColor.OFF;
+
 	// ---- effects (client-side particles) ----
 	public Trail trail = Trail.OFF;
 	public Ambient ambient = Ambient.OFF;
 	public int ambientAmount = 1; // index into AMOUNT_LABELS
+
+	public HitEffect hitEffect = HitEffect.OFF;
+	public KillEffect killEffect = KillEffect.OFF;
+
+	// ---- PvP visuals ----
+	public BlockOverlay blockOverlay = BlockOverlay.VANILLA;
+	public CosmeticColor overlayColor = CosmeticColor.ACCENT;
+	public boolean targetReticle = false;
+	public boolean fullbright = false;
+	public boolean lowFire = false;
+	public boolean noHurtCam = false;
 
 	// ---- HUD bar ----
 	public boolean hudEnabled = true;
@@ -272,6 +330,12 @@ public final class LmgConfig {
 		if (catEars == null) catEars = d.catEars;
 		if (chinaHat == null) chinaHat = d.chinaHat;
 		if (trail == null) trail = d.trail;
+		if (shield == null) shield = d.shield;
+		if (hitEffect == null) hitEffect = d.hitEffect;
+		if (killEffect == null) killEffect = d.killEffect;
+		if (blockOverlay == null) blockOverlay = d.blockOverlay;
+		if (overlayColor == null || overlayColor == CosmeticColor.OFF) overlayColor = d.overlayColor;
+		if (aurora == null) aurora = d.aurora;
 		if (ambient == null) ambient = d.ambient;
 		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
