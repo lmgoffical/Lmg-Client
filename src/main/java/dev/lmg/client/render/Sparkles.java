@@ -21,6 +21,10 @@ public final class Sparkles {
 
 	/** Keeps roughly {@code target} slow sparkles alive inside the given area. */
 	public void keepAmbient(int target, float minX, float maxX, float minY, float maxY) {
+		if (target <= 0) {
+			particles.removeIf(p -> p.drag == 0);
+			return;
+		}
 		int ambient = 0;
 		for (Particle p : particles) if (p.drag == 0) ambient++;
 		// Spawn gradually so they don't all appear on the same frame.
@@ -84,13 +88,14 @@ public final class Sparkles {
 
 	public void draw(GuiGraphicsExtractor g, float alphaMul) {
 		float time = Util.getMillis() / 1000f;
+		int rgb = Theme.accentSoft();
 		for (Particle p : particles) {
 			float t = p.age / p.life;
 			// fade in over the first 15%, fade out over the last 40%
 			float fade = Math.min(t / 0.15f, (1 - t) / 0.4f);
 			float twinkle = p.drag > 0 ? 1f : 0.55f + 0.45f * (float) Math.sin(time * 3f + p.twinkle);
 			float a = Draw.clamp01(fade) * twinkle * alphaMul;
-			Draw.texture(g, Draw.SPARKLE, Draw.SPARKLE_TEX, p.x, p.y, p.size, p.rot, Draw.white(a * 0.9f));
+			Draw.texture(g, Draw.SPARKLE, Draw.SPARKLE_TEX, p.x, p.y, p.size, p.rot, Draw.withAlpha(rgb, a * 0.9f));
 		}
 	}
 

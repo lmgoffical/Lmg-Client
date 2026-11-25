@@ -5,17 +5,30 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 - **Splash screen**: a glowing Star of David with "Press to enter". Clicking spins the star, throws out sparkles and fades into the menu.
 - **Main menu**: text-only buttons with a soft hover bar, your 3D skin that slowly turns (drag it to spin it), and drifting light curtains with star sparkles.
 - **Themed menus**: the server list, world list and options get the same dark background (outside of a world).
-- **HUD bar**: a rounded bar in the top-left showing your name, the server, FPS and the time.
-- **Client settings**: main menu → **Client** turns each feature on or off. Settings are saved in `.minecraft/config/lmgclient.json`.
+- **HUD bar**: a smooth, animated bar showing your name, server, FPS, ping, clock and (optionally) coordinates.
+- **Lmg menu**: press **Right Shift** anywhere (or main menu → **Client**). Three tabs:
+  - **Theme**: accent color, background style, animation speed
+  - **Menus**: splash screen, themed menus, light curtains, sparkle amount, skin spin
+  - **HUD**: on/off, position, size, background opacity, and which info to show
+
+  Left-click a setting for the next option, right-click for the previous one. Settings are saved in `.minecraft/config/lmgclient.json`. The key can be changed in Minecraft's **Controls** settings.
 
 ## Playing it (Windows)
 
 1. Install **Fabric Loader** for Minecraft 26.3 with the installer from <https://fabricmc.net/use/installer/>.
-2. Download **Fabric API** for 26.3 from <https://modrinth.com/mod/fabric-api>.
-3. Put `fabric-api-*.jar` and `lmg-client-*.jar` into `%appdata%\.minecraft\mods`.
+2. Download both jars from the [`download`](download) folder: `lmg-client-*.jar` and `fabric-api-*.jar`.
+3. Put them into `%appdata%\.minecraft\mods`.
 4. Open the Minecraft Launcher, choose the **fabric-loader-26.3** profile, and press Play.
 
-Recommended extras for performance and shaders: **Sodium**, **Lithium** and **Iris** (all on Modrinth).
+### More FPS (optional, recommended)
+
+Put these into the same `mods` folder:
+
+| Mod | What it does | Download (26.3) |
+|---|---|---|
+| **Sodium** | Much faster rendering, usually the biggest FPS boost. Currently a beta for 26.3. | [sodium-fabric-0.9.4-beta.2+mc26.3.jar](https://cdn.modrinth.com/data/AANobbMI/versions/B2hHu7Uv/sodium-fabric-0.9.4-beta.2%2Bmc26.3.jar) |
+| **Lithium** | Faster game logic, smoother ticks | [lithium-fabric-0.26.4+mc26.3.jar](https://cdn.modrinth.com/data/gvQqBUqZ/versions/Lal8mJGR/lithium-fabric-0.26.4%2Bmc26.3.jar) |
+| **Iris** | Shader support (needs Sodium) | [iris-fabric-1.11.7+mc26.3.jar](https://cdn.modrinth.com/data/YL57xq9U/versions/vTN4NRGW/iris-fabric-1.11.7%2Bmc26.3.jar) |
 
 ## Building it yourself (Windows)
 
@@ -57,6 +70,7 @@ gradlew.bat runClient
 ## Roadmap
 
 - Restyled server list rows, hotbar and nametags
+- Draggable HUD position
 - Custom font
 - Glass-blur client panel
 - Custom sky

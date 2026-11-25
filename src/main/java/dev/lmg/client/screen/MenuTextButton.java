@@ -1,6 +1,7 @@
 package dev.lmg.client.screen;
 
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.Theme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -33,9 +34,9 @@ public class MenuTextButton extends AbstractWidget {
 		long now = Util.getMillis();
 		float dt = lastFrame < 0 ? 0 : (now - lastFrame) / 1000f;
 		lastFrame = now;
-		hover = Draw.approach(hover, isHoveredOrFocused() ? 1f : 0f, 14f, dt);
+		hover = Draw.approach(hover, isHoveredOrFocused() ? 1f : 0f, 14f * Theme.speed(), dt);
 
-		float appear = Draw.easeOutCubic((now - appearAt) / 380f);
+		float appear = Draw.easeOutCubic(Theme.progress(appearAt, 380f));
 		if (appear <= 0.01f) return;
 
 		int yOff = Math.round((1 - appear) * 6);
@@ -44,7 +45,7 @@ public class MenuTextButton extends AbstractWidget {
 
 		if (hover > 0.01f) {
 			int barW = Math.round(width * (0.5f + 0.5f * Draw.easeOutCubic(hover)));
-			Draw.roundRect(g, cx - barW / 2, top, cx + barW / 2, top + height, 4, Draw.white(0.09f * hover * appear));
+			Draw.roundRect(g, cx - barW / 2, top, cx + barW / 2, top + height, 4, Theme.accent(0.11f * hover * appear));
 		}
 
 		int rgb = Draw.lerpRgb(IDLE_COLOR, HOVER_COLOR, hover);

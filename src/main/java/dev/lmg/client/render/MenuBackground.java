@@ -5,27 +5,25 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
 
 /**
- * The dark Lmg Client menu background: soft gradient, darkened edges, and
+ * The Lmg Client menu background: soft gradient, darkened edges, and
  * (optionally) drifting light curtains with star sparkles on the right side.
  */
 public final class MenuBackground {
-	private static final int TOP = 0xFF17171D;
-	private static final int BOTTOM = 0xFF09090C;
-
 	// Shared, so the sparkles keep drifting smoothly when you switch between menus.
 	private static final Sparkles AMBIENT = new Sparkles();
 
 	private MenuBackground() {}
 
 	public static void draw(GuiGraphicsExtractor g, int width, int height, boolean effects) {
-		g.fillGradient(0, 0, width, height, TOP, BOTTOM);
+		LmgConfig cfg = LmgConfig.get();
+		LmgConfig.Backdrop backdrop = cfg.backdrop;
+		g.fillGradient(0, 0, width, height, 0xFF000000 | backdrop.top, 0xFF000000 | backdrop.bottom);
 		vignette(g, width, height);
-		if (effects && LmgConfig.get().menuEffects) {
-			curtains(g, width, height);
-			AMBIENT.keepAmbient(26, width * 0.70f, width, 0, height);
-			AMBIENT.update();
-			AMBIENT.draw(g, 1f);
-		}
+		if (!effects) return;
+		if (cfg.curtains) curtains(g, width, height);
+		AMBIENT.keepAmbient(LmgConfig.SPARKLE_AMOUNTS[cfg.sparkles], width * 0.70f, width, 0, height);
+		AMBIENT.update();
+		AMBIENT.draw(g, 1f);
 	}
 
 	/** Darkens the left and right edges with stacked translucent strips. */
@@ -41,7 +39,8 @@ public final class MenuBackground {
 
 	/** Three wavy, translucent "aurora curtain" bands that slowly sway. */
 	private static void curtains(GuiGraphicsExtractor g, int width, int height) {
-		float t = Util.getMillis() / 1000f;
+		float t = Util.getMillis() / 1000f * Theme.speed();
+		int rgb = Theme.accentSoft();
 		int step = 2;
 		for (int b = 0; b < 3; b++) {
 			float phase = b * 1.9f;
@@ -56,9 +55,8 @@ public final class MenuBackground {
 				// fade out toward the top and bottom of the screen
 				float edge = (float) Math.sin(Math.PI * k);
 				float a = 0.035f * edge;
-				int x1 = Math.round(x);
-				g.fill(x1, y, Math.round(x + bandW), y + step, Draw.white(a));
-				g.fill(Math.round(x + bandW * 0.30f), y, Math.round(x + bandW * 0.70f), y + step, Draw.white(a * 1.4f));
+				g.fill(Math.round(x), y, Math.round(x + bandW), y + step, Draw.withAlpha(rgb, a));
+				g.fill(Math.round(x + bandW * 0.30f), y, Math.round(x + bandW * 0.70f), y + step, Draw.withAlpha(rgb, a * 1.4f));
 			}
 		}
 	}

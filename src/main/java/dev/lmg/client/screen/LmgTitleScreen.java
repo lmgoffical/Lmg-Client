@@ -1,9 +1,12 @@
 package dev.lmg.client.screen;
 
 import dev.lmg.client.LmgClient;
+import dev.lmg.client.LmgConfig;
 import dev.lmg.client.mixin.PlayerSkinWidgetAccessor;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
+import dev.lmg.client.render.Theme;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerSkinWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -80,13 +83,13 @@ public class LmgTitleScreen extends Screen {
 		long now = Util.getMillis();
 		float dt = lastFrame < 0 ? 0 : Math.min(0.1f, (now - lastFrame) / 1000f);
 		lastFrame = now;
-		float time = now / 1000f;
-		float intro = Draw.easeOutCubic((now - openedAt) / 700f);
+		float time = now / 1000f * Theme.speed();
+		float intro = Draw.easeOutCubic(Theme.progress(openedAt, 700f));
 
 		// Slowly turn the skin unless the mouse is over it.
-		if (skin != null && !skin.isHovered()) {
+		if (skin != null && LmgConfig.get().skinSpin && !skin.isHovered()) {
 			PlayerSkinWidgetAccessor acc = (PlayerSkinWidgetAccessor) skin;
-			acc.lmg$setRotationY(acc.lmg$getRotationY() + SKIN_SPIN_DEG_PER_SEC * dt);
+			acc.lmg$setRotationY(acc.lmg$getRotationY() + SKIN_SPIN_DEG_PER_SEC * Theme.speed() * dt);
 		}
 
 		// Logo + name at the top of the menu column.
@@ -108,12 +111,21 @@ public class LmgTitleScreen extends Screen {
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 
 		if (fadeFromBlack) {
-			float black = 1f - Draw.easeOutCubic((now - openedAt) / 600f);
+			float black = 1f - Draw.easeOutCubic(Theme.progress(openedAt, 600f));
 			if (black > 0.005f) {
 				g.nextStratum();
 				g.fill(0, 0, width, height, Draw.withAlpha(0x000000, black));
 			}
 		}
+	}
+
+	@Override
+	public boolean keyPressed(KeyEvent event) {
+		if (LmgClient.OPEN_MENU_KEY.matches(event)) {
+			minecraft.gui.setScreen(new LmgSettingsScreen(this));
+			return true;
+		}
+		return super.keyPressed(event);
 	}
 
 	@Override

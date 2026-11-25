@@ -29,8 +29,9 @@ public final class Draw {
 		pose.popMatrix();
 	}
 
+	/** The Star of David logo, tinted with the current accent color. */
 	public static void logo(GuiGraphicsExtractor g, float cx, float cy, float size, float radians, float alpha) {
-		texture(g, LOGO, LOGO_TEX, cx, cy, size, radians, white(alpha));
+		texture(g, LOGO, LOGO_TEX, cx, cy, size, radians, withAlpha(Theme.accentSoft(), alpha));
 	}
 
 	/** Centered text drawn at a fractional scale (e.g. 2.0 for a big title). */

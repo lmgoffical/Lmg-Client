@@ -4,6 +4,7 @@ import dev.lmg.client.LmgClient;
 import dev.lmg.client.render.Draw;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Sparkles;
+import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -37,9 +38,9 @@ public class SplashScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 		long now = Util.getMillis();
-		float time = now / 1000f;
-		float intro = Draw.easeOutCubic((now - openedAt) / INTRO_MS);
-		float enter = enterAt < 0 ? 0f : Draw.clamp01((now - enterAt) / ENTER_MS);
+		float time = now / 1000f * Theme.speed();
+		float intro = Draw.easeOutCubic(Theme.progress(openedAt, INTRO_MS));
+		float enter = enterAt < 0 ? 0f : Theme.progress(enterAt, ENTER_MS);
 
 		float cx = width / 2f;
 		float cy = height / 2f - 14f;
@@ -57,7 +58,7 @@ public class SplashScreen extends Screen {
 		float textAlpha = intro * (1f - Draw.clamp01(enter / 0.3f));
 		Draw.scaledText(g, font, LmgClient.CLIENT_NAME, cx, cy + 38f + bob, 1.6f, Draw.white(textAlpha));
 		float pulse = 0.45f + 0.35f * (float) Math.sin(time * 3f);
-		float promptIn = Draw.clamp01((now - openedAt - 500) / 600f);
+		float promptIn = Theme.progress(openedAt + 500, 600f);
 		Draw.scaledText(g, font, "Press to enter", cx, cy + 58f + bob, 0.85f, Draw.withAlpha(0xC8C8D2, textAlpha * pulse * promptIn));
 
 		burst.update();
@@ -73,7 +74,7 @@ public class SplashScreen extends Screen {
 
 	@Override
 	public void tick() {
-		if (enterAt >= 0 && Util.getMillis() - enterAt >= ENTER_MS) {
+		if (enterAt >= 0 && Theme.progress(enterAt, ENTER_MS) >= 1f) {
 			minecraft.gui.setScreen(new LmgTitleScreen(true));
 		}
 	}
