@@ -67,6 +67,18 @@ Write-Host '   Lmg Client installer' -ForegroundColor White
 Write-Host '   --------------------' -ForegroundColor DarkGray
 
 try {
+    # GitHub caches branch files for several minutes, so a fresh release could look old.
+    # Ask the API for the newest commit and download from that exact commit instead.
+    try {
+        $sha = (Invoke-WebRequest -Uri "https://api.github.com/repos/$Repo/commits/$Branch" `
+                -Headers @{ Accept = 'application/vnd.github.sha' } -UserAgent $UserAgent -UseBasicParsing).Content
+        if ($sha -is [byte[]]) { $sha = [Text.Encoding]::ASCII.GetString($sha) }
+        $sha = ([string]$sha).Trim()
+        if ($sha -match '^[0-9a-f]{40}$') { $Raw = "https://raw.githubusercontent.com/$Repo/$sha" }
+    } catch {
+        # fall back to the branch URL (may be a few minutes behind)
+    }
+
     $mc = Join-Path $env:APPDATA '.minecraft'
     $profileFiles = @('launcher_profiles.json', 'launcher_profiles_microsoft_store.json') |
         ForEach-Object { Join-Path $mc $_ } | Where-Object { Test-Path $_ }
