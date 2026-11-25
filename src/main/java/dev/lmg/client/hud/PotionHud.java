@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.world.effect.MobEffects;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,6 +27,12 @@ public class PotionHud implements HudElement {
 		Minecraft mc = Minecraft.getInstance();
 		if (!LmgConfig.get().potionHud || mc.player == null || mc.level == null || mc.gui.hud.isHidden()) return;
 		List<MobEffectInstance> effects = new ArrayList<>(mc.player.getActiveEffects());
+		if (effects.isEmpty() && HudLayout.editing) {
+			// sample effects so you can see and place the list in the HUD editor
+			effects.add(new MobEffectInstance(MobEffects.SPEED, 1840, 1));
+			effects.add(new MobEffectInstance(MobEffects.STRENGTH, 920, 0));
+			effects.add(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 4800, 0));
+		}
 		if (effects.isEmpty()) return;
 		effects.sort(Comparator.comparing((MobEffectInstance e) -> !e.getEffect().value().isBeneficial())
 				.thenComparing(e -> -e.getDuration()));
@@ -44,8 +51,12 @@ public class PotionHud implements HudElement {
 			width = Math.max(width, Math.max(font.width(name), font.width(time)));
 		}
 		int panelW = 18 + 8 + width + 8;
-		int x = g.guiWidth() - panelW - 5;
-		int y = g.guiHeight() / 3 - effects.size() * ROW / 2;
+		int totalH = effects.size() * (ROW + 2) - 2;
+		int[] at = HudLayout.place(HudLayout.Element.POTIONS, g.guiWidth() - panelW - 5,
+				g.guiHeight() / 3 - totalH / 2, panelW, totalH, g.guiWidth(), g.guiHeight());
+		HudLayout.report(HudLayout.Element.POTIONS, at[0], at[1], panelW, totalH);
+		int x = at[0];
+		int y = at[1];
 		long ms = System.currentTimeMillis();
 
 		for (int i = 0; i < effects.size(); i++) {

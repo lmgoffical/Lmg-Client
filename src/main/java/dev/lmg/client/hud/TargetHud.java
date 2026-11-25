@@ -44,6 +44,7 @@ public class TargetHud implements HudElement {
 		lastNanos = now;
 
 		LivingEntity target = cfg.targetHud && !mc.gui.hud.isHidden() ? Targeting.current() : null;
+		if (target == null && cfg.targetHud && HudLayout.editing) target = mc.player; // sample while placing it
 		if (target != null && target != shown) {
 			shown = target;
 			healthShown = target.getHealth();
@@ -66,13 +67,14 @@ public class TargetHud implements HudElement {
 		List<MobEffectInstance> effects = new ArrayList<>(e.getActiveEffects());
 
 		int height = 34 + (gear.isEmpty() ? 0 : 14) + (effects.isEmpty() ? 0 : 12);
-		int x = g.guiWidth() / 2 + 14;
-		int y = g.guiHeight() / 2 + 10;
+		int[] at = HudLayout.place(HudLayout.Element.TARGET, g.guiWidth() / 2 + 14, g.guiHeight() / 2 + 10,
+				WIDTH, height, g.guiWidth(), g.guiHeight());
+		HudLayout.report(HudLayout.Element.TARGET, at[0], at[1], WIDTH, height);
 		float slide = (1 - Draw.easeOutCubic(appear)) * 6;
 
 		Matrix3x2fStack pose = g.pose();
 		pose.pushMatrix();
-		pose.translate(x + slide, y);
+		pose.translate(at[0] + slide, at[1]);
 
 		Draw.roundRect(g, 0, 0, WIDTH, height, 6, Draw.withAlpha(0x0E0E12, 0.82f * appear));
 		g.fill(6, 0, WIDTH - 6, 1, Draw.white(0.08f * appear));

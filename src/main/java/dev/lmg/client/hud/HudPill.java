@@ -85,18 +85,21 @@ public class HudPill implements HudElement {
 		total += PAD;
 
 		float scale = LmgConfig.HUD_SCALES[cfg.hudScale];
-		float screenW = g.guiWidth() / scale;
-		float x0 = switch (cfg.hudPosition) {
+		int outerW = Math.round(total * scale);
+		int outerH = Math.round(HEIGHT * scale);
+		int defaultX = switch (cfg.hudPosition) {
 			case TOP_LEFT -> MARGIN;
-			case TOP_CENTER -> screenW / 2f - total / 2f;
-			case TOP_RIGHT -> screenW - MARGIN - total;
+			case TOP_CENTER -> (g.guiWidth() - outerW) / 2;
+			case TOP_RIGHT -> g.guiWidth() - MARGIN - outerW;
 		};
+		int[] at = HudLayout.place(HudLayout.Element.HUD_BAR, defaultX, MARGIN, outerW, outerH, g.guiWidth(), g.guiHeight());
+		HudLayout.report(HudLayout.Element.HUD_BAR, at[0], at[1], outerW, outerH);
 		float slide = (1f - Draw.easeOutCubic(appear)) * -8f;
 
 		Matrix3x2fStack pose = g.pose();
 		pose.pushMatrix();
+		pose.translate(at[0], at[1] + slide * scale);
 		pose.scale(scale, scale);
-		pose.translate(x0, MARGIN + slide);
 
 		int w = Math.round(total);
 		float bgAlpha = LmgConfig.HUD_OPACITIES[cfg.hudOpacity] * appear;

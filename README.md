@@ -6,7 +6,7 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
 - **Main menu**: text-only buttons with a soft hover bar, your 3D skin that slowly turns (drag it to spin it), and drifting light curtains with star sparkles.
 - **Themed menus**: the server list, world list and options get the same dark background (outside of a world).
 - **HUD bar**: a smooth, animated bar showing your name, server, FPS, ping, clock and (optionally) coordinates.
-- **Lmg menu**: press **Right Shift** anywhere (or main menu → **Client**). Three tabs:
+- **Lmg menu**: press **Right Shift** anywhere (or main menu → **Client**). A compact panel with a sidebar; drag its title bar to move it (double-click the title bar to re-centre). **Edit HUD** lets you drag the HUD bar, target info and potion list anywhere (right-click one to reset it). Categories:
   - **Theme**: accent color, background style, animation speed
   - **World**: sky theme, time of day, fog, clouds, stars, rain & snow, animated aurora
   - **Avatar**: Lmg Client cape, wings, halo, crown, cat ears, China hat, energy shield (only you see them)
@@ -16,7 +16,7 @@ A Fabric mod for Minecraft Java **26.3** that gives the game a custom look:
   - **Menus**: splash screen, themed menus, light curtains, sparkle amount, skin spin
   - **HUD**: on/off, position, size, background opacity, and which info to show
 
-  Left-click a setting for the next option, right-click for the previous one. Settings are saved in `.minecraft/config/lmgclient.json`. The key can be changed in Minecraft's **Controls** settings.
+  Switches turn things on/off; for options click `<` / `>` (or left/right-click the row). Settings are saved in `.minecraft/config/lmgclient.json`. The key can be changed in Minecraft's **Controls** settings.
 
 ## Installing it (Windows), the easy way
 

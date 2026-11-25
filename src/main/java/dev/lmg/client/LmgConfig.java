@@ -281,6 +281,13 @@ public final class LmgConfig {
 	public boolean lowFire = false;
 	public boolean noHurtCam = false;
 
+	// ---- layout (dragged in the HUD editor / by the menu title bar) ----
+	// HUD element positions as a fraction (0..1) of the free screen space; -1 = default spot.
+	public float hudBarX = -1, hudBarY = -1;
+	public float targetX = -1, targetY = -1;
+	public float potionsX = -1, potionsY = -1;
+	public int menuOffsetX = 0, menuOffsetY = 0;
+
 	// ---- HUD bar ----
 	public boolean hudEnabled = true;
 	public HudPosition hudPosition = HudPosition.TOP_LEFT;

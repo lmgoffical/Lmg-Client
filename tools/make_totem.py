@@ -29,14 +29,14 @@ def star(draw, c, r, width, fill):
 
 def main():
     big = SIZE * SS
-    c, r = big / 2, big * 0.40
+    c, r = big / 2, big * 0.30  # star radius (smaller = more empty space around it)
     # 1) dark outline, 2) gold body, 3) light highlight band
     shape = Image.new("L", (big, big), 0)
-    star(ImageDraw.Draw(shape), c, r, big * 0.15, 255)
+    star(ImageDraw.Draw(shape), c, r, big * 0.12, 255)
     body = Image.new("L", (big, big), 0)
-    star(ImageDraw.Draw(body), c, r, big * 0.105, 255)
+    star(ImageDraw.Draw(body), c, r, big * 0.085, 255)
     shine = Image.new("L", (big, big), 0)
-    star(ImageDraw.Draw(shine), c, r, big * 0.035, 255)
+    star(ImageDraw.Draw(shine), c, r, big * 0.03, 255)
 
     img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     outline_col = (92, 56, 0, 255)

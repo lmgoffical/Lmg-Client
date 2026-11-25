@@ -13,46 +13,69 @@ import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
- * One line in the Client settings: name on the left, value on the right.
- * Left-click goes to the next value, right-click (or shift-click) to the previous.
+ * One line in the Lmg menu. Three kinds:
+ *  - toggle: an on/off switch on the right
+ *  - choice: "‹ value ›" - click ‹ for the previous option, › (or the row) for the next
+ *  - button: runs an action
  */
 public class SettingRow extends AbstractWidget {
-	private static final int LABEL_IDLE = 0xB4B4C0;
-	private static final int VALUE_OFF = 0x6E6E78;
-	private static final int VALUE_OTHER = 0xE6E6EE;
+	private enum Kind { TOGGLE, CHOICE, BUTTON }
 
+	private static final int LABEL = 0xB9B9C4;
+	private static final int VALUE = 0xEDEDF2;
+	private static final int DIM = 0x6E6E7A;
+
+	private final Kind kind;
+	private final Supplier<Boolean> isOn;
 	private final Supplier<String> value;
 	private final Runnable next;
 	private final Runnable previous;
-	private final IntSupplier swatch; // optional color square next to the value
+	private final IntSupplier swatch;
 	private long appearAt;
 	private float hover;
+	private float knob = -1;
 	private long lastFrame = -1;
+	private int prevArrowX0 = Integer.MIN_VALUE, prevArrowX1 = Integer.MIN_VALUE;
 
-	public SettingRow(int x, int y, int width, int height, String label, Supplier<String> value,
-					  Runnable next, Runnable previous, IntSupplier swatch, long appearAt) {
-		super(x, y, width, height, Component.literal(label));
+	private SettingRow(Kind kind, String label, Supplier<Boolean> isOn, Supplier<String> value,
+					   Runnable next, Runnable previous, IntSupplier swatch) {
+		super(0, 0, 100, 14, Component.literal(label));
+		this.kind = kind;
+		this.isOn = isOn;
 		this.value = value;
 		this.next = next;
 		this.previous = previous;
 		this.swatch = swatch;
-		this.appearAt = appearAt;
 	}
 
-	/** When the row starts fading in (used to stagger rows one after another). */
-	public void setAppearAt(long appearAt) {
-		this.appearAt = appearAt;
-	}
-
-	/** A simple On/Off row. */
-	public static SettingRow toggle(int x, int y, int w, int h, String label, Supplier<Boolean> get,
-									java.util.function.Consumer<Boolean> set, long appearAt) {
+	public static SettingRow toggle(String label, Supplier<Boolean> get, Consumer<Boolean> set) {
 		Runnable flip = () -> set.accept(!get.get());
-		return new SettingRow(x, y, w, h, label, () -> get.get() ? "On" : "Off", flip, flip, null, appearAt);
+		return new SettingRow(Kind.TOGGLE, label, get, null, flip, flip, null);
+	}
+
+	public static SettingRow choice(String label, Supplier<String> value, Runnable next, Runnable previous) {
+		return new SettingRow(Kind.CHOICE, label, null, value, next, previous, null);
+	}
+
+	public static SettingRow choice(String label, Supplier<String> value, Runnable next, Runnable previous, IntSupplier swatch) {
+		return new SettingRow(Kind.CHOICE, label, null, value, next, previous, swatch);
+	}
+
+	public static SettingRow button(String label, String action, Runnable onPress) {
+		return new SettingRow(Kind.BUTTON, label, null, () -> action, onPress, onPress, null);
+	}
+
+	public SettingRow at(int x, int y, int width, int height, long appearAt) {
+		setPosition(x, y);
+		setWidth(width);
+		setHeight(height);
+		this.appearAt = appearAt;
+		return this;
 	}
 
 	@Override
@@ -60,42 +83,52 @@ public class SettingRow extends AbstractWidget {
 		long now = Util.getMillis();
 		float dt = lastFrame < 0 ? 0 : (now - lastFrame) / 1000f;
 		lastFrame = now;
-		hover = Draw.approach(hover, isHoveredOrFocused() ? 1f : 0f, 14f * Theme.speed(), dt);
-		float appear = Draw.easeOutCubic(Theme.progress(appearAt, 320f));
+		hover = Draw.approach(hover, isHoveredOrFocused() ? 1f : 0f, 16f * Theme.speed(), dt);
+		float appear = Draw.easeOutCubic(Theme.progress(appearAt, 260f));
 		if (appear <= 0.01f) return;
 
 		Font font = Minecraft.getInstance().font;
-		int yOff = Math.round((1 - appear) * 5);
-		int top = getY() + yOff;
-		int textY = top + (height - font.lineHeight) / 2 + 1;
+		int x = getX(), y = getY() + Math.round((1 - appear) * 4);
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int right = x + width - 6;
 
-		if (hover > 0.01f) {
-			Draw.roundRect(g, getX(), top, getX() + width, top + height, 4, Theme.accent(0.10f * hover * appear));
-		}
+		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
+		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(LABEL, 0xFFFFFF, hover), appear), false);
 
-		g.text(font, getMessage(), getX() + 8, textY, Draw.withAlpha(Draw.lerpRgb(LABEL_IDLE, 0xFFFFFF, hover), appear), false);
-
-		String v = value.get();
-		int color = switch (v) {
-			case "On" -> Theme.accentSoft();
-			case "Off" -> VALUE_OFF;
-			default -> VALUE_OTHER;
-		};
-		int right = getX() + width - 8;
-		if (hover > 0.01f) {
-			// little arrows to hint that you can click through the options
-			int arrows = Draw.withAlpha(0xFFFFFF, 0.5f * hover * appear);
-			g.text(font, ">", right - font.width(">"), textY, arrows, false);
-			right -= font.width(">") + 4;
-		}
-		int vw = font.width(v);
-		g.text(font, v, right - vw, textY, Draw.withAlpha(color, appear), false);
-		if (hover > 0.01f) {
-			g.text(font, "<", right - vw - 4 - font.width("<"), textY, Draw.withAlpha(0xFFFFFF, 0.5f * hover * appear), false);
-		}
-		if (swatch != null) {
-			int sx = right - vw - (hover > 0.01f ? 14 : 6) - 8;
-			Draw.roundRect(g, sx, textY - 1, sx + 8, textY + 7, 2, Draw.withAlpha(swatch.getAsInt(), appear));
+		switch (kind) {
+			case TOGGLE -> {
+				boolean on = isOn.get();
+				if (knob < 0) knob = on ? 1 : 0;
+				knob = Draw.approach(knob, on ? 1f : 0f, 18f * Theme.speed(), dt);
+				int tw = 18, th = 10;
+				int tx = right - tw, ty = y + (height - th) / 2;
+				int track = Draw.lerpRgb(0x3A3A46, Theme.accent(), knob);
+				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 5, Draw.withAlpha(track, appear * (0.75f + 0.25f * knob)));
+				int kx = tx + 1 + Math.round(knob * (tw - th));
+				Draw.roundRect(g, kx, ty + 1, kx + th - 2, ty + th - 1, 4, Draw.withAlpha(0xFFFFFF, appear));
+			}
+			case CHOICE -> {
+				String v = value.get();
+				int vw = font.width(v);
+				boolean overPrev = isHovered && mouseX >= prevArrowX0 && mouseX < prevArrowX1;
+				boolean overNext = isHovered && mouseX >= right - 8 && !overPrev;
+				int nextX = right - font.width("›");
+				g.text(font, "›", nextX, textY, Draw.withAlpha(overNext ? 0xFFFFFF : DIM, appear), false);
+				int vx = nextX - 5 - vw;
+				g.text(font, v, vx, textY, Draw.withAlpha(VALUE, appear), false);
+				int px = vx - 5 - font.width("‹");
+				g.text(font, "‹", px, textY, Draw.withAlpha(overPrev ? 0xFFFFFF : DIM, appear), false);
+				prevArrowX0 = px - 4;
+				prevArrowX1 = vx - 1;
+				if (swatch != null) {
+					int sx = px - 11;
+					Draw.roundRect(g, sx, textY - 1, sx + 7, textY + 6, 2, Draw.withAlpha(swatch.getAsInt(), appear));
+				}
+			}
+			case BUTTON -> {
+				String v = value.get() + "  ›";
+				g.text(font, v, right - font.width(v), textY, Draw.withAlpha(Theme.accentSoft(), appear), false);
+			}
 		}
 	}
 
@@ -106,7 +139,9 @@ public class SettingRow extends AbstractWidget {
 
 	@Override
 	public void onClick(MouseButtonEvent event, boolean doubleClick) {
-		if (event.button() == 1 || event.hasShiftDown()) previous.run();
+		boolean back = event.button() == 1 || event.hasShiftDown()
+				|| (kind == Kind.CHOICE && event.x() >= prevArrowX0 && event.x() < prevArrowX1);
+		if (back) previous.run();
 		else next.run();
 		LmgConfig.save();
 	}
