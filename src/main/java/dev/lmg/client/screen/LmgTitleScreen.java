@@ -75,6 +75,13 @@ public class LmgTitleScreen extends Screen {
 				minecraft.getSkinManager().createLookup(minecraft.getGameProfile(), false));
 		skin.setPosition(Math.round(width * 0.70f) - skinW / 2, height / 2 - skinH / 2 + 8);
 		addRenderableWidget(skin);
+
+		// The first time you open the game, say plainly what this is before anything else.
+		if (!LmgConfig.get().welcomeSeen) {
+			minecraft.execute(() -> {
+				if (minecraft.gui.screen() == this) minecraft.gui.setScreen(new WelcomeScreen(this, true));
+			});
+		}
 	}
 
 	@Override
@@ -123,7 +130,7 @@ public class LmgTitleScreen extends Screen {
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 
 		// Version in the corner, plus a notice when an update is out.
-		String version = LmgClient.CLIENT_NAME + " " + UpdateChecker.currentVersion();
+		String version = LmgClient.CLIENT_NAME + " " + UpdateChecker.currentVersion() + "  -  not made by Mojang or Microsoft";
 		g.text(font, version, width - font.width(version) - 6, height - 12, Draw.withAlpha(0xF2C14E, 0.7f * intro), false);
 		String update = UpdateChecker.newerVersion();
 		if (update != null) {

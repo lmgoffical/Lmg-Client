@@ -65,6 +65,19 @@ function Find-Launcher {
 Write-Host ''
 Write-Host '   Lmg Client installer' -ForegroundColor White
 Write-Host '   --------------------' -ForegroundColor DarkGray
+Write-Host ''
+Write-Host '   This installer will:' -ForegroundColor White
+Say '    - install Fabric Loader (the standard mod loader for Minecraft) into your Minecraft folder'
+Say '    - add a "Lmg Client" profile to the Minecraft Launcher'
+Say '    - download Lmg Client, Fabric API, Sodium, Lithium and Iris from their official sources'
+Say '      and check each file against its published SHA-1 hash before using it'
+Say '    - create %APPDATA%\.lmgclient for the mods and your Lmg settings'
+Say '      (the first time, it copies your options and server list; worlds are linked, not copied)'
+Write-Host ''
+Write-Host '   It will NOT: install anything else, read your files, or send personal information.' -ForegroundColor DarkGray
+Write-Host '   Lmg Client does not track you. Read the privacy policy at https://lmgoffical.github.io/Lmg-Client/#/privacy' -ForegroundColor DarkGray
+Write-Host ''
+Read-Host '   Press Enter to continue, or close this window to cancel'
 
 try {
     # GitHub caches branch files for several minutes, so a fresh release could look old.

@@ -242,7 +242,7 @@ public class LmgSettingsScreen extends Screen {
 							toast("Copied the long code", "Server unreachable: " + CloudCodes.messageOf(error));
 						}
 					}));
-				}).withHint("Copies a code like LMG-ABC234."));
+				}).withHint("Anyone with the code can download it."));
 				r.add(SettingRow.button("Import from clipboard", "Paste", () -> {
 					String text = minecraft.keyboardHandler.getClipboard();
 					if (CloudCodes.isShortCode(text)) {
@@ -315,7 +315,7 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.toggle("Fullbright", () -> c.fullbright, v -> c.fullbright = v)
 						.withHint("See in caves without torches. Key: B"));
 				r.add(SettingRow.toggle("Ore edges", OreOutlines::isEnabled, OreOutlines::setEnabled)
-						.withHint("Ores get a coloured outline."));
+						.withHint("A texture pack. Off on strict servers."));
 				r.add(SettingRow.toggle("Ore glow in the dark", () -> c.oreGlow, v -> c.oreGlow = v)
 						.withHint("Outlines ores you can already see."));
 				r.add(SettingRow.toggle("Potion effects HUD", () -> c.potionHud, v -> c.potionHud = v)
@@ -392,8 +392,10 @@ public class LmgSettingsScreen extends Screen {
 						() -> c.freecamSpeed = step(c.freecamSpeed, LmgConfig.FREECAM_SPEEDS.length, 1),
 						() -> c.freecamSpeed = step(c.freecamSpeed, LmgConfig.FREECAM_SPEEDS.length, -1))
 						.withHint("Hold sprint to go faster."));
-				r.add(SettingRow.toggle("Freecam on servers", () -> c.freecamOnServers, v -> c.freecamOnServers = v)
-						.withHint("Some servers ban it - check first."));
+				r.add(SettingRow.toggle("Server-safe mode", () -> c.serverSafe, v -> c.serverSafe = v)
+						.withHint("Keeps freecam and ore glow off on servers."));
+				r.add(SettingRow.button("About & safety", "Open", () -> minecraft.gui.setScreen(new WelcomeScreen(this, false)))
+						.withHint("What this mod does, and what it sends."));
 				r.add(SettingRow.toggle("Hide cosmetics", () -> c.hideCosmetics, v -> c.hideCosmetics = v)
 						.withHint("Your plain skin, nothing else."));
 			}

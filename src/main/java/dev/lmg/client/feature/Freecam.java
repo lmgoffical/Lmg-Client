@@ -24,8 +24,8 @@ public final class Freecam {
 	public static void toggle() {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
-		if (!on && !mc.isLocalServer() && !LmgConfig.get().freecamOnServers) {
-			LmgKeys.say("Freecam is off on servers - some ban it. Turn it on in Keys if this one allows it.");
+		if (!on && ServerSafe.blocks(ServerSafe.Feature.FREECAM)) {
+			LmgKeys.say(ServerSafe.message(ServerSafe.Feature.FREECAM));
 			return;
 		}
 		on = !on;
@@ -52,7 +52,7 @@ public final class Freecam {
 
 	public static void tick(Minecraft mc) {
 		if (!on) return;
-		if (mc.player == null || mc.level == null) {
+		if (mc.player == null || mc.level == null || ServerSafe.blocks(ServerSafe.Feature.FREECAM)) {
 			on = false;
 			return;
 		}

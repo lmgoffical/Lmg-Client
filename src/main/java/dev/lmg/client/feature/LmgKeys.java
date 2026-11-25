@@ -80,6 +80,10 @@ public final class LmgKeys {
 			}
 		}
 		while (ORE_GLOW.consumeClick()) {
+			if (ServerSafe.blocks(ServerSafe.Feature.ORE_GLOW)) {
+				say(ServerSafe.message(ServerSafe.Feature.ORE_GLOW));
+				continue;
+			}
 			c.oreGlow = !c.oreGlow;
 			say(c.oreGlow ? "Ore glow on" : "Ore glow off");
 			LmgConfig.save();

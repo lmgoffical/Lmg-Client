@@ -319,7 +319,10 @@ public final class LmgConfig {
 	public int zoomLevel = 1;
 	public boolean smoothZoom = true;
 	public int freecamSpeed = 1;
-	public boolean freecamOnServers = false;
+	/** On multiplayer servers, keep the visual helpers that some servers ban (freecam, ore glow) off. */
+	public boolean serverSafe = true;
+	/** False until the "before you start" screen has been shown once. */
+	public boolean welcomeSeen = false;
 	public boolean hideCosmetics = false;
 
 	// ---- maps ----

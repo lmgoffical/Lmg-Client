@@ -54,7 +54,8 @@ public final class OreGlow {
 	}
 
 	public static void tick(Minecraft mc) {
-		if (!LmgConfig.get().oreGlow || mc.player == null || mc.level == null) {
+		if (!LmgConfig.get().oreGlow || mc.player == null || mc.level == null
+				|| dev.lmg.client.feature.ServerSafe.blocks(dev.lmg.client.feature.ServerSafe.Feature.ORE_GLOW)) {
 			found = new ArrayList<>();
 			return;
 		}

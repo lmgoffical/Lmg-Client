@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.19", "<b>Safer by default.</b> Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."],
   ["0.18", "<b>Maps and keys.</b> A minimap and a world map with waypoints, zoom, freecam, and a Keys tab to bind anything. The menu got friendlier too."],
   ["0.17", "<b>Cosmetics menu.</b> A wardrobe with tabs for capes, wings, hats, glasses, ears and auras (24 items, each with its own colour), plus your own skins and Blockbench models."],
   ["0.16", "<b>Better cosmetics.</b> Wings bend and fold when they flap, a real 3D halo, crown and cat ears, and a nicer China hat."],
@@ -133,8 +134,9 @@ const CHANGELOG = [
 
 const FAQ = [
   ["Is this a hack client?", "No. Everything is visual and client-side: skies, cosmetics, HUD, menus. There's no aim assist, reach or anything that plays the game for you."],
-  ["Will I get banned for using it?", "Visual mods are fine on almost every server. A few competitive servers don't allow fullbright or ore textures, so turn those off there if their rules say so."],
-  ["Is it free?", "Yes, and it's going to stay free."],
+  ["Will I get banned for using it?", "Nobody can promise that for any mod, so please read each server's rules. Lmg turns on server-safe mode by default: on multiplayer servers it keeps freecam and ore glow off. Ore edges is a texture pack, so switch it off on servers that don't allow it."],
+  ["Is it free?", "Yes. It's free to download and use, it isn't for sale, and there are no ads. See the Licences page for the details."],
+  ["Who makes it?", "A small independent team. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. Minecraft is a trademark of Mojang AB."],
   ["Can other people see my wings and cape?", "Not yet - right now cosmetics only show on your screen. Showing them to other Lmg users is on the list."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
 ];
@@ -235,6 +237,7 @@ async function pageDownload() {
         <p class="muted">One small installer. It sets up Fabric, adds an <b>Lmg Client</b> profile to your launcher, and grabs Sodium, Lithium and Iris so the game runs well. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download installer</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the script isn't signed &mdash; click <i>More info &rarr; Run anyway</i>.</p>
+        <p class="muted small" style="margin-top:10px">Want to check the file? Its SHA-256 is <code>0dd23bd11b69645e386cd5f411f964d526edc43c7c3aec1a9885f2f003fbebec</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Before you run it, the installer lists everything it will do and waits for you to press Enter.</p>
       </div>
       <div class="card">
         <h3>Installing</h3>
@@ -332,6 +335,7 @@ async function pageThread(id) {
           <div class="row between"><div>${userLink(t.author)} <span class="meta">&middot; ${esc(timeAgo(t.created_at))}${t.updated_at !== t.created_at ? " (edited)" : ""}</span></div></div>
           <div class="post-body" id="op-body">${richText(t.body)}</div>
           ${t.config_code ? `<div class="code-box"><div class="grow"><div class="meta">Config code</div><div class="code">${esc(t.config_code)}</div></div><button class="btn primary small" id="copy-code">Copy code</button></div>` : ""}
+          <div class="row" style="margin-top:10px"><a class="btn small" href="${reportUrl("thread", t.id, t.title)}" target="_blank" rel="noopener">Report this thread</a></div>
           ${mine || isStaff() ? `<div class="staff-bar">
             ${mine ? `<button class="btn small" id="edit-thread">Edit</button>` : ""}
             ${isStaff() ? `<button class="btn small" id="pin">${t.pinned ? "Unpin" : "Pin"}</button><button class="btn small" id="lock">${t.locked ? "Unlock" : "Lock"}</button>` : ""}
@@ -476,6 +480,7 @@ function pageSignup() {
       <label>Username</label><input id="username" maxlength="20" placeholder="3-20 letters, numbers or _">
       <label>Email</label><input id="email" type="email" autocomplete="email">
       <label>Password</label><input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+      <label class="check"><input type="checkbox" id="consent"> I'm 13 or older, and I agree to the <a href="#/terms">Terms</a>, <a href="#/privacy">Privacy Policy</a> and <a href="#/rules">Community Rules</a>.</label>
       <div class="row" style="margin-top:16px"><button class="btn primary" id="go">Sign up</button><a href="#/login" class="small">Have an account? Log in</a></div>
       <div class="error" id="err"></div><div class="notice" id="ok"></div>
     </div>`);
@@ -487,11 +492,12 @@ function pageSignup() {
     err.textContent = "";
     if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return err.textContent = "Username: 3-20 letters, numbers or _.";
     if (password.length < 8) return err.textContent = "Password must be at least 8 characters.";
+    if (!document.getElementById("consent").checked) return err.textContent = "Please tick the box to confirm your age and agree to the terms.";
     const { data: free } = await sb.rpc("username_available", { p_name: username });
     if (!free) return err.textContent = "That username is taken.";
     const { data, error } = await sb.auth.signUp({
       email, password,
-      options: { data: { username }, emailRedirectTo: location.origin + location.pathname },
+      options: { data: { username, consented_at: new Date().toISOString() }, emailRedirectTo: location.origin + location.pathname },
     });
     if (error) return err.textContent = friendlyError(error);
     if (data.session) location.hash = "#/forum";
@@ -553,6 +559,106 @@ async function pageAdmin() {
   };
 }
 
+
+// ---------------------------------------------------------------------------
+// legal pages (plain-English drafts - see README, "Before a public launch")
+// ---------------------------------------------------------------------------
+
+const LEGAL_UPDATED = "2026-11-25";
+const REPORT_REPO = "https://github.com/lmgoffical/Lmg-Client/issues/new";
+
+const LEGAL = {
+  terms: `
+    <p>Last updated ${LEGAL_UPDATED}. By using the Lmg Client website or the Lmg Client mod, you agree to these terms. If you don't, please don't use them.</p>
+    <h3>1. What Lmg Client is</h3>
+    <p>Lmg Client is a free visual mod for Minecraft Java Edition 26.3 using Fabric. It changes how the game looks (sky, fog, menus, HUD, cosmetics and a few visual helpers). You need your own legitimately bought copy of Minecraft to play with it.</p>
+    <h3>2. Not affiliated with Minecraft</h3>
+    <p>Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. "Minecraft" is a trademark of Mojang AB. We use the name only to say what the mod works with.</p>
+    <h3>3. Using the mod</h3>
+    <p>You can download, install and use Lmg Client for free, for personal, non-commercial play. You may not sell it, charge for it, or share modified copies of it. The full licence is on the <a href="#/licences">Licences</a> page.</p>
+    <p>You are responsible for following each server's rules. Some servers don't allow visual helpers that show information through walls, such as freecam or ore glow. Lmg Client keeps those off on multiplayer servers by default, but you're still the one who decides what you use. We are not responsible for bans, penalties or lost progress on any server.</p>
+    <h3>4. Accounts on this website</h3>
+    <p>You must be 13 or older to make an account. You're responsible for keeping your password safe and for everything that happens on your account. Tell us straight away if you think someone else has it.</p>
+    <h3>5. What you post</h3>
+    <p>You keep ownership of the posts, configs and bios you add. By posting them you give us permission to store and show them on this website, and to share a config when someone uses its code. Don't post anything illegal, abusive, hateful, or that breaks someone else's rights. The <a href="#/rules">Community Rules</a> say more.</p>
+    <p>We can hide or remove content, and suspend or close accounts, that breaks these terms or the rules. Where we can, we'll tell you why.</p>
+    <h3>6. Our promises (and limits)</h3>
+    <p>The mod and website are provided "as is". We work hard to keep them safe and working, but we can't promise they'll always be available or free of bugs. To the extent the law allows, we aren't liable for losses caused by using them.</p>
+    <h3>7. Changes</h3>
+    <p>We may update these terms. We'll change the date at the top when we do. If you keep using the site or mod after a change, you accept the new terms.</p>
+    <h3>8. Contact</h3>
+    <p>Questions about these terms: open an issue on <a href="https://github.com/lmgoffical/Lmg-Client/issues" target="_blank" rel="noopener">GitHub</a>. Please don't post personal information there.</p>`,
+
+  privacy: `
+    <p>Last updated ${LEGAL_UPDATED}. This explains what Lmg Client and this website do with information. Short version: the mod doesn't track you, and the website only keeps what it needs to run accounts, the forum and config sharing.</p>
+    <h3>The mod</h3>
+    <ul>
+      <li><b>No analytics, no telemetry, no tracking.</b> The mod doesn't report what you play or click.</li>
+      <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
+      <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
+      <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
+    </ul>
+    <h3>The website</h3>
+    <ul>
+      <li><b>Account details:</b> your username and email address, and a password that is stored in scrambled (hashed) form. We don't see your password.</li>
+      <li><b>Your content:</b> forum threads, replies, bios and shared configs.</li>
+      <li><b>Technical logs:</b> the hosting services keep standard logs (such as IP addresses and browser type) for security and to keep the site running.</li>
+      <li><b>Login storage:</b> your browser keeps your login so you stay signed in. We don't use advertising or tracking cookies.</li>
+    </ul>
+    <h3>Who helps run the site</h3>
+    <p>Supabase hosts our database and sign-in. GitHub hosts the site and the mod's downloads. Each handles data under its own privacy policy.</p>
+    <h3>How long we keep things</h3>
+    <p>Accounts and posts stay until you delete them or ask us to delete your account. Logs are kept only as long as the hosting services keep them by default.</p>
+    <h3>Your choices</h3>
+    <p>You can edit or delete your own posts and bio at any time. To ask for your account and data to be deleted, or for a copy of what we hold, open a GitHub issue labelled <i>privacy</i> and ask for a private reply. Please don't post your email address in the issue. We'll act on requests within 30 days.</p>
+    <h3>Children</h3>
+    <p>The website is for people aged 13 and older. If we learn that someone younger has made an account, we'll delete it.</p>
+    <h3>Changes</h3>
+    <p>If we change how data is handled, we'll update this page and the date at the top.</p>`,
+
+  rules: `
+    <p>Last updated ${LEGAL_UPDATED}. The forum is for people who like making Minecraft look good. Keep it that way.</p>
+    <ul>
+      <li><b>Be decent.</b> No harassment, slurs, hate, threats or targeting people for who they are.</li>
+      <li><b>No cheats, hacks or malware.</b> Don't share anything meant to break a server, steal accounts or harm someone's computer.</li>
+      <li><b>No selling or trading accounts</b>, and no asking people for their passwords.</li>
+      <li><b>Keep it personal.</b> Don't post anyone's private information (addresses, phone numbers, school or work details, email addresses), even as a joke.</li>
+      <li><b>Share honestly.</b> Configs should be what they say they are. Don't use a config code to pass off something else.</li>
+      <li><b>Don't spam</b> or post the same thing over and over, and don't advertise other sites or products without asking first.</li>
+      <li><b>Credit others.</b> If a config, skin or model is someone else's work, say so.</li>
+    </ul>
+    <h3>Reporting</h3>
+    <p>Use the <i>Report this thread</i> link at the top of any thread. It opens a GitHub issue with the thread's link filled in. Please don't add personal details to the report.</p>
+    <h3>What happens</h3>
+    <p>We read reports and act on them. We might hide a post, lock a thread, or suspend an account. Repeat or serious problems lead to a permanent ban. If you think we got something wrong, tell us in a GitHub issue.</p>`,
+
+  licences: `
+    <p>Last updated ${LEGAL_UPDATED}.</p>
+    <h3>Lmg Client</h3>
+    <p>Copyright &copy; the Lmg Client team. All rights reserved. You may download, install and use Lmg Client for free, for personal, non-commercial play. You may not sell it, charge for it, redistribute it, or distribute modified copies, without written permission. The full text is in the <a href="https://github.com/lmgoffical/Lmg-Client/blob/claude/modest-cray-bg98zr/LICENSE" target="_blank" rel="noopener">LICENSE</a> file.</p>
+    <h3>Third-party software</h3>
+    <p>The installer fetches these from their own sources, unchanged, and keeps their licences:</p>
+    <ul>
+      <li><b>Fabric Loader</b> and <b>Fabric API</b>, Apache License 2.0.</li>
+      <li><b>Sodium</b>, <b>Lithium</b> and <b>Iris</b>, GNU Lesser General Public License v3.0 (LGPL-3.0).</li>
+    </ul>
+    <p>The full list, with links, is in <a href="https://github.com/lmgoffical/Lmg-Client/blob/claude/modest-cray-bg98zr/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES.md</a>.</p>
+    <h3>Minecraft</h3>
+    <p>Minecraft is a trademark of Mojang AB. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. You need your own copy of Minecraft to use it.</p>`,
+};
+
+function pageLegal(title, body) {
+  setActiveNav("");
+  render(`<div class="card legal"><h1>${esc(title)}</h1>${body}</div>
+    <p class="muted small" style="margin-top:12px">Plain-English drafts. <a href="#/terms">Terms</a> &middot; <a href="#/privacy">Privacy</a> &middot; <a href="#/rules">Rules</a> &middot; <a href="#/licences">Licences</a></p>`);
+}
+
+function reportUrl(kind, id, title) {
+  const t = encodeURIComponent(`Report: ${kind} ${id}`);
+  const body = encodeURIComponent(`Reporting ${kind} #${id} (${title || ""})\n${location.origin}${location.pathname}#/t/${id}\n\nWhat's wrong:\n\n(Please don't include personal information here.)`);
+  return `${REPORT_REPO}?title=${t}&labels=report&body=${body}`;
+}
+
 // ---------------------------------------------------------------------------
 // router
 // ---------------------------------------------------------------------------
@@ -574,6 +680,10 @@ async function route() {
       case "signup": return pageSignup();
       case "u": return await pageProfile(arg || "");
       case "admin": return await pageAdmin();
+      case "terms": return pageLegal("Terms of use", LEGAL.terms);
+      case "privacy": return pageLegal("Privacy policy", LEGAL.privacy);
+      case "rules": return pageLegal("Community rules", LEGAL.rules);
+      case "licences": return pageLegal("Licences and credits", LEGAL.licences);
       default: return render(`<div class="empty">Page not found. <a href="#/">Go home</a></div>`);
     }
   } catch (e) {

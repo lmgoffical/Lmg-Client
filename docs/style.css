@@ -219,3 +219,11 @@ code { font-family: var(--pixel); font-size: 0.8em; color: var(--gold); backgrou
   .grid.two .section-head { flex-wrap: wrap; }
   .changelog li { grid-template-columns: 52px 1fr; }
 }
+
+/* legal pages and consent */
+label.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.5; margin-top: 14px; color: var(--muted); }
+label.check input { width: auto; margin-top: 3px; }
+.legal h3 { margin: 24px 0 6px; font-family: var(--display); font-size: 18px; }
+.legal p, .legal li { color: var(--muted); line-height: 1.6; }
+.legal ul { padding-left: 20px; }
+footer span { display: block; }
