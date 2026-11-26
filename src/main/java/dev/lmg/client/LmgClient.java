@@ -83,6 +83,8 @@ public class LmgClient implements ClientModInitializer {
 
 		// Things drawn in the world: custom block overlay, target reticle, aurora.
 		LevelRenderEvents.BEFORE_BLOCK_OUTLINE.register(WorldRender::blockOutline);
+		// Pets are added to the list of things the game draws, after it has collected the real entities.
+		net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents.END_EXTRACTION.register(dev.lmg.client.pet.Pets::extract);
 		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
 			WorldRender.aurora(context);
 			WorldRender.targetReticle(context);
@@ -101,6 +103,7 @@ public class LmgClient implements ClientModInitializer {
 			Targeting.tick(mc);
 			OreGlow.tick(mc);
 			dev.lmg.client.feature.LmgKeys.tick(mc);
+			dev.lmg.client.pet.Pets.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});
 		LOGGER.info("{} loaded", CLIENT_NAME);

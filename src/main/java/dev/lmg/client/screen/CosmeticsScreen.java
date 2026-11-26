@@ -80,6 +80,8 @@ public class CosmeticsScreen extends Screen {
 		cols = Math.max(1, (gridW + GAP) / (MIN_CARD_W + GAP));
 		CARD_W = (gridW - (cols - 1) * GAP) / cols;
 		addRenderableWidget(new SkinButton(x0 + 6, y0 + 6, 44, 13, Component.literal("< Back"), openedAt, this::onClose));
+		addRenderableWidget(new SkinButton(x0 + 54, y0 + 6, 40, 13, Component.literal("Pets"), openedAt,
+				() -> minecraft.gui.setScreen(new PetsScreen(this))));
 
 		int px = x0 + W - PREVIEW_W - 6;
 		if (tab.equals("custom")) {
@@ -193,9 +195,9 @@ public class CosmeticsScreen extends Screen {
 
 	// ---- palette ---------------------------------------------------------------------------------
 
-	private record Pal(int sidebar, int card, int cardHover, int border, int text, int dim, int accent, int field) {}
+	record Pal(int sidebar, int card, int cardHover, int border, int text, int dim, int accent, int field) {}
 
-	private static Pal pal() {
+	static Pal pal() {
 		return switch (MenuSkin.style()) {
 			case NEVERLOSE -> new Pal(MenuSkin.NL_SIDEBAR, MenuSkin.NL_CARD, 0xFF06182F, MenuSkin.NL_BORDER,
 					MenuSkin.NL_TEXT, 0x6F8091, MenuSkin.accent(), MenuSkin.NL_FIELD);

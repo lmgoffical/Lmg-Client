@@ -43,7 +43,7 @@ public class LmgTitleScreen extends Screen {
 	@Override
 	protected void init() {
 		columnX = Math.round(width * 0.34f);
-		int columnHeight = 34 + 8 + 14 + 16 + BUTTON_GAP * 6 + 8;
+		int columnHeight = 34 + 8 + 14 + 16 + BUTTON_GAP * 7 + 8;
 		columnTop = height / 2 - columnHeight / 2;
 
 		int y = columnTop + 34 + 8 + 14 + 16;
@@ -65,7 +65,10 @@ public class LmgTitleScreen extends Screen {
 		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Cosmetics"), t + 210,
 				() -> minecraft.gui.setScreen(new CosmeticsScreen(this))));
 		y += BUTTON_GAP;
-		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.translatable("menu.quit"), t + 270,
+		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Mods"), t + 240,
+				() -> minecraft.gui.setScreen(new ModsScreen(this))));
+		y += BUTTON_GAP;
+		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.translatable("menu.quit"), t + 300,
 				() -> minecraft.stop()));
 
 		// 3D skin preview on the right (drag it to spin it yourself).

@@ -286,6 +286,8 @@ public class LmgSettingsScreen extends Screen {
 			case "Avatar" -> {
 				r.add(SettingRow.button("Cosmetics & skins", "Open", () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))
 						.withHint("Capes, wings, hats and your own skins."));
+				r.add(SettingRow.button("Pets", "Open", () -> minecraft.gui.setScreen(new PetsScreen(this)))
+						.withHint("Animals or a mini player that follow you."));
 				r.add(enumRow("Trail", LmgConfig.Trail.values(), () -> c.trail, v -> c.trail = v, v -> v.label)
 						.withHint("Particles behind you as you walk."));
 				r.add(enumRow("Ambient particles", LmgConfig.Ambient.values(), () -> c.ambient, v -> c.ambient = v, v -> v.label)
@@ -394,6 +396,8 @@ public class LmgSettingsScreen extends Screen {
 						.withHint("Hold sprint to go faster."));
 				r.add(SettingRow.toggle("Server-safe mode", () -> c.serverSafe, v -> c.serverSafe = v)
 						.withHint("Keeps freecam and ore glow off on servers."));
+				r.add(SettingRow.button("Mods", "Open", () -> minecraft.gui.setScreen(new ModsScreen(this)))
+						.withHint("See your mods, switch them on or off."));
 				r.add(SettingRow.button("About & safety", "Open", () -> minecraft.gui.setScreen(new WelcomeScreen(this, false)))
 						.withHint("What this mod does, and what it sends."));
 				r.add(SettingRow.toggle("Hide cosmetics", () -> c.hideCosmetics, v -> c.hideCosmetics = v)

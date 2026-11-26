@@ -323,6 +323,9 @@ public final class LmgConfig {
 	public boolean serverSafe = true;
 	/** False until the "before you start" screen has been shown once. */
 	public boolean welcomeSeen = false;
+
+	// ---- pets (up to 3) ----
+	public java.util.List<dev.lmg.client.pet.PetConfig> pets = new java.util.ArrayList<>();
 	public boolean hideCosmetics = false;
 
 	// ---- maps ----
@@ -422,6 +425,8 @@ public final class LmgConfig {
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);
 		hudOpacity = clampIndex(hudOpacity, HUD_OPACITIES.length, d.hudOpacity);
+		if (pets == null) pets = new java.util.ArrayList<>();
+		dev.lmg.client.pet.PetConfig.sanitize(pets);
 		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
 		freecamSpeed = clampIndex(freecamSpeed, FREECAM_SPEEDS.length, d.freecamSpeed);
 		minimapSize = clampIndex(minimapSize, MINIMAP_SIZES.length, d.minimapSize);

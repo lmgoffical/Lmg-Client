@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.20", "<b>Pets.</b> Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."],
   ["0.19", "<b>Safer by default.</b> Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."],
   ["0.18", "<b>Maps and keys.</b> A minimap and a world map with waypoints, zoom, freecam, and a Keys tab to bind anything. The menu got friendlier too."],
   ["0.17", "<b>Cosmetics menu.</b> A wardrobe with tabs for capes, wings, hats, glasses, ears and auras (24 items, each with its own colour), plus your own skins and Blockbench models."],
@@ -137,7 +138,7 @@ const FAQ = [
   ["Will I get banned for using it?", "Nobody can promise that for any mod, so please read each server's rules. Lmg turns on server-safe mode by default: on multiplayer servers it keeps freecam and ore glow off. Ore edges is a texture pack, so switch it off on servers that don't allow it."],
   ["Is it free?", "Yes. It's free to download and use, it isn't for sale, and there are no ads. See the Licences page for the details."],
   ["Who makes it?", "A small independent team. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. Minecraft is a trademark of Mojang AB."],
-  ["Can other people see my wings and cape?", "Not yet - right now cosmetics only show on your screen. Showing them to other Lmg users is on the list."],
+  ["Can other people see my wings, cape or pets?", "Not yet - cosmetics and pets only show on your own screen. Showing them to other Lmg users is on the list."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
 ];
 
