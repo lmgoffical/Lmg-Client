@@ -81,7 +81,7 @@ public final class Emotes {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null || partner == null) return;
 		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position(), partner));
-		EmoteNet.sendWith(e, problem -> mc.execute(() -> {
+		EmoteNet.sendWith(e, partner, problem -> mc.execute(() -> {
 			Playing now = PLAYING.get(mc.player == null ? null : mc.player.getUUID());
 			if (now != null && now.emote() == e) PLAYING.remove(mc.player.getUUID());
 			if (said != null) said.accept(problem);
@@ -159,7 +159,7 @@ public final class Emotes {
 			if (pl.emote().withPartner()) {
 				Player with = pl.with() == null ? null : level.getPlayerByUUID(pl.with());
 				if (with == null || p == null || with.distanceTo(p) > dev.lmg.client.social.PartnerPlay.MAX_DISTANCE) gone = true;
-				if (mine && !dev.lmg.client.social.PartnerPlay.allowedNow()) gone = true;
+				if (mine && !dev.lmg.client.social.ClimbRequests.mayClimbOn(pl.with())) gone = true;
 			}
 			if (mine && mc.player != null && (mc.options.keyJump.isDown() || mc.options.keyShift.isDown())) moved = true;
 			if (over || gone || moved || busy) {

@@ -39,7 +39,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			new Category("You", new Page("Outfit", "cosmetics, pets and you"), new Page("Trails", "particles around you"), new Page("Items", "what's in your hand"), new Page("Sharing", "what other Lmg players see")),
 			new Category("Combat", new Page("Target", "whatever you're aiming at"), new Page("Crosshair", "shape, colour and size"), new Page("Hits", "effects, numbers and sounds"), new Page("Clarity", "seeing clearly in a fight")),
 			new Category("HUD", new Page("Bar", "the bar at the top"), new Page("Panels", "PvP stats, armour, hotbar"), new Page("Maps", "minimap, map and waypoints")),
-			new Category("Social", new Page("Friends", "who's online and joining them"), new Page("Partner", "climbing on and playing together"), new Page("Emotes", "the emote wheel"), new Page("UID", "your Lmg number")),
+			new Category("Social", new Page("Friends", "who's online and joining them"), new Page("Climbing", "sit on someone, play around them"), new Page("Emotes", "the emote wheel"), new Page("UID", "your Lmg number")),
 			new Category("Menu", new Page("Look", "how this menu looks"), new Page("Main menu", "the title screen"), new Page("Help", "the tour, safety and mods")),
 			new Category("Game", new Page("Keys", "click a key, then press the new one"), new Page("Tools", "zoom, freecam and server-safe"), new Page("FPS", "make the game run smoother"), new Page("Configs", "save setups, share them with a code"))
 	};
@@ -881,27 +881,44 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 					if (v) toast("Matching", dev.lmg.client.social.Partner.matchOutfit(true));
 				}).withHint("Their items, in your colours."));
 			}
-			case "Partner" -> {
-				r.add(SettingRow.toggle("Let my partner climb on me", () -> dev.lmg.client.social.Social.state().iAllowClimb(), v -> {
-					if (dev.lmg.client.social.Social.partner() == null) { toast("No partner yet", "Pick one in the Friends list first."); return; }
-					dev.lmg.client.social.Social.allowClimb(v, err -> toast(err != null ? "Couldn't change it" : v ? "Climbing allowed" : "Climbing off",
-							err != null ? err : v ? "Your partner can sit on you and play around you." : "They get down straight away."));
-				}).withHint("Off until you say yes. Then they can sit on you and play around you.").keywords("partner climb ride carry"));
+			case "Climbing" -> {
+				// answer anyone who's asking right now
+				for (dev.lmg.client.social.ClimbRequests.Ask ask : dev.lmg.client.social.ClimbRequests.waiting()) {
+					String what = ask.kind() == dev.lmg.client.emote.Emote.PERCH_HEAD ? "your head" : ask.kind() == dev.lmg.client.emote.Emote.PERCH_SHOULDER ? "your shoulder" : "playing";
+					r.add(SettingRow.choice(ask.name() + " asks: " + what, () -> "Yes / No",
+							() -> { dev.lmg.client.social.ClimbRequests.answer(ask, "once"); rebuildWidgets(); },
+							() -> { dev.lmg.client.social.ClimbRequests.answer(ask, "no"); rebuildWidgets(); })
+							.withHint("Click for yes (2 hours), right-click for no."));
+				}
 				r.add(SettingRow.button("Sit on their head", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_HEAD, "Climb"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_HEAD))
-						.withHint("Small, sitting on top of their head. Stand close first.").keywords("partner ride"));
+						.withHint("Whoever you're looking at (or your partner). Asks them first.").keywords("partner ride climb"));
 				r.add(SettingRow.button("Sit on their shoulder", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_SHOULDER, "Climb"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_SHOULDER))
-						.withHint("Tiny, on their left shoulder like a parrot.").keywords("partner ride"));
+						.withHint("Tiny, on their left shoulder like a parrot. Asks them first.").keywords("partner ride"));
 				r.add(SettingRow.button("Play around them", () -> partnerAction(dev.lmg.client.emote.Emote.PLAY, "Play"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PLAY))
 						.withHint("Hop round them, pull their arm, poke them, then sit together."));
 				r.add(SettingRow.toggle("Play when I'm idle", () -> c.partnerPlayIdle, v -> c.partnerPlayIdle = v)
-						.withHint("Leave the game a bit next to them and you start playing around them.")
-						.withMore(() -> more("Play when idle", "When you're next to your partner and not doing anything", () -> List.of(
+						.withHint("Idle next to someone who said yes and you start playing around them.")
+						.withMore(() -> more("Play when idle", "Next to someone who said yes, doing nothing", () -> List.of(
 								SettingRow.slider("Start after", () -> c.partnerIdleSeconds, v -> c.partnerIdleSeconds = (int) Math.round(v), 5, 120, 5,
 										v -> Math.round(v) + " s").withHint("How long you have to be idle first.")),
 								() -> c.partnerIdleSeconds = 20)));
+				r.add(SettingRow.toggle("Let people ask to climb on me", () -> dev.lmg.client.social.Social.state().climbAsks(), v -> {
+					if (!dev.lmg.client.social.Social.signedIn()) { toast("Turn on Friends first", "Climbing uses the same sign-in (you don't need to add anyone)."); return; }
+					dev.lmg.client.social.Social.climbAsks(v, err -> { if (err != null) toast("Couldn't change it", err); });
+				}).withHint("Off: nobody can ask. Asking never lets them on until you say yes."));
+				int n = dev.lmg.client.social.Social.state().climbers().size();
+				r.add(SettingRow.button("Who can climb on me", () -> n == 0 ? "Nobody" : n + (n == 1 ? " person - clear" : " people - clear"), () -> {
+					if (n == 0) return;
+					dev.lmg.client.social.Social.climbRevoke(null, err -> { toast(err != null ? "Couldn't clear it" : "Done", err != null ? err : "Nobody can climb on you now (except your partner, if you said yes)."); rebuildWidgets(); });
+				}).withHint(n == 0 ? "People you said yes to show here." : "Yes to: " + String.join(", ", dev.lmg.client.social.Social.state().climbers().stream().map(y -> y.name()).toList())));
+				r.add(SettingRow.toggle("Let my partner climb on me", () -> dev.lmg.client.social.Social.state().iAllowClimb(), v -> {
+					if (dev.lmg.client.social.Social.partner() == null) { toast("No partner yet", "You don't need one - anyone can ask you. Partners just skip asking."); return; }
+					dev.lmg.client.social.Social.allowClimb(v, err -> toast(err != null ? "Couldn't change it" : v ? "Climbing allowed" : "Climbing off",
+							err != null ? err : v ? "Your partner can climb on you without asking." : "They get down straight away."));
+				}).withHint("Partners only: they can climb on you without asking each time.").keywords("partner climb ride carry"));
 			}
 			case "Emotes" -> {
 				r.add(SettingRow.button("Emote wheel", "Open", () -> {

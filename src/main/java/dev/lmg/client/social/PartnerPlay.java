@@ -14,9 +14,10 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * You and your partner, together: sitting on their head or shoulder, or (when you've been idle
- * a while next to them) playing around them - hopping round in circles, pulling their arm,
- * poking them, then sitting down next to them for a rest.
+ * Sitting on someone's head or shoulder, or (when you've been idle a while next to them)
+ * playing around them - hopping round in circles, pulling their arm, poking them, then sitting
+ * down next to them for a rest. Your partner (if they said yes), or anyone who said yes when
+ * you asked (ClimbRequests).
  *
  * Only your character's picture moves (for you and other Lmg players). Your real position on
  * the server doesn't change, so you have to stay close: it ends if you get more than a few
@@ -224,16 +225,46 @@ public final class PartnerPlay {
 
 	// ---- you: climbing on, getting down, and playing when idle ------------------------------------
 
-	/** Climbs onto your partner's head or shoulder. Returns null if it worked, else why not. */
+	/** Who you'd climb on: whoever you're looking at, else your partner, else whoever's nearest (close by). */
+	public static Player target(Minecraft mc) {
+		if (mc.player == null || mc.level == null) return null;
+		if (mc.crosshairPickEntity instanceof Player p && p != mc.player && p.distanceTo(mc.player) <= START_DISTANCE) return p;
+		Player partner = Partner.inWorld(mc);
+		if (partner != null && partner.distanceTo(mc.player) <= START_DISTANCE) return partner;
+		Player best = null;
+		double bestD = START_DISTANCE;
+		for (Player p : mc.level.players()) {
+			if (p == mc.player || p.isSpectator()) continue;
+			double d = p.distanceTo(mc.player);
+			if (d <= bestD) {
+				bestD = d;
+				best = p;
+			}
+		}
+		return best;
+	}
+
+	/**
+	 * Sits on (or plays around) whoever you'd climb on. If they've said yes it starts right away;
+	 * if not, they're asked first. Returns null if it started or the ask went out, else why not.
+	 */
 	public static String climb(Emote where) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return "Join a world first.";
-		UUID partner = Social.partner();
-		if (partner == null) return "Pick a partner in Friends first.";
-		if (!allowedNow()) return "Your partner hasn't said yes to climbing yet.";
-		Player p = Partner.inWorld(mc);
-		if (p == null) return "Your partner isn't here.";
-		if (p.distanceTo(mc.player) > START_DISTANCE) return "Get closer to your partner first.";
+		Player p = target(mc);
+		if (p == null) return "Stand next to someone (or look at them) first.";
+		if (ClimbRequests.mayClimbOn(p.getUUID())) return climbOn(p.getUUID(), where);
+		ClimbRequests.ask(p, where);
+		return null;
+	}
+
+	/** Climbs on someone who has said yes. Returns null if it worked, else why not. */
+	public static String climbOn(UUID who, Emote where) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null || mc.level == null) return "Join a world first.";
+		Player p = mc.level.getPlayerByUUID(who);
+		if (p == null) return "They're not here any more.";
+		if (p.distanceTo(mc.player) > START_DISTANCE) return "Get closer to " + p.getGameProfile().name() + " first.";
 		Emotes.playWith(where, p.getUUID(), msg -> dev.lmg.client.feature.LmgKeys.say(msg));
 		return null;
 	}
@@ -281,10 +312,20 @@ public final class PartnerPlay {
 			return;
 		}
 		LmgConfig c = LmgConfig.get();
-		if (!c.partnerPlayIdle || doing != null || Emotes.get(pl.getUUID()) != null || !allowedNow()) return;
+		if (!c.partnerPlayIdle || doing != null || Emotes.get(pl.getUUID()) != null) return;
 		if (now - lastActive < c.partnerIdleSeconds * 1000L) return;
+		// your partner first, else anyone close by who has said yes
 		Player p = Partner.inWorld(mc);
-		if (p == null || p.distanceTo(pl) > START_DISTANCE + 1) return;
+		if (p == null || p.distanceTo(pl) > START_DISTANCE + 1 || !ClimbRequests.mayClimbOn(p.getUUID())) {
+			p = null;
+			for (Player q : mc.level.players()) {
+				if (q != pl && q.distanceTo(pl) <= START_DISTANCE + 1 && ClimbRequests.mayClimbOn(q.getUUID())) {
+					p = q;
+					break;
+				}
+			}
+		}
+		if (p == null) return;
 		Emotes.playWith(Emote.PLAY, p.getUUID(), msg -> {});
 	}
 }

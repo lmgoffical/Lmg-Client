@@ -1,9 +1,9 @@
 {
-  "version": "0.31.0",
+  "version": "0.32.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.31.0.jar",
-    "sha1": "08dfd466eedb50729af681f0a0bc4eda1af63ea9"
+    "file": "lmg-client-0.32.0.jar",
+    "sha1": "34c66df75ed03fd18e3ed3440ff421596887e654"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.32",
+      "text": "Climb on anyone (who says yes). You don't need to be friends or partners any more: look at someone with Lmg and climb - they get a little card asking, and press Y (yes for 2 hours), U (always) or N (no). See who can climb on you, clear it, or stop people asking, in Social &gt; Climbing."
+    },
+    {
       "version": "0.31",
       "text": "Partners, closer. If your partner says yes (Social &gt; Partner &gt; Let my partner climb on me), you can sit on their head or their shoulder. Stand still next to them for a bit and you start playing around them: hopping round, pulling their arm, poking them, then sitting down together. Other Lmg players see it too."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.27",
       "text": "Easier to find your way. The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."
-    },
-    {
-      "version": "0.26",
-      "text": "Friends & more. Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."
     }
   ],
   "launcher": {

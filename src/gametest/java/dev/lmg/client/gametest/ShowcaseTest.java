@@ -533,7 +533,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			f.setAccessible(true);
 			var mia = new dev.lmg.client.social.Social.Friend(MIA, "Mia_Builds", true, "singleplayer", null, null, null);
 			f.set(null, new dev.lmg.client.social.Social.State(java.util.List.of(mia), java.util.List.of(), java.util.List.of(),
-					MIA, null, java.util.List.of(), true, true));
+					MIA, null, java.util.List.of(), true, true, java.util.List.of(), java.util.List.of(), true));
 			var loaded = dev.lmg.client.social.Social.class.getDeclaredField("loaded");
 			loaded.setAccessible(true);
 			loaded.set(null, true);
@@ -593,6 +593,44 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(10);
 		ctx.takeScreenshot("climb-me-shoulder-eyes");
 		ctx.runOnClient(mc -> dev.lmg.client.social.PartnerPlay.getDown());
+		// someone who's NOT a friend or partner: Theo. Climbing on him asks first; he asks us too.
+		java.util.UUID theo = java.util.UUID.fromString("33333333-3333-4333-8333-333333333333");
+		ctx.runOnClient(mc -> {
+			dev.lmg.client.social.PartnerPlay.testAllowed = false;
+			var p = mc.player;
+			var t = new net.minecraft.client.player.RemotePlayer(mc.level, new com.mojang.authlib.GameProfile(theo, "TheoMC"));
+			t.setId(-424244);
+			t.snapTo(p.getX() - 1.4, p.getY(), p.getZ() + 0.4, 0f, 0f);
+			mc.level.addEntity(t);
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		});
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> {
+			var t = mc.level.getPlayerByUUID(theo);
+			System.out.println("[climb] may climb on Theo before: " + dev.lmg.client.social.ClimbRequests.mayClimbOn(theo));
+			dev.lmg.client.social.ClimbRequests.ask(t, dev.lmg.client.emote.Emote.PERCH_SHOULDER);
+			System.out.println("[climb] after asking, doing: " + dev.lmg.client.social.PartnerPlay.mine());
+			// Theo asks to sit on our head: the card shows up
+			dev.lmg.client.social.ClimbRequests.asked(theo, "TheoMC", dev.lmg.client.emote.Emote.PERCH_HEAD);
+		});
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("climb-ask-card");
+		ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_N);
+		ctx.waitTicks(5);
+		ctx.runOnClient(mc -> System.out.println("[climb] card after N: " + dev.lmg.client.social.ClimbRequests.current()));
+		// Theo says yes to ours: we climb straight on
+		ctx.runOnClient(mc -> dev.lmg.client.social.ClimbRequests.answered(theo, "once"));
+		ctx.waitTicks(25);
+		ctx.runOnClient(mc -> System.out.println("[climb] after Theo's yes, doing: " + dev.lmg.client.social.PartnerPlay.mine()
+				+ " may=" + dev.lmg.client.social.ClimbRequests.mayClimbOn(theo)));
+		ctx.takeScreenshot("climb-on-theo");
+		ctx.runOnClient(mc -> {
+			dev.lmg.client.social.PartnerPlay.getDown();
+			var t = mc.level.getPlayerByUUID(theo);
+			if (t != null) t.discard();
+			dev.lmg.client.social.PartnerPlay.testAllowed = true;
+		});
+		ctx.waitTicks(5);
 		// the menu page
 		page(4, 1);
 		ctx.setScreen(() -> new LmgSettingsScreen(null));

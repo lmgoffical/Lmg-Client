@@ -32,6 +32,10 @@ public final class LmgKeys {
 	public static final KeyMapping HUD_BAR = key("hud_bar", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping PROFILE = key("profile", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping CLIMB = key("climb", InputConstants.UNKNOWN.getValue());
+	// answering "can I sit on you?" (only does anything while the question is on screen)
+	public static final KeyMapping CLIMB_YES = key("climb_yes", InputConstants.KEY_Y);
+	public static final KeyMapping CLIMB_ALWAYS = key("climb_always", InputConstants.KEY_U);
+	public static final KeyMapping CLIMB_NO = key("climb_no", InputConstants.KEY_N);
 	public static final KeyMapping CINEMATIC = key("cinematic", InputConstants.KEY_F7);
 	public static final KeyMapping FRIENDS = key("friends", InputConstants.KEY_O);
 	public static final KeyMapping EMOTE = key("emote", InputConstants.KEY_G);
@@ -53,7 +57,10 @@ public final class LmgKeys {
 			new Bind(EMOTE, "Emote wheel (hold)", "Hold, point, let go."),
 			new Bind(PHOTO, "Photo mode", "Freeze, frame it, save it."),
 			new Bind(PROFILE, "Next profile", "Everyday, PvP, Screenshots: swap in one press."),
-			new Bind(CLIMB, "Climb on partner", "Head, then shoulder, then down (if they said yes)."));
+			new Bind(CLIMB, "Climb on someone", "Head, then shoulder, then down. Asks them first."),
+			new Bind(CLIMB_YES, "Climbing: say yes", "When someone asks to climb on you (2 hours)."),
+			new Bind(CLIMB_ALWAYS, "Climbing: say always", "Yes until you take it back."),
+			new Bind(CLIMB_NO, "Climbing: say no", "Says no to the question on screen."));
 
 	private LmgKeys() {}
 
