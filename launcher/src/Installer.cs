@@ -58,15 +58,25 @@ namespace LmgLauncher
         public static Task<byte[]> Bytes(string url) => Http.GetByteArrayAsync(url);
 
         /// <summary>Downloads to a temporary file, checks the SHA-1, then moves it into place.</summary>
-        public static async Task Save(string url, string path, string sha1)
+        public static async Task Save(string url, string path, string sha1, Action<long, long> bytes = null)
         {
             string tmp = path + ".part";
             using (var res = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
             {
                 res.EnsureSuccessStatusCode();
+                long total = res.Content.Headers.ContentLength ?? -1, done = 0;
                 using (var input = await res.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 using (var output = File.Create(tmp))
-                    await input.CopyToAsync(output).ConfigureAwait(false);
+                {
+                    var buf = new byte[81920];
+                    int n;
+                    while ((n = await input.ReadAsync(buf, 0, buf.Length).ConfigureAwait(false)) > 0)
+                    {
+                        await output.WriteAsync(buf, 0, n).ConfigureAwait(false);
+                        done += n;
+                        bytes?.Invoke(done, total);
+                    }
+                }
             }
             if (!string.IsNullOrEmpty(sha1) && !Sha1(tmp).Equals(sha1, StringComparison.OrdinalIgnoreCase))
             {
@@ -231,8 +241,14 @@ namespace LmgLauncher
                     progress(Str(mod, "name") + " is up to date", p);
                     continue;
                 }
-                progress("Downloading " + Str(mod, "name"), p);
-                await Net.Save(Str(mod, "url"), dest, sha1);
+                string label = "Downloading " + Str(mod, "name");
+                progress(label, p);
+                double next = 0.2 + 0.7 * (i + 1) / mods.Count;
+                await Net.Save(Str(mod, "url"), dest, sha1, (done, total) =>
+                {
+                    if (total <= 0) return;
+                    progress(label + "  ·  " + Mb(done) + " / " + Mb(total), p + (next - p) * done / total);
+                });
             }
 
             // ---- launcher profile ----
@@ -337,6 +353,8 @@ namespace LmgLauncher
                 return 8;
             }
         }
+
+        static string Mb(long bytes) => (bytes / 1048576.0).ToString("0.0") + " MB";
 
         internal static string Str(Dictionary<string, object> d, string key) =>
             d != null && d.TryGetValue(key, out var v) && v != null ? v.ToString() : "";

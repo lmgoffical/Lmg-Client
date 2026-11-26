@@ -14,6 +14,9 @@ namespace LmgLauncher
     {
         public int RamGb { get; set; } = 0;          // 0 = pick automatically
         public bool CloseOnLaunch { get; set; } = true;
+        public int WindowX { get; set; } = int.MinValue;
+        public int WindowY { get; set; } = int.MinValue;
+        public string CrashSeen { get; set; } = "";
 
         public static AppSettings Load()
         {

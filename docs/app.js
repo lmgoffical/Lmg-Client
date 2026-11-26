@@ -242,7 +242,7 @@ async function pageDownload() {
         <p class="muted">A small app (under 100 KB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download the app</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the app isn't signed yet &mdash; click <i>More info &rarr; Run anyway</i>.</p>
-        <p class="muted small" style="margin-top:10px">Want to check the file? Its SHA-256 is <code>bf7bb5a78652ddd7d35ad146d7e3d860aaa2a282bfda8e7fa9bbdd4e461273d8</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p>
+        <p class="muted small" style="margin-top:10px">Want to check the file? Its SHA-256 is <code>f41fc9c51f3d031e415deca894ae1ad77f074e9ed0d67ab1320fad77986e305f</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p>
       </div>
       <div class="card">
         <h3>Installing</h3>

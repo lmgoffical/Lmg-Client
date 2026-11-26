@@ -19,7 +19,8 @@ namespace LmgLauncher
             using (var mutex = new Mutex(true, "LmgClientApp", out bool first))
             {
                 if (!first && !args.Contains("--updated")) return;
-                Application.Run(new MainForm(args.Contains("--updated")));
+                string tab = args.FirstOrDefault(a => a.StartsWith("--tab="))?.Substring(6);
+                Application.Run(new MainForm(args.Contains("--updated"), tab));
             }
         }
     }
