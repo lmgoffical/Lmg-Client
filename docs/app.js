@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.28", "<b>Your sword, your crosshair.</b> Move, turn and resize what you hold and watch it change as you drag (try Big &amp; low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."],
   ["0.27", "<b>Easier to find your way.</b> The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."],
   ["0.26", "<b>Friends &amp; more.</b> Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."],
   ["0.25", "<b>Snow.</b> Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."],
@@ -194,7 +195,8 @@ async function pageHome() {
         <div><h3>Photo mode</h3><p>F8 freezes the world. Fly the camera, add a filter and a Polaroid frame, and save the shot.</p></div>
         <div><h3>Winter</h3><p>Snow that falls and settles on the ground around you - only on your screen, so it's fine anywhere.</p></div>
         <div><h3>Any colour you like</h3><p>Sky, aurora, trails, hits, crosshair, menu background, cosmetics: drag a slider to pick the exact shade.</p></div>
-        <div><h3>Crosshair &amp; effects</h3><p>Your own crosshair that lights up in reach, damage numbers, a hurt flash in any colour, motion blur and colour filters.</p></div>
+        <div><h3>Crosshair &amp; effects</h3><p>Pick a crosshair, draw your own pixel by pixel or use the Lmg star, and make it spin. Plus damage numbers, a hurt flash in any colour, motion blur and colour filters.</p></div>
+        <div><h3>Held items</h3><p>Move, turn and resize your sword with sliders and watch it change in your hand. Big &amp; low is the showcase look.</p></div>
         <div><h3>UIDs</h3><p>Grab your Lmg number. The lower it is, the rarer: Founders get 1 to 10. It shows on your name tag for other Lmg players.</p></div>
       </div>
     </section>
@@ -211,6 +213,8 @@ async function pageHome() {
           ["menu", "Right Shift: the world goes black and white behind the menu", "The settings menu with snow settling on its top edge over a grey world"],
           ["death", "After dying: a trail and a beam back to the spot", "A trail of small red sparkles leading across a field at night to a red beam"],
           ["emotes", "Other Lmg players see your emotes too", "Two players dancing side by side"],
+          ["held", "Big &amp; low: your sword held low and to the middle", "A first-person view holding a big diamond sword low in the middle of the screen, angled up to the right"],
+          ["crosshair", "Draw your own crosshair, with previews on sky, grass and cave", "The crosshair editor: a pink plus drawn on a pixel grid, three small previews and options for mirror, spin and colour"],
           ["groups", "Seven groups, with pages along the top", "The settings menu on Visuals, Effects, listing crosshair, damage number and motion blur options"],
           ["effects", "Your own crosshair turns red in reach, and damage numbers pop up", "A zombie in a cherry grove with a small damage number above its head and a red crosshair on it"],
         ].map(([img, cap, alt]) => `<figure><a href="img/shots/${img}.jpg" target="_blank" rel="noopener"><img src="img/shots/${img}.jpg" alt="${alt}" loading="lazy" width="1280" height="720"></a><figcaption>${cap}</figcaption></figure>`).join("")}

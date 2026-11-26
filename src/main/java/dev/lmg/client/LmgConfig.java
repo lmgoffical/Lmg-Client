@@ -272,6 +272,14 @@ public final class LmgConfig {
 	public int crosshairRgb = 0xFFFFFF;
 	public int crosshairSize = 1;        // index into CROSSHAIR_SIZES
 	public boolean crosshairTargetColor = true;  // turns your in-reach colour when you can hit what you aim at
+	public int crosshairSpin = 0;        // index into SPIN_SPEEDS
+	public boolean crosshairOutline = true;
+	/** Your own drawing: 15 rows of 15 pixels (bit 0 = left). */
+	public int[] crosshairPixels = defaultDrawing();
+	// ---- held item look ----
+	public float itemX = 0f, itemY = 0f, itemZ = 0f;
+	public float itemTurn = 0f, itemTilt = 0f, itemRoll = 0f; // degrees
+	public float itemSize = 1f;
 	public boolean damageNumbers = false;
 	public int damageRgb = 0xFF5A6E;
 	public int hurtRgb = 0xFF0000;       // the flash when something gets hurt
@@ -288,8 +296,27 @@ public final class LmgConfig {
 	public static final float[] CROSSHAIR_SIZES = {0.75f, 1f, 1.4f, 1.8f};
 	public static final String[] CROSSHAIR_SIZE_LABELS = {"Small", "Normal", "Big", "Huge"};
 
+	public static final float[] SPIN_SPEEDS = {0f, 40f, 120f, 360f};   // degrees a second
+	public static final String[] SPIN_LABELS = {"Off", "Slow", "Medium", "Fast"};
+	public static final int DRAW_SIZE = 15;
+
+	/** A plus with a gap in the middle, to start drawing from. */
+	public static int[] defaultDrawing() {
+		int[] rows = new int[DRAW_SIZE];
+		int mid = DRAW_SIZE / 2;
+		for (int i = 0; i < DRAW_SIZE; i++) {
+			if (Math.abs(i - mid) >= 2 && Math.abs(i - mid) <= 5) {
+				rows[mid] |= 1 << i;
+				rows[i] |= 1 << mid;
+			}
+		}
+		rows[mid] |= 1 << mid;
+		return rows;
+	}
+
 	public enum Crosshair {
-		VANILLA("Vanilla"), DOT("Dot"), CROSS("Cross"), CROSS_DOT("Cross + dot"), CIRCLE("Circle"), CHEVRON("Chevron");
+		VANILLA("Vanilla"), DOT("Dot"), CROSS("Cross"), CROSS_DOT("Cross + dot"), CIRCLE("Circle"), CHEVRON("Chevron"),
+		LOGO("Lmg logo"), DRAWN("Your drawing");
 		public final String label;
 
 		Crosshair(String label) {
@@ -544,13 +571,31 @@ public final class LmgConfig {
 		if (overlayColor == null || overlayColor == CosmeticColor.OFF) overlayColor = d.overlayColor;
 		if (aurora == null) aurora = d.aurora;
 		if (ambient == null) ambient = d.ambient;
-		itemScale = clampIndex(itemScale, ITEM_SCALES.length, d.itemScale);
 		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		if (winter == null) winter = dev.lmg.client.world.Winter.Mode.SEASONAL;
 		if (crosshair == null) crosshair = Crosshair.VANILLA;
 		crosshairSize = clampIndex(crosshairSize, CROSSHAIR_SIZES.length, 1);
+		crosshairSpin = clampIndex(crosshairSpin, SPIN_SPEEDS.length, 0);
+		if (crosshairPixels == null || crosshairPixels.length != DRAW_SIZE) crosshairPixels = defaultDrawing();
+		// held item: older versions had size steps and a "lower" switch
+		itemScale = clampIndex(itemScale, ITEM_SCALES.length, 0);
+		if (itemScale != 0) {
+			itemSize = ITEM_SCALES[itemScale];
+			itemScale = 0;
+		}
+		if (lowerItems) {
+			itemY = -0.08f;
+			lowerItems = false;
+		}
+		itemX = clampF(itemX, -0.6f, 0.6f);
+		itemY = clampF(itemY, -0.6f, 0.6f);
+		itemZ = clampF(itemZ, -0.6f, 0.6f);
+		itemTurn = clampF(itemTurn, -180f, 180f);
+		itemTilt = clampF(itemTilt, -180f, 180f);
+		itemRoll = clampF(itemRoll, -180f, 180f);
+		itemSize = clampF(itemSize, 0.3f, 2f);
 		motionBlur = clampIndex(motionBlur, MOTION_BLUR_LABELS.length, 0);
 		if (menuWeather == null) {
 			// v0.25 had a snow amount: keep "off" and "blizzard", everything else follows the seasons
@@ -572,6 +617,10 @@ public final class LmgConfig {
 		minimapSize = clampIndex(minimapSize, MINIMAP_SIZES.length, d.minimapSize);
 		minimapZoom = clampIndex(minimapZoom, MINIMAP_ZOOMS.length, d.minimapZoom);
 		return this;
+	}
+
+	private static float clampF(float v, float min, float max) {
+		return Float.isNaN(v) ? 0f : Math.max(min, Math.min(max, v));
 	}
 
 	private static int clampIndex(int value, int length, int fallback) {

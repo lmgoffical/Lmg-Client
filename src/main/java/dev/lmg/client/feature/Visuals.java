@@ -5,6 +5,8 @@ import dev.lmg.client.render.Draw;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -37,13 +39,23 @@ public final class Visuals {
 		// turn your "in reach" colour when what you're aiming at can be hit
 		if (c.crosshairTargetColor && mc.crosshairPickEntity instanceof LivingEntity l && l.isAlive()
 				&& mc.player.isWithinEntityInteractionRange(l, 0.0)) rgb = c.reachColor;
-		int col = 0xFF000000 | rgb, outline = 0xB0000000;
+		int col = 0xFF000000 | rgb, outline = c.crosshairOutline ? 0xB0000000 : 0;
 		float cx = g.guiWidth() / 2f, cy = g.guiHeight() / 2f;
 		Matrix3x2fStack pose = g.pose();
 		pose.pushMatrix();
 		pose.translate(cx, cy);
 		pose.scale(s, s);
-		switch (c.crosshair) {
+		float spin = LmgConfig.SPIN_SPEEDS[c.crosshairSpin];
+		if (spin > 0) pose.rotate((float) Math.toRadians((Util.getMillis() % 360_000L) / 1000.0 * spin % 360.0));
+		draw(g, c.crosshair, c.crosshairPixels, col, outline);
+		pose.popMatrix();
+		return true;
+	}
+
+	/** Draws a crosshair around (0, 0); also used for the previews in the editor. */
+	public static void draw(GuiGraphicsExtractor g, LmgConfig.Crosshair shape, int[] pixels, int col, int outline) {
+		Matrix3x2fStack pose = g.pose();
+		switch (shape) {
 			case DOT -> dot(g, col, outline, 1);
 			case CROSS -> cross(g, col, outline);
 			case CROSS_DOT -> {
@@ -73,11 +85,34 @@ public final class Visuals {
 					}
 				}
 			}
+			case LOGO -> {
+				// the Lmg star; its dark edge is part of the picture, the white takes your colour
+				int argb = 0xFF000000 | (col & 0xFFFFFF);
+				g.blit(RenderPipelines.GUI_TEXTURED, LOGO, -8, -8, 0f, 0f, 16, 16, 64, 64, 64, 64, argb);
+			}
+			case DRAWN -> drawPixels(g, pixels, col, outline);
 			default -> {
 			}
 		}
-		pose.popMatrix();
-		return true;
+	}
+
+	private static final Identifier LOGO = dev.lmg.client.LmgClient.id("textures/gui/crosshair_logo.png");
+
+	/** Your drawing, centred: the dark edge first, then the pixels on top. */
+	public static void drawPixels(GuiGraphicsExtractor g, int[] rows, int col, int outline) {
+		int n = LmgConfig.DRAW_SIZE, half = n / 2;
+		if (outline != 0) {
+			for (int y = 0; y < n; y++) {
+				for (int x = 0; x < n; x++) {
+					if ((rows[y] >> x & 1) != 0) g.fill(x - half - 1, y - half - 1, x - half + 2, y - half + 2, outline);
+				}
+			}
+		}
+		for (int y = 0; y < n; y++) {
+			for (int x = 0; x < n; x++) {
+				if ((rows[y] >> x & 1) != 0) g.fill(x - half, y - half, x - half + 1, y - half + 1, col);
+			}
+		}
 	}
 
 	private static void dot(GuiGraphicsExtractor g, int col, int outline, int r) {

@@ -74,6 +74,9 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("newmenu")) newMenu(ctx, world);
 			if (want("tour")) tour(ctx);
 			if (want("effects")) effects(ctx, world);
+			if (want("items")) items(ctx, world);
+			if (want("xhair")) xhair(ctx, world);
+			if (want("tourskip")) tourSkip(ctx);
 			if (want("cosmetics")) cosmetics(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
@@ -418,6 +421,91 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.waitTicks(12);
 		}
 		ctx.runOnClient(mc -> System.out.println("[tour] done=" + LmgConfig.get().tourDone));
+		ctx.setScreen(() -> null);
+	}
+
+	/** The held item presets, and the screen for moving it. */
+	private void items(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("time set 1000");
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 30 -4");
+		world.getServer().runCommand("item replace entity @a weapon.mainhand with minecraft:diamond_sword[enchantments={sharpness:5}]");
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		ctx.waitTicks(30);
+		world.getConnection().waitForChunksRender();
+		for (dev.lmg.client.feature.ItemLook.Preset p : dev.lmg.client.feature.ItemLook.Preset.values()) {
+			ctx.runOnClient(mc -> p.apply(LmgConfig.get()));
+			ctx.waitTicks(8);
+			ctx.takeScreenshot("items-" + p.name().toLowerCase());
+		}
+		// LMG_ITEM_TRY="x,y,z,turn,tilt,roll,size;..." tries other looks (for tuning the presets)
+		String tries = System.getenv().getOrDefault("LMG_ITEM_TRY", "");
+		int n = 0;
+		for (String t : tries.split(";")) {
+			if (t.isBlank()) continue;
+			String[] v = t.split(",");
+			ctx.runOnClient(mc -> {
+				LmgConfig c = LmgConfig.get();
+				c.itemX = Float.parseFloat(v[0]);
+				c.itemY = Float.parseFloat(v[1]);
+				c.itemZ = Float.parseFloat(v[2]);
+				c.itemTurn = Float.parseFloat(v[3]);
+				c.itemTilt = Float.parseFloat(v[4]);
+				c.itemRoll = Float.parseFloat(v[5]);
+				c.itemSize = Float.parseFloat(v[6]);
+			});
+			ctx.waitTicks(6);
+			ctx.takeScreenshot("items-try" + (n++));
+		}
+		ctx.runOnClient(mc -> dev.lmg.client.feature.ItemLook.Preset.BIG_LOW.apply(LmgConfig.get()));
+		ctx.setScreen(() -> new dev.lmg.client.screen.ItemLookScreen(null));
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("items-screen");
+		ctx.runOnClient(mc -> System.out.println("[items] " + dev.lmg.client.screen.ItemLookScreen.describe()));
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> dev.lmg.client.feature.ItemLook.Preset.VANILLA.apply(LmgConfig.get()));
+	}
+
+	/** The crosshair editor, the logo crosshair spinning, and a drawing in game. */
+	private void xhair(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("time set 1000");
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 30 -4");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.crosshairRgb = 0xFF8FC8;
+			c.crosshairSpin = 1;
+			c.crosshairSize = 2;
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		});
+		ctx.setScreen(() -> new dev.lmg.client.screen.CrosshairEditorScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("xhair-editor");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> LmgConfig.get().crosshair = LmgConfig.Crosshair.LOGO);
+		ctx.waitTicks(10);
+		ctx.takeScreenshot("xhair-logo");
+		ctx.runOnClient(mc -> LmgConfig.get().crosshair = LmgConfig.Crosshair.DRAWN);
+		ctx.waitTicks(10);
+		ctx.takeScreenshot("xhair-drawn");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.crosshair = LmgConfig.Crosshair.VANILLA;
+			c.crosshairSpin = 0;
+			c.crosshairSize = 1;
+		});
+	}
+
+	/** The first tour card, with its "No thanks" button. */
+	private void tourSkip(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> LmgConfig.get().tourDone = false);
+		page(0, 0);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("tourskip-card");
+		ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> System.out.println("[tourskip] done=" + LmgConfig.get().tourDone + " screen=" + mc.gui.screen()));
 		ctx.setScreen(() -> null);
 	}
 

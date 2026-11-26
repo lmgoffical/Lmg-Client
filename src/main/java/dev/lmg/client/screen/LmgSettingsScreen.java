@@ -197,7 +197,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		int cx0 = panelX + SIDEBAR_W, cx1 = panelX + panelW();
 		int rowsTop = panelY + HEADER_H + 6 + MenuSkin.contentTopPad() - 2;
 		List<Step> s = new ArrayList<>();
-		s.add(new Step("Welcome to Lmg", "This is the Lmg menu. Right Shift opens and closes it, anywhere in game. Here's a quick look at where everything is.",
+		s.add(new Step("Welcome to Lmg", "This is the Lmg menu. Right Shift opens and closes it, anywhere in game. Want a quick look at where everything is? It takes half a minute, and you can stop any time with Esc.",
 				() -> showPage(0, 0), null));
 		s.add(new Step("Groups", "Everything is grouped on the left: Visuals, You, Combat, HUD, Social, Menu and Game.",
 				null, () -> new int[]{panelX + 2, panelY + HEADER_H + 2, panelX + SIDEBAR_W - 2, panelY + HEADER_H + 8 + CATS.length * TAB_GAP}));
@@ -264,6 +264,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		// beside the spot if there's room (a bit narrower if needed), else under / over it, else in the middle
 		int roomRight = r == null ? 0 : width - r[2] - 16, roomLeft = r == null ? 0 : r[0] - 16;
 		int cw = r != null && Math.max(roomRight, roomLeft) >= 104 ? Math.min(170, Math.max(roomRight, roomLeft)) : 170;
+		if (tourStep == 0) cw = 196;   // room for both "No thanks" and "Show me around"
 		List<net.minecraft.util.FormattedCharSequence> lines = font.split(Component.literal(st.text()), cw - 16);
 		int ch = 30 + lines.size() * 10 + 22;
 		int cx, cy;
@@ -297,18 +298,19 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			g.text(font, line, cx + 8, ty, Draw.withAlpha(0xC9D3E3, a), false);
 			ty += 10;
 		}
-		boolean last = tourStep == all.size() - 1;
-		String next = last ? "Done" : "Next";
+		boolean first = tourStep == 0, last = tourStep == all.size() - 1;
+		String next = first ? "Show me around" : last ? "Done" : "Next";
 		int bw = font.width(next) + 16, bx = cx + cw - 8 - bw, by = cy + ch - 20;
 		boolean overNext = mouseX >= bx && mouseX < bx + bw && mouseY >= by && mouseY < by + 14;
 		PillButton.draw(g, font, bx, by, bw, 14, next, true, overNext ? 1f : 0f, a);
 		tourHits.add(new int[]{bx, by, bx + bw, by + 14, 0});
 		if (!last) {
-			String skip = "Skip tour";
-			int sx = cx + 8;
-			boolean overSkip = mouseX >= sx && mouseX < sx + font.width(skip) && mouseY >= by && mouseY < by + 14;
-			g.text(font, skip, sx, by + 3, Draw.withAlpha(overSkip ? 0xE8EDF5 : 0x7C8BA3, a), false);
-			tourHits.add(new int[]{sx, by, sx + font.width(skip), by + 14, 1});
+			// a real button, so it's obvious you don't have to do the tour
+			String skip = first ? "No thanks" : "Skip tour";
+			int sw = font.width(skip) + 14, sx = cx + 8;
+			boolean overSkip = mouseX >= sx && mouseX < sx + sw && mouseY >= by && mouseY < by + 14;
+			PillButton.draw(g, font, sx, by, sw, 14, skip, false, overSkip ? 1f : 0f, a);
+			tourHits.add(new int[]{sx, by, sx + sw, by + 14, 1});
 		}
 	}
 
@@ -438,6 +440,12 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				r.add(SettingRow.color("Crosshair colour", () -> c.crosshairRgb, null, () -> picker("Crosshair colour", c.crosshairRgb,
 						v -> { c.crosshairRgb = v; if (c.crosshair == LmgConfig.Crosshair.VANILLA) c.crosshair = LmgConfig.Crosshair.CROSS_DOT; },
 						() -> c.crosshairRgb = 0xFFFFFF, null, null)).withHint("Any colour. Vanilla's can't be recoloured."));
+				r.add(SettingRow.button("Draw your crosshair", "Draw", () -> minecraft.gui.setScreen(new CrosshairEditorScreen(this)))
+						.withHint("Paint it pixel by pixel. Picks \"Your drawing\" for you."));
+				r.add(SettingRow.choice("Crosshair spin", () -> LmgConfig.SPIN_LABELS[c.crosshairSpin],
+						() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, 1),
+						() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, -1))
+						.withHint("Makes your crosshair turn round and round."));
 				r.add(SettingRow.choice("Crosshair size", () -> LmgConfig.CROSSHAIR_SIZE_LABELS[c.crosshairSize],
 						() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, 1),
 						() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, -1)));
@@ -514,12 +522,11 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, -1)));
 			}
 			case "Items" -> {
-				r.add(SettingRow.choice("Held item size", () -> Math.round(LmgConfig.ITEM_SCALES[c.itemScale] * 100) + "%",
-						() -> c.itemScale = step(c.itemScale, LmgConfig.ITEM_SCALES.length, 1),
-						() -> c.itemScale = step(c.itemScale, LmgConfig.ITEM_SCALES.length, -1))
-						.withHint("Smaller sword = more screen to see."));
-				r.add(SettingRow.toggle("Lower held items", () -> c.lowerItems, v -> c.lowerItems = v)
-						.withHint("Pushes your hand down a bit."));
+				r.add(SettingRow.choice("Held item look", () -> dev.lmg.client.feature.ItemLook.label(c),
+						() -> dev.lmg.client.feature.ItemLook.cycle(c, 1), () -> dev.lmg.client.feature.ItemLook.cycle(c, -1))
+						.withHint("Ready-made spots for your sword. Big & low is the showcase look."));
+				r.add(SettingRow.button("Move, turn & resize", "Adjust", () -> minecraft.gui.setScreen(new ItemLookScreen(this)))
+						.withHint("Drag sliders and watch your hand change."));
 				r.add(SettingRow.toggle("Lmg totem", () -> OreOutlines.isEnabled(OreOutlines.TOTEM),
 						v -> { c.lmgTotem = v; OreOutlines.setEnabled(OreOutlines.TOTEM, v); })
 						.withHint("Totems become a Star of David."));
@@ -703,6 +710,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			case "Help" -> {
 				r.add(SettingRow.button("Show me around", "Start", () -> startTour())
 						.withHint("The quick tour of this menu again."));
+				r.add(SettingRow.toggle("Offer the tour", () -> !c.tourDone, v -> c.tourDone = !v)
+						.withHint("Off: the tour never pops up by itself."));
 				r.add(SettingRow.button("About & safety", "Open", () -> minecraft.gui.setScreen(new WelcomeScreen(this, false)))
 						.withHint("What this mod does, and what it sends."));
 				r.add(SettingRow.button("Mods", "Open", () -> minecraft.gui.setScreen(new ModsScreen(this)))
