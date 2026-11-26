@@ -62,8 +62,8 @@
     }
   ],
   "launcher": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "file": "Lmg-Client.exe",
-    "sha1": "3b3a827e8392844c44156f19bc65bccc4240aec5"
+    "sha1": "6510cd2343b1180164f915a878b447c577a4248c"
   }
 }

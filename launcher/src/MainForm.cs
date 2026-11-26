@@ -296,11 +296,11 @@ namespace LmgLauncher
             foreach (var n in news)
             {
                 if (y > card.Bottom - 50) break;
-                TextAt(g, "v" + n.Key, fMono, Gold, card.X + 20, y);
                 var rect = new RectangleF(card.X + 70, y - 1, card.Width - 90, 200);
                 var size = g.MeasureString(n.Value, fSmall, (int)rect.Width);
-                float h = Math.Min(size.Height, card.Bottom - 20 - y);
-                using (var b = new SolidBrush(Muted)) g.DrawString(n.Value, fSmall, b, new RectangleF(rect.X, rect.Y, rect.Width, h));
+                if (y + size.Height > card.Bottom - 14) break;     // only whole entries
+                TextAt(g, "v" + n.Key, fMono, Gold, card.X + 20, y);
+                using (var b = new SolidBrush(Muted)) g.DrawString(n.Value, fSmall, b, new RectangleF(rect.X, rect.Y, rect.Width, size.Height + 2));
                 y += Math.Max(20, size.Height) + 12;
             }
         }
