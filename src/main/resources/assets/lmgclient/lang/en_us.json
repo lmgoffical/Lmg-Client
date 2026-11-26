@@ -14,5 +14,6 @@
 	"key.lmgclient.friends": "Friends",
 	"key.lmgclient.emote": "Emote wheel",
 	"key.lmgclient.photo": "Photo mode",
-	"key.lmgclient.profile": "Next profile"
+	"key.lmgclient.profile": "Next profile",
+	"key.lmgclient.climb": "Climb on partner"
 }

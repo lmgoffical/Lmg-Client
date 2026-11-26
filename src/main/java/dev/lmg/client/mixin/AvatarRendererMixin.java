@@ -31,7 +31,12 @@ public abstract class AvatarRendererMixin {
 			} else {
 				dev.lmg.client.emote.Emotes.Playing playing = dev.lmg.client.emote.Emotes.get(entity.getUUID());
 				holder.lmg$setEmote(playing == null ? null : playing.emote(), playing == null ? 0f : playing.seconds());
+				// sitting on, or playing around, your partner: drawn there instead
+				if (playing != null && playing.emote().withPartner() && entity instanceof net.minecraft.world.entity.player.Player who) {
+					dev.lmg.client.social.PartnerPlay.apply(state, who, playing, partialTick);
+				}
 			}
+			holder.lmg$setTug(dev.lmg.client.social.PartnerPlay.tug(entity.getUUID()));
 		}
 		// your own name tag in third person, if you want to see it
 		Minecraft mcx = Minecraft.getInstance();

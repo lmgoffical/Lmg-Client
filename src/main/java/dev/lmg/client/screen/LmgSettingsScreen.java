@@ -39,7 +39,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			new Category("You", new Page("Outfit", "cosmetics, pets and you"), new Page("Trails", "particles around you"), new Page("Items", "what's in your hand"), new Page("Sharing", "what other Lmg players see")),
 			new Category("Combat", new Page("Target", "whatever you're aiming at"), new Page("Crosshair", "shape, colour and size"), new Page("Hits", "effects, numbers and sounds"), new Page("Clarity", "seeing clearly in a fight")),
 			new Category("HUD", new Page("Bar", "the bar at the top"), new Page("Panels", "PvP stats, armour, hotbar"), new Page("Maps", "minimap, map and waypoints")),
-			new Category("Social", new Page("Friends", "who's online and joining them"), new Page("Emotes", "the emote wheel"), new Page("UID", "your Lmg number")),
+			new Category("Social", new Page("Friends", "who's online and joining them"), new Page("Partner", "climbing on and playing together"), new Page("Emotes", "the emote wheel"), new Page("UID", "your Lmg number")),
 			new Category("Menu", new Page("Look", "how this menu looks"), new Page("Main menu", "the title screen"), new Page("Help", "the tour, safety and mods")),
 			new Category("Game", new Page("Keys", "click a key, then press the new one"), new Page("Tools", "zoom, freecam and server-safe"), new Page("FPS", "make the game run smoother"), new Page("Configs", "save setups, share them with a code"))
 	};
@@ -294,7 +294,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		s.add(new Step("Friends", "See who's online, where they're playing, and join them. Key: O.",
 				null, () -> friendsRect));
 		s.add(new Step("Your UID", "Your Lmg number. The lower it is, the rarer: 1 to 10 are Founders. Grab yours here.",
-				() -> showPage(4, 2), () -> new int[]{cx0 + 2, rowsTop, cx1 - 4, rowsTop + 2 * ROW_GAP + 4}));
+				() -> showPage(4, 3), () -> new int[]{cx0 + 2, rowsTop, cx1 - 4, rowsTop + 2 * ROW_GAP + 4}));
 		s.add(new Step("Edit HUD", "Move the bar, the minimap and the panels wherever you like.",
 				null, () -> hudRect));
 		s.add(new Step("Keys worth knowing", "G emote wheel, F8 photo mode, M world map, C zoom, F7 film mode, O friends. Change any of them in Game > Keys.",
@@ -881,6 +881,28 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 					if (v) toast("Matching", dev.lmg.client.social.Partner.matchOutfit(true));
 				}).withHint("Their items, in your colours."));
 			}
+			case "Partner" -> {
+				r.add(SettingRow.toggle("Let my partner climb on me", () -> dev.lmg.client.social.Social.state().iAllowClimb(), v -> {
+					if (dev.lmg.client.social.Social.partner() == null) { toast("No partner yet", "Pick one in the Friends list first."); return; }
+					dev.lmg.client.social.Social.allowClimb(v, err -> toast(err != null ? "Couldn't change it" : v ? "Climbing allowed" : "Climbing off",
+							err != null ? err : v ? "Your partner can sit on you and play around you." : "They get down straight away."));
+				}).withHint("Off until you say yes. Then they can sit on you and play around you.").keywords("partner climb ride carry"));
+				r.add(SettingRow.button("Sit on their head", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_HEAD, "Climb"),
+						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_HEAD))
+						.withHint("Small, sitting on top of their head. Stand close first.").keywords("partner ride"));
+				r.add(SettingRow.button("Sit on their shoulder", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_SHOULDER, "Climb"),
+						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_SHOULDER))
+						.withHint("Tiny, on their left shoulder like a parrot.").keywords("partner ride"));
+				r.add(SettingRow.button("Play around them", () -> partnerAction(dev.lmg.client.emote.Emote.PLAY, "Play"),
+						() -> partnerToggle(dev.lmg.client.emote.Emote.PLAY))
+						.withHint("Hop round them, pull their arm, poke them, then sit together."));
+				r.add(SettingRow.toggle("Play when I'm idle", () -> c.partnerPlayIdle, v -> c.partnerPlayIdle = v)
+						.withHint("Leave the game a bit next to them and you start playing around them.")
+						.withMore(() -> more("Play when idle", "When you're next to your partner and not doing anything", () -> List.of(
+								SettingRow.slider("Start after", () -> c.partnerIdleSeconds, v -> c.partnerIdleSeconds = (int) Math.round(v), 5, 120, 5,
+										v -> Math.round(v) + " s").withHint("How long you have to be idle first.")),
+								() -> c.partnerIdleSeconds = 20)));
+			}
 			case "Emotes" -> {
 				r.add(SettingRow.button("Emote wheel", "Open", () -> {
 					if (minecraft.player != null) minecraft.gui.setScreen(new EmoteWheelScreen());
@@ -1056,6 +1078,21 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		for (int k = 0; k < all.length; k++) if (all[k].equals(LmgConfig.get().activeProfile)) i = k;
 		dev.lmg.client.feature.Looks.switchTo(all[Math.floorMod(i + dir, all.length)], msg -> toast("Profiles", msg));
 		rebuildWidgets();
+	}
+
+	/** "Climb" / "Get down" for a partner button. */
+	private static String partnerAction(dev.lmg.client.emote.Emote e, String start) {
+		return dev.lmg.client.social.PartnerPlay.mine() == e ? (e == dev.lmg.client.emote.Emote.PLAY ? "Stop" : "Get down") : start;
+	}
+
+	private void partnerToggle(dev.lmg.client.emote.Emote e) {
+		if (dev.lmg.client.social.PartnerPlay.mine() == e) {
+			dev.lmg.client.social.PartnerPlay.getDown();
+			return;
+		}
+		String why = dev.lmg.client.social.PartnerPlay.climb(e);
+		if (why != null) toast("Not yet", why);
+		else onClose();   // straight back to the game, so you can see it
 	}
 
 	/** Asks first, then deletes everything the Lmg server holds about you. */

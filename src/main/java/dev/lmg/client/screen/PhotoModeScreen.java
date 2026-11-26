@@ -118,7 +118,7 @@ public class PhotoModeScreen extends Screen {
 
 	/** None -> Wave -> Hug -> ... : your character strikes the pose for the shot. */
 	private static void poseStep(int dir) {
-		var all = dev.lmg.client.emote.Emote.values();
+		var all = java.util.Arrays.stream(dev.lmg.client.emote.Emote.values()).filter(e -> !e.withPartner()).toArray(dev.lmg.client.emote.Emote[]::new);
 		int i = PhotoMode.pose == null ? -1 : PhotoMode.pose.ordinal();
 		i = Math.floorMod(i + 1 + dir, all.length + 1) - 1;
 		PhotoMode.pose = i < 0 ? null : all[i];

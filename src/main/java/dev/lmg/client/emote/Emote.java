@@ -9,7 +9,11 @@ public enum Emote {
 	CLAP("clap", "Clap", 2.8f),
 	SIT("sit", "Sit", 0f),
 	POINT("point", "Point", 2.4f),
-	BOW("bow", "Bow", 2.2f);
+	BOW("bow", "Bow", 2.2f),
+	// with your partner (only if they said yes): you sit on them, or play around them
+	PERCH_HEAD("perch_head", "On their head", 0f),
+	PERCH_SHOULDER("perch_shoulder", "On their shoulder", 0f),
+	PLAY("play", "Playing around them", 0f);
 
 	public final String id, label;
 	public final float seconds;
@@ -27,6 +31,15 @@ public enum Emote {
 	/** Emotes that keep going until you move (and that someone walking up later should still see). */
 	public boolean lasting() {
 		return loops() || this == HUG;
+	}
+
+	/** Done together with your partner (drawn on or around them). */
+	public boolean withPartner() {
+		return this == PERCH_HEAD || this == PERCH_SHOULDER || this == PLAY;
+	}
+
+	public boolean perch() {
+		return this == PERCH_HEAD || this == PERCH_SHOULDER;
 	}
 
 	public static Emote byId(String id) {

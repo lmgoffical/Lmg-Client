@@ -14,6 +14,19 @@ public abstract class AvatarRenderStateMixin implements EmoteHolder {
 	@Unique
 	private float lmg$emoteTime;
 
+	@Unique
+	private float lmg$tug;
+
+	@Override
+	public float lmg$tug() {
+		return lmg$tug;
+	}
+
+	@Override
+	public void lmg$setTug(float amount) {
+		lmg$tug = amount;
+	}
+
 	@Override
 	public Emote lmg$emote() {
 		return lmg$emote;

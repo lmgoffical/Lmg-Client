@@ -17,5 +17,9 @@ public abstract class HumanoidModelMixin {
 		if (state instanceof EmoteHolder holder && holder.lmg$emote() != null) {
 			EmotePoses.apply((HumanoidModel<?>) (Object) this, holder.lmg$emote(), holder.lmg$emoteTime());
 		}
+		// someone pulling on your arm
+		if (state instanceof EmoteHolder holder && holder.lmg$tug() > 0.01f) {
+			EmotePoses.tugged((HumanoidModel<?>) (Object) this, holder.lmg$tug(), state.ageInTicks / 20f);
+		}
 	}
 }

@@ -31,6 +31,7 @@ public final class LmgKeys {
 	public static final KeyMapping COSMETICS = key("cosmetics", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping HUD_BAR = key("hud_bar", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping PROFILE = key("profile", InputConstants.UNKNOWN.getValue());
+	public static final KeyMapping CLIMB = key("climb", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping CINEMATIC = key("cinematic", InputConstants.KEY_F7);
 	public static final KeyMapping FRIENDS = key("friends", InputConstants.KEY_O);
 	public static final KeyMapping EMOTE = key("emote", InputConstants.KEY_G);
@@ -51,7 +52,8 @@ public final class LmgKeys {
 			new Bind(FRIENDS, "Friends", "Who's online, and join them."),
 			new Bind(EMOTE, "Emote wheel (hold)", "Hold, point, let go."),
 			new Bind(PHOTO, "Photo mode", "Freeze, frame it, save it."),
-			new Bind(PROFILE, "Next profile", "Everyday, PvP, Screenshots: swap in one press."));
+			new Bind(PROFILE, "Next profile", "Everyday, PvP, Screenshots: swap in one press."),
+			new Bind(CLIMB, "Climb on partner", "Head, then shoulder, then down (if they said yes)."));
 
 	private LmgKeys() {}
 
@@ -104,6 +106,19 @@ public final class LmgKeys {
 			LmgConfig.save();
 		}
 		while (PROFILE.consumeClick()) Looks.next(LmgKeys::say);
+		while (CLIMB.consumeClick()) {
+			var now = dev.lmg.client.social.PartnerPlay.mine();
+			if (now == dev.lmg.client.emote.Emote.PERCH_HEAD) {
+				dev.lmg.client.social.PartnerPlay.getDown();
+				String why = dev.lmg.client.social.PartnerPlay.climb(dev.lmg.client.emote.Emote.PERCH_SHOULDER);
+				if (why != null) say(why);
+			} else if (now != null) {
+				dev.lmg.client.social.PartnerPlay.getDown();
+			} else {
+				String why = dev.lmg.client.social.PartnerPlay.climb(dev.lmg.client.emote.Emote.PERCH_HEAD);
+				if (why != null) say(why);
+			}
+		}
 		while (HUD_BAR.consumeClick()) {
 			c.hudEnabled = !c.hudEnabled;
 			LmgConfig.save();

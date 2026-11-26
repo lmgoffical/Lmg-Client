@@ -7,4 +7,9 @@ public interface EmoteHolder {
 	float lmg$emoteTime();
 
 	void lmg$setEmote(Emote emote, float seconds);
+
+	/** How hard someone is pulling this player's arm (0 = not). */
+	float lmg$tug();
+
+	void lmg$setTug(float amount);
 }

@@ -133,6 +133,7 @@ public class LmgClient implements ClientModInitializer {
 			dev.lmg.client.world.Mist.tick(mc);
 			dev.lmg.client.map.DeathTrail.tick(mc);
 			dev.lmg.client.feature.Visuals.tick(mc);
+			dev.lmg.client.social.PartnerPlay.tick(mc);
 			dev.lmg.client.social.Uids.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});

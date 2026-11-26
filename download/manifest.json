@@ -1,9 +1,9 @@
 {
-  "version": "0.30.0",
+  "version": "0.31.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.30.0.jar",
-    "sha1": "c6ea6f16d64e6a22b5903d076c3aa383856916ac"
+    "file": "lmg-client-0.31.0.jar",
+    "sha1": "08dfd466eedb50729af681f0a0bc4eda1af63ea9"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.31",
+      "text": "Partners, closer. If your partner says yes (Social &gt; Partner &gt; Let my partner climb on me), you can sit on their head or their shoulder. Stand still next to them for a bit and you start playing around them: hopping round, pulling their arm, poking them, then sitting down together. Other Lmg players see it too."
+    },
+    {
       "version": "0.30",
       "text": "Delete means delete. Menu &gt; Help &gt; Delete all my Lmg data wipes everything our server has about you: friends, invites, your UID, shared pets and cosmetics, and the config codes you shared. On the website, your profile page has Delete my account, which removes your login, profile and every post."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.26",
       "text": "Friends & more. Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."
-    },
-    {
-      "version": "0.25",
-      "text": "Snow. Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."
     }
   ],
   "launcher": {

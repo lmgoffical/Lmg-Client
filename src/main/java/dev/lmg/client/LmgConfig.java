@@ -559,6 +559,8 @@ public final class LmgConfig {
 	public boolean friendsAppearOffline = false;
 	public boolean matchPartner = false;        // wear the same items as your partner (in your own colours)
 	public boolean partnerHearts = true;        // hearts between you and your partner when you're close
+	public boolean partnerPlayIdle = true;      // play around your partner when you've been idle next to them
+	public int partnerIdleSeconds = 20;
 	public boolean emoteCamera = true;          // switch to the front camera while you emote (from first person)
 	/** True while the database has your shared setup (so switching off removes it). */
 	public boolean avatarShared = false;
@@ -716,6 +718,7 @@ public final class LmgConfig {
 		if (activeProfile == null || activeProfile.isBlank()) activeProfile = PROFILES[0];
 		if (lowEndBackup == null) lowEndBackup = "";
 		if (friendNicknames == null) friendNicknames = new java.util.HashMap<>();
+		partnerIdleSeconds = Math.max(5, Math.min(120, partnerIdleSeconds));
 		friendNicknames.entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null || e.getValue().isBlank());
 		if (crosshairPixels == null || crosshairPixels.length != DRAW_SIZE) crosshairPixels = defaultDrawing();
 		// held item: older versions had size steps and a "lower" switch

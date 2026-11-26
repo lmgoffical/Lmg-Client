@@ -32,6 +32,8 @@ public final class EmotePoses {
 			case SIT -> sit(m, t, k);
 			case POINT -> point(m, t, k);
 			case BOW -> bow(m, t, k);
+			case PERCH_HEAD, PERCH_SHOULDER -> perch(m, t, k);
+			case PLAY -> play(m, t, k);
 		}
 	}
 
@@ -113,6 +115,70 @@ public final class EmotePoses {
 		lift(m, 10f * k);
 		// a slow breath
 		m.head.xRot += Mth.sin(t * 1.4f) * 0.02f * k;
+	}
+
+	/** Sitting up on your partner: legs hanging over the front, hands holding on, a little sway. */
+	private static void perch(HumanoidModel<?> m, float t, float k) {
+		float kick = Mth.sin(t * 3.2f) * 0.22f;   // swinging legs
+		to(m.rightLeg, -1.25f + kick, 0.12f, 0.06f, k);
+		to(m.leftLeg, -1.25f - kick, -0.12f, -0.06f, k);
+		to(m.rightArm, -0.35f, 0f, 0.35f, k);
+		to(m.leftArm, -0.35f, 0f, -0.35f, k);
+		lift(m, 10f * k);
+		m.body.zRot += Mth.sin(t * 1.6f) * 0.05f * k;
+		m.head.zRot += Mth.sin(t * 1.6f + 0.6f) * 0.09f * k;
+	}
+
+	/** Playing around your partner; which move depends on how far into the routine you are. */
+	private static void play(HumanoidModel<?> m, float t, float k) {
+		int seg = dev.lmg.client.social.PartnerPlay.segment(t);
+		float st = dev.lmg.client.social.PartnerPlay.segmentTime(t);
+		// each move fades in from the start of its part
+		float w = k * ease(Mth.clamp(st / 0.4f, 0f, 1f));
+		switch (seg) {
+			case 0 -> {
+				// hopping round: arms up, waving about
+				float pump = Mth.sin(st * 7f) * 0.35f;
+				to(m.rightArm, -0.2f, 0f, 2.6f + pump, w);
+				to(m.leftArm, -0.2f, 0f, -2.6f + pump, w);
+				m.head.xRot = Mth.lerp(w, m.head.xRot, -0.2f);
+			}
+			case 1 -> {
+				// pulling their arm: both hands out to them, leaning back, tugging in pulls
+				float pull = 0.6f + 0.4f * Mth.sin(st * 5.5f);
+				to(m.rightArm, -1.5f, -0.25f, 0f, w);
+				to(m.leftArm, -1.5f, 0.25f, 0f, w);
+				m.body.xRot = Mth.lerp(w, m.body.xRot, -0.28f * pull);
+				m.head.xRot = Mth.lerp(w, m.head.xRot, -0.25f);
+				to(m.rightLeg, -0.55f, 0f, 0.05f, w);
+				to(m.leftLeg, 0.35f, 0f, -0.05f, w);
+				m.rightArm.xRot -= 0.12f * pull * w;
+				m.leftArm.xRot -= 0.12f * pull * w;
+			}
+			case 2 -> {
+				// poking them, hand on hip, head tilting
+				float poke = Math.max(0f, Mth.sin(st * 9f));
+				to(m.rightArm, -1.35f - 0.25f * poke, -0.15f, 0f, w);
+				to(m.leftArm, -0.15f, 0f, -0.75f, w);
+				m.head.zRot += Mth.sin(st * 4f) * 0.18f * w;
+				m.body.zRot += Mth.sin(st * 4f) * 0.04f * w;
+			}
+			default -> {
+				// a rest: sitting next to them, leaning on them
+				sit(m, st, w);
+				m.head.zRot = Mth.lerp(w, m.head.zRot, 0.32f);
+				m.body.zRot = Mth.lerp(w, m.body.zRot, 0.08f);
+				to(m.rightArm, -0.9f, 0.2f, -0.35f, w);
+			}
+		}
+	}
+
+	/** Someone pulling your left arm: it gets tugged out to the side, and you lean that way a bit. */
+	public static void tugged(HumanoidModel<?> m, float amount, float time) {
+		float jerk = 0.12f * Mth.sin(time * 5.5f);
+		to(m.leftArm, -0.45f + jerk, 0f, -1.15f - jerk, amount);
+		m.body.zRot = Mth.lerp(amount, m.body.zRot, -0.07f);
+		m.head.zRot = Mth.lerp(amount, m.head.zRot, -0.12f);
 	}
 
 	private static void point(HumanoidModel<?> m, float t, float k) {
