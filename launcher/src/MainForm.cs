@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,36 +12,36 @@ using System.Windows.Forms;
 
 namespace LmgLauncher
 {
-    /// <summary>The app window: Home (you, Play, what's new), Mods, and Settings.</summary>
+    /// <summary>
+    /// The app window. Kept plain on purpose: the website's fonts and colours, text links instead
+    /// of a wall of buttons, one solid Play button, and real information instead of slogans.
+    /// </summary>
     class MainForm : Form
     {
-        const int W = 960, H = 600, TITLE = 56;
+        const int W = 940, H = 580, TITLE = 50;
         enum Tab { Home, Mods, Settings }
 
         readonly Installer installer = new Installer();
         readonly AppSettings settings = AppSettings.Load();
-        readonly Font fTitle, fHero, fH2, fName, fBody, fSmall, fBadge, fButton, fPlay, fMono;
-        readonly Random rnd = new Random(7);
-        readonly List<PointF> stars = new List<PointF>();
-        readonly List<float> starPhase = new List<float>();
-        readonly Timer twinkle = new Timer { Interval = 60 };
+        readonly Font fWord, fNav, fHello, fH2, fBody, fSmall, fTiny, fLink, fPlay, fPixel, fPixelSmall, fRow;
         readonly Timer gameWatch = new Timer { Interval = 3000 };
+        readonly Timer anim = new Timer { Interval = 30 };
 
         Tab tab = Tab.Home;
         Account account;
-        string heading = "Checking for updates...";
-        string sub = "One moment.";
+        string line1 = "Checking for updates...";
         string status = "";
         Color statusColor = C.Faint;
         double progress = -1;
-        bool busy, playing, updateReady;
+        bool busy, playing, updateReady, checkedOnce;
         FileInfo crash;
-        float playPulse;
+        float stickerIn;
         List<KeyValuePair<string, string>> news = new List<KeyValuePair<string, string>>();
 
-        // controls per tab
         readonly List<Control> homeControls = new List<Control>(), modsControls = new List<Control>(), settingsControls = new List<Control>();
-        readonly Btn tabHome, tabMods, tabSettings, play, switchAccount, crashOpen, crashDismiss;
+        readonly Btn navHome, navMods, navSettings, play, switchLink, changelogLink;
+        RectangleF crashOpenRect, crashHideRect;   // drawn links on the crash line
+        int hotLink;
         readonly ModsView modsView;
         readonly Slider ram;
         readonly Toggle shaders, closeOnLaunch;
@@ -58,86 +59,91 @@ namespace LmgLauncher
             ClientSize = new Size(Dpi.D(W), Dpi.D(H));
             RestorePosition();
 
-            fTitle = new Font("Segoe UI Semibold", 11f);
-            fHero = new Font("Segoe UI Semibold", 22f);
-            fH2 = new Font("Segoe UI Semibold", 15f);
-            fName = new Font("Segoe UI Semibold", 11.5f);
-            fBody = new Font("Segoe UI", 10.5f);
-            fSmall = new Font("Segoe UI", 9f);
-            fBadge = new Font("Segoe UI Semibold", 7.5f);
-            fButton = new Font("Segoe UI Semibold", 9.5f);
-            fPlay = new Font("Segoe UI Semibold", 17f);
-            fMono = new Font("Consolas", 9f);
+            fWord = Fonts.Bold(11.5f);
+            fNav = Fonts.Medium(10f);
+            fHello = Fonts.Bold(24f);
+            fH2 = Fonts.Bold(18f);
+            fBody = Fonts.Text(10.5f);
+            fSmall = Fonts.Text(9.5f);
+            fTiny = Fonts.Text(8.5f);
+            fLink = Fonts.Medium(9.5f);
+            fPlay = Fonts.Bold(15f);
+            fPixel = Fonts.Pixel(9f);
+            fPixelSmall = Fonts.Pixel(7f);
+            fRow = Fonts.Bold(10.5f);
 
-            for (int i = 0; i < 70; i++)
-            {
-                stars.Add(new PointF((float)rnd.NextDouble() * W, TITLE + (float)rnd.NextDouble() * (H - TITLE)));
-                starPhase.Add((float)(rnd.NextDouble() * Math.PI * 2));
-            }
-
-            // title bar
-            tabHome = Add(null, new Btn("Home", fButton, Btn.Kind.Tab), 360, 13, 76, 30, () => ShowTab(Tab.Home));
-            tabMods = Add(null, new Btn("Mods", fButton, Btn.Kind.Tab), 442, 13, 76, 30, () => ShowTab(Tab.Mods));
-            tabSettings = Add(null, new Btn("Settings", fButton, Btn.Kind.Tab), 524, 13, 86, 30, () => ShowTab(Tab.Settings));
-            Add(null, new Btn("–", fTitle, Btn.Kind.Ghost), W - 98, 13, 40, 30, () => WindowState = FormWindowState.Minimized);
-            Add(null, new Btn("✕", fTitle, Btn.Kind.Ghost), W - 54, 13, 40, 30, Close);
+            // title bar: name, three plain links, window buttons
+            navHome = Add(null, new Btn("Home", fNav, Btn.Kind.Nav), 214, 10, 64, 34, () => ShowTab(Tab.Home));
+            navMods = Add(null, new Btn("Mods", fNav, Btn.Kind.Nav), 282, 10, 60, 34, () => ShowTab(Tab.Mods));
+            navSettings = Add(null, new Btn("Settings", fNav, Btn.Kind.Nav), 346, 10, 80, 34, () => ShowTab(Tab.Settings));
+            Add(null, new Btn("—", fNav, Btn.Kind.Window), W - 86, 10, 36, 30, () => WindowState = FormWindowState.Minimized);
+            Add(null, new Btn("✕", fNav, Btn.Kind.Window), W - 46, 10, 36, 30, Close);
 
             // home
-            switchAccount = Add(homeControls, new Btn("Switch account", fButton, Btn.Kind.Ghost), 390, 105, 120, 30, () => Installer.OpenMinecraftLauncher());
-            play = Add(homeControls, new Btn("PLAY", fPlay, Btn.Kind.Primary), 40, 300, 480, 66, () => Play());
-            crashOpen = Add(homeControls, new Btn("Open report", fButton, Btn.Kind.Ghost), 330, 440, 96, 28, OpenCrash);
-            crashDismiss = Add(homeControls, new Btn("Dismiss", fButton, Btn.Kind.Ghost), 432, 440, 76, 28, DismissCrash);
-            Add(homeControls, new Btn("Game folder", fButton, Btn.Kind.Ghost), 40, 498, 114, 32, () => OpenFolder(Paths.GameDir));
-            Add(homeControls, new Btn("Mods folder", fButton, Btn.Kind.Ghost), 162, 498, 114, 32, () => OpenFolder(Paths.Mods));
-            Add(homeControls, new Btn("Screenshots", fButton, Btn.Kind.Ghost), 284, 498, 114, 32, () => OpenFolder(Path.Combine(Paths.GameDir, "screenshots")));
-            Add(homeControls, new Btn("Website", fButton, Btn.Kind.Ghost), 406, 498, 114, 32, () => Open("https://lmgoffical.github.io/Lmg-Client/"));
+            play = Add(homeControls, new Btn("Play", fPlay, Btn.Kind.Primary) { TagFont = fPixel }, 48, 238, 300, 58, () => Play());
+            switchLink = Link(homeControls, "switch account", 0, 180, () => Installer.OpenMinecraftLauncher());
+            int lx = 48;
+            foreach (var (label, action) in new (string, Action)[] {
+                ("Game folder", () => OpenFolder(Paths.GameDir)), ("Mods folder", () => OpenFolder(Paths.Mods)),
+                ("Screenshots", () => OpenFolder(Path.Combine(Paths.GameDir, "screenshots"))), ("Website", () => Open("https://lmgoffical.github.io/Lmg-Client/")) })
+            {
+                var l = Link(homeControls, label, lx, 404, action);
+                lx += (int)(l.Width / Dpi.Scale) + 22;
+            }
+            changelogLink = Link(homeControls, "Full changelog on the website", 600, 476, () => Open("https://lmgoffical.github.io/Lmg-Client/"));
 
             // mods
-            modsView = Add(modsControls, new ModsView(fName, fSmall, fBadge), 40, 132, 880, 392, null);
+            modsView = Add(modsControls, new ModsView(Fonts.Bold(10.5f), fSmall, fPixelSmall), 48, 120, 844, 382, null);
             modsView.Message += m => SetStatus(m, m.EndsWith(" is on.") || m.EndsWith(" is off.") ? C.Faint : C.Gold);
-            Add(modsControls, new Btn("Open folder", fButton, Btn.Kind.Ghost), 700, 86, 104, 30, () => OpenFolder(Paths.Mods));
-            Add(modsControls, new Btn("Find more", fButton, Btn.Kind.Ghost), 812, 86, 104, 30, () => Open("https://modrinth.com/mods?g=categories:fabric"));
+            var findMore = Link(modsControls, "Find more on Modrinth", 0, 80, () => Open("https://modrinth.com/mods?g=categories:fabric"));
+            findMore.Left = Dpi.D(892) - findMore.Width;
+            var openFolder = Link(modsControls, "Open the folder", 0, 80, () => OpenFolder(Paths.Mods));
+            openFolder.Left = findMore.Left - openFolder.Width - Dpi.D(20);
 
-            // settings
+            // settings: one plain list, control on the right of each row
             int total = Installer.TotalRamGb();
-            ram = Add(settingsControls, new Slider { Min = 1, Max = Math.Max(3, Math.Min(12, total - 2)) }, 60, 150, 390, 30, null);
+            ram = Add(settingsControls, new Slider { Min = 1, Max = Math.Max(3, Math.Min(12, total - 2)) }, 560, 120, 220, 26, null);
             ram.Value = settings.RamGb == 0 ? 1 : settings.RamGb;
             ram.Changed += v =>
             {
                 settings.RamGb = v <= 1 ? 0 : v;
                 settings.Save();
-                SetStatus("Memory changes apply the next time you press Play.", C.Faint);
+                SetStatus("Memory changes kick in next time you press Play.", C.Faint);
             };
-            shaders = Add(settingsControls, new Toggle(), 404, 226, 46, 24, null);
+            shaders = Add(settingsControls, new Toggle(), 744, 178, 40, 22, null);
             shaders.Changed += on =>
             {
-                try { Game.SetShaders(on); SetStatus(on ? "Shaders on for next time." : "Shaders off for next time.", C.Faint); }
+                try { Game.SetShaders(on); SetStatus(on ? "Shaders will be on next time." : "Shaders will be off next time.", C.Faint); }
                 catch (Exception ex) { SetStatus("Couldn't change shaders: " + ex.Message, C.Bad); }
             };
-            closeOnLaunch = Add(settingsControls, new Toggle { On = settings.CloseOnLaunch }, 404, 302, 46, 24, null);
+            closeOnLaunch = Add(settingsControls, new Toggle { On = settings.CloseOnLaunch }, 744, 236, 40, 22, null);
             closeOnLaunch.Changed += on => { settings.CloseOnLaunch = on; settings.Save(); };
-            Add(settingsControls, new Btn("Repair", fButton, Btn.Kind.Ghost), 350, 372, 100, 30, () => { ShowTab(Tab.Home); Play(repairOnly: true); });
-            Add(settingsControls, new Btn("Check now", fButton, Btn.Kind.Ghost), 800, 142, 100, 30, async () => { ShowTab(Tab.Home); await Check(); });
-            Add(settingsControls, new Btn("Website", fButton, Btn.Kind.Ghost), 510, 222, 92, 30, () => Open("https://lmgoffical.github.io/Lmg-Client/"));
-            Add(settingsControls, new Btn("Privacy", fButton, Btn.Kind.Ghost), 608, 222, 92, 30, () => Open("https://lmgoffical.github.io/Lmg-Client/#/privacy"));
-            Add(settingsControls, new Btn("Report a problem", fButton, Btn.Kind.Ghost), 706, 222, 130, 30, () => Open("https://github.com/lmgoffical/Lmg-Client/issues/new"));
-            Add(settingsControls, new Btn("Open", fButton, Btn.Kind.Ghost), 800, 296, 100, 30, () => OpenFolder(Paths.GameDir));
-            Add(settingsControls, new Btn("Remove", fButton, Btn.Kind.Danger), 800, 372, 100, 30, RemoveApp);
+            Link(settingsControls, "Check now", 700, 292, async () => { ShowTab(Tab.Home); await Check(); });
+            Link(settingsControls, "Repair", 700, 350, () => { ShowTab(Tab.Home); Play(repairOnly: true); });
+            Link(settingsControls, "Open", 700, 408, () => OpenFolder(Paths.GameDir));
+            Add(settingsControls, new Btn("Remove", fLink, Btn.Kind.Danger), 700, 458, 80, 26, RemoveApp);
+            int sx = 48;
+            foreach (var (label, url) in new[] { ("Website", "https://lmgoffical.github.io/Lmg-Client/"), ("Privacy", "https://lmgoffical.github.io/Lmg-Client/#/privacy"),
+                ("Report a problem", "https://github.com/lmgoffical/Lmg-Client/issues/new") })
+            {
+                var l = Link(settingsControls, label, sx, 516, () => Open(url));
+                sx += (int)(l.Width / Dpi.Scale) + 22;
+            }
 
             ShowTab(startTab == "mods" ? Tab.Mods : startTab == "settings" ? Tab.Settings : Tab.Home);
-
-            twinkle.Tick += (s, e) =>
+            gameWatch.Tick += async (s, e) => await WatchGame();
+            anim.Tick += (s, e) =>
             {
-                if (WindowState == FormWindowState.Minimized) return;
-                playPulse += 0.06f;
+                float target = updateReady && tab == Tab.Home ? 1f : 0f;
+                if (Math.Abs(stickerIn - target) < 0.01f) { stickerIn = target; return; }
+                stickerIn += (target - stickerIn) * 0.18f;
                 Invalidate(false);
             };
-            twinkle.Start();
-            gameWatch.Tick += async (s, e) => await WatchGame();
+            anim.Start();
 
             Shown += async (s, e) =>
             {
-                if (justUpdated) SetStatus("The app updated itself to " + AppSetup.CurrentText + ".", C.Good);
+                if (justUpdated) SetStatus("Updated the app to " + AppSetup.CurrentText + ".", C.Good);
                 account = Account.ReadActive();
                 Invalidate();
                 var skin = account?.LoadSkin();
@@ -158,12 +164,19 @@ namespace LmgLauncher
             return c;
         }
 
+        Btn Link(List<Control> group, string text, int x, int y, Action click)
+        {
+            var b = Add(group, new Btn(text, fLink, Btn.Kind.Link), x, y, 100, 24, click);
+            b.FitWidth();
+            return b;
+        }
+
         void ShowTab(Tab t)
         {
             tab = t;
-            tabHome.Selected = t == Tab.Home;
-            tabMods.Selected = t == Tab.Mods;
-            tabSettings.Selected = t == Tab.Settings;
+            navHome.Selected = t == Tab.Home;
+            navMods.Selected = t == Tab.Mods;
+            navSettings.Selected = t == Tab.Settings;
             foreach (var c in homeControls) c.Visible = t == Tab.Home;
             foreach (var c in modsControls) c.Visible = t == Tab.Mods;
             foreach (var c in settingsControls) c.Visible = t == Tab.Settings;
@@ -173,21 +186,23 @@ namespace LmgLauncher
                 shaders.On = Game.ShadersOn();
                 shaders.Enabled = !playing && Game.ShaderPack() != null;
             }
-            UpdateHomeControls();
             status = "";
+            UpdateHome();
             foreach (Control c in Controls) c.Invalidate();
             Invalidate();
         }
 
-        void UpdateHomeControls()
+        void UpdateHome()
         {
             bool home = tab == Tab.Home;
-            bool showCrash = home && crash != null;
-            crashOpen.Visible = crashDismiss.Visible = showCrash;
-            switchAccount.Visible = home;
-            switchAccount.Label = account == null ? "Open launcher" : "Switch account";
+            switchLink.Visible = home;
+            switchLink.Label = account == null ? "open the Minecraft Launcher" : "switch account";
+            switchLink.FitWidth();
             play.Enabled = !busy && !playing;
-            play.Label = playing ? "PLAYING" : busy ? "WORKING..." : updateReady ? "UPDATE & PLAY" : "PLAY";
+            play.Label = playing ? "Playing" : busy ? "One sec..." : updateReady ? "Update & play" : "Play";
+            play.Tag2 = Installer.InstalledVersion() is string v && !updateReady ? v.Replace(".0", "") : installer.LatestVersion?.Replace(".0", "");
+            changelogLink.Visible = home && news.Count > 0;
+            play.Invalidate();
         }
 
         // ---- the work ---------------------------------------------------------------------------
@@ -201,27 +216,44 @@ namespace LmgLauncher
                 if (await AppSetup.UpdateSelf(installer, s => SetStatus(s, C.Faint))) { Close(); return; }
                 string latest = installer.LatestVersion, have = Installer.InstalledVersion();
                 updateReady = have != null && !installer.UpToDate();
-                if (have == null) { heading = "Let's get you set up."; sub = "Press Play and I'll install everything. It takes about a minute."; }
-                else if (!updateReady) { heading = "Ready when you are."; sub = "You're on the newest Lmg Client (" + latest + ")."; }
-                else { heading = "There's an update."; sub = "Lmg Client " + latest + " is out (you have " + have + "). Play gets it first."; }
+                if (have == null) line1 = "Nothing's installed yet. Press Play and give it about a minute.";
+                else if (!updateReady) line1 = "You're on " + Short(latest) + ", the newest one." + LastPlayed();
+                else line1 = Short(latest) + " is out (you have " + Short(have) + "). Play updates it first.";
                 SetStatus("", C.Faint);
             }
             catch (Exception ex)
             {
                 bool have = Installer.InstalledVersion() != null;
-                heading = have ? "Ready when you are." : "Can't reach the update server.";
-                sub = have ? "Couldn't check for updates, but you can still play." : "Check your internet, then try again.";
-                SetStatus("Couldn't check for updates: " + Friendly(ex), C.Bad);
+                line1 = have ? "Couldn't check for updates, but you can still play." : "I can't reach the update server. Check your internet?";
+                SetStatus(Friendly(ex), C.Bad);
             }
-            UpdateHomeControls();
+            checkedOnce = true;
+            UpdateHome();
             Invalidate();
+        }
+
+        static string Short(string v) => v?.EndsWith(".0") == true ? v.Substring(0, v.Length - 2) : v;
+
+        static string LastPlayed()
+        {
+            try
+            {
+                var log = new FileInfo(Path.Combine(Paths.GameDir, "logs", "latest.log"));
+                if (!log.Exists) return "";
+                var ago = DateTime.Now - log.LastWriteTime;
+                string when = ago.TotalMinutes < 2 ? "just now" : ago.TotalHours < 1 ? (int)ago.TotalMinutes + " minutes ago"
+                    : ago.TotalDays < 1 ? (int)ago.TotalHours + (ago.TotalHours < 2 ? " hour ago" : " hours ago")
+                    : ago.TotalDays < 2 ? "yesterday" : (int)ago.TotalDays + " days ago";
+                return " Last played " + when + ".";
+            }
+            catch { return ""; }
         }
 
         async void Play(bool repairOnly = false)
         {
             if (busy || playing) return;
             busy = true;
-            UpdateHomeControls();
+            UpdateHome();
             try
             {
                 if (installer.Manifest == null) await installer.Fetch();
@@ -239,17 +271,15 @@ namespace LmgLauncher
                 }
                 if (repairOnly)
                 {
-                    heading = "All fixed.";
-                    sub = "Everything was downloaded fresh.";
-                    SetStatus("Done.", C.Good);
+                    line1 = "Everything's been downloaded fresh.";
+                    SetStatus("Repaired.", C.Good);
                     return;
                 }
                 Installer.SelectProfile();
-                heading = "Opening Minecraft...";
-                sub = "\"Lmg Client\" is picked in the Minecraft Launcher - just press Play there.";
+                line1 = "The Minecraft Launcher's opening with Lmg Client picked. Press Play there.";
                 if (Installer.MinecraftLauncherRunning())
                 {
-                    SetStatus("The Minecraft Launcher is already open: pick \"Lmg Client\" there and press Play.", C.Gold);
+                    SetStatus("The Minecraft Launcher was already open, so pick \"Lmg Client\" there.", C.Gold);
                     return;
                 }
                 Installer.OpenMinecraftLauncher();
@@ -268,7 +298,7 @@ namespace LmgLauncher
             {
                 busy = false;
                 progress = -1;
-                if (!IsDisposed) { UpdateHomeControls(); Invalidate(); }
+                if (!IsDisposed) { UpdateHome(); Invalidate(); }
             }
         }
 
@@ -277,13 +307,13 @@ namespace LmgLauncher
             bool now = await Task.Run(() => Game.Running());
             if (now == playing) return;
             playing = now;
-            if (playing) { heading = "Have fun!"; sub = "Lmg Client is running. Mods and shaders can be changed once you close the game."; }
+            if (playing) line1 = "Minecraft's running. Mods and shaders can be changed once you close it.";
             else
             {
                 RefreshCrash();
                 await Check();
             }
-            UpdateHomeControls();
+            UpdateHome();
             if (tab != Tab.Home) ShowTab(tab);
             Invalidate();
         }
@@ -292,7 +322,7 @@ namespace LmgLauncher
         {
             var latest = Game.LatestCrash();
             crash = latest != null && latest.Name != settings.CrashSeen && latest.LastWriteTimeUtc > DateTime.UtcNow.AddDays(-3) ? latest : null;
-            UpdateHomeControls();
+            UpdateHome();
         }
 
         void OpenCrash()
@@ -305,14 +335,14 @@ namespace LmgLauncher
         {
             if (crash != null) { settings.CrashSeen = crash.Name; settings.Save(); }
             crash = null;
-            UpdateHomeControls();
+            UpdateHome();
             Invalidate();
         }
 
         static string Friendly(Exception ex)
         {
             if (ex is AggregateException ag && ag.InnerException != null) ex = ag.InnerException;
-            if (ex is System.Net.Http.HttpRequestException) return "couldn't reach the internet (or GitHub/Modrinth is down).";
+            if (ex is System.Net.Http.HttpRequestException) return "No connection (or GitHub/Modrinth is having a moment).";
             return ex.Message;
         }
 
@@ -327,7 +357,7 @@ namespace LmgLauncher
         void RemoveApp()
         {
             var ok = MessageBox.Show(this,
-                "Remove the Lmg Client app and its shortcuts?\n\nYour Lmg game folder, worlds and settings stay. You can still play from the Minecraft Launcher.",
+                "Remove the Lmg Client app and its shortcuts?\n\nYour Lmg game folder, worlds and settings stay, and you can still play from the Minecraft Launcher.",
                 "Remove Lmg Client", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (ok != DialogResult.Yes) return;
             AppSetup.Uninstall();
@@ -349,8 +379,6 @@ namespace LmgLauncher
             try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); } catch { }
         }
 
-        // ---- keyboard ---------------------------------------------------------------------------
-
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter && tab == Tab.Home) { Play(); e.Handled = true; }
@@ -367,22 +395,25 @@ namespace LmgLauncher
         {
             var g = e.Graphics;
             Gfx.Setup(g);
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
             g.ScaleTransform(Dpi.Scale, Dpi.Scale);
 
-            using (var brush = new LinearGradientBrush(new Rectangle(0, 0, W, H), C.Panel, C.Bg, 60f)) g.FillRectangle(brush, 0, 0, W, H);
-            // twinkling stars
-            for (int i = 0; i < stars.Count; i++)
+            g.Clear(C.Bg);
+            if (tab == Tab.Home)
             {
-                float a = 0.12f + 0.25f * (0.5f + 0.5f * (float)Math.Sin(playPulse * 0.6f + starPhase[i]));
-                float s = i % 7 == 0 ? 2f : 1.2f;
-                using (var b = new SolidBrush(C.Alpha(Color.White, a))) g.FillEllipse(b, stars[i].X, stars[i].Y, s, s);
+                // the little landscape lives on Home; the other tabs stay quiet
+                var oldInterp = g.InterpolationMode;
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.DrawImage(Scenery.Get(W, 150), 0, H - 150, W, 150);
+                g.InterpolationMode = oldInterp;
             }
             using (var pen = new Pen(C.Line)) g.DrawRectangle(pen, 0, 0, W - 1, H - 1);
 
             // title bar
-            Gfx.Star(g, 28, TITLE / 2f, 10f, C.Blue, 2f);
-            Gfx.Text(g, "Lmg Client", fTitle, C.Text, 46, 16);
-            Gfx.Text(g, "app " + AppSetup.CurrentText, fSmall, C.Gold, 46 + g.MeasureString("Lmg Client", fTitle).Width + 6, 19);
+            Gfx.Star(g, 26, 26, 8f, C.Blue, 1.8f);
+            Gfx.Text(g, "lmg client", fWord, C.Text, 42, 15);
+            float ww = g.MeasureString("lmg client", fWord).Width;
+            Gfx.Text(g, "app " + AppSetup.CurrentText, fPixelSmall, C.Gold, 42 + ww + 6, 20);
             using (var pen = new Pen(C.Line)) g.DrawLine(pen, 0, TITLE, W, TITLE);
 
             switch (tab)
@@ -391,127 +422,166 @@ namespace LmgLauncher
                 case Tab.Mods: DrawMods(g); break;
                 default: DrawSettings(g); break;
             }
-
-            Gfx.Text(g, "Not made by Mojang or Microsoft. You sign in with the normal Minecraft Launcher - this app never sees your password.", fSmall, C.Faint, 40, H - 28);
+            Gfx.Text(g, "made by lmg. not affiliated with Mojang or Microsoft. you sign in with the normal Minecraft Launcher; this app never sees your password.",
+                fTiny, C.Alpha(C.Faint, 0.8f), 48, H - 24);
         }
 
         void DrawHome(Graphics g)
         {
-            // you
-            var card = new RectangleF(40, 80, 480, 84);
-            Gfx.Fill(g, card, 12, C.Alpha(C.Panel2, 0.92f));
-            Gfx.Outline(g, card, 12, C.Line);
-            var face = new RectangleF(56, 94, 56, 56);
-            Gfx.Fill(g, RectangleF.Inflate(face, 3, 3), 9, C.Line2);
+            // your face, a little crooked, like a photo stuck on
             var state = g.Save();
-            using (var clip = Gfx.Round(face, 7)) g.SetClip(clip);
+            g.TranslateTransform(84, 120);
+            g.RotateTransform(-3f);
+            var face = new RectangleF(-36, -36, 72, 72);
+            using (var b = new SolidBrush(C.Line2)) g.FillRectangle(b, RectangleF.Inflate(face, 3, 3));
             Account.DrawFace(g, account?.Skin, face);
             g.Restore(state);
-            if (account != null)
-            {
-                Gfx.Text(g, account.Name, fH2, C.Text, 126, 94);
-                Gfx.Text(g, "Signed in through the Minecraft Launcher", fSmall, C.Faint, 128, 126);
-                using (var b = new SolidBrush(playing ? C.Good : C.Alpha(C.Good, 0.85f))) g.FillEllipse(b, 104, 140, 12, 12);
-                using (var p = new Pen(C.Panel2, 2)) g.DrawEllipse(p, 104, 140, 12, 12);
-            }
-            else
-            {
-                Gfx.Text(g, "Not signed in", fH2, C.Text, 126, 94);
-                Gfx.Text(g, "Open the Minecraft Launcher and sign in first.", fSmall, C.Faint, 128, 126);
-            }
 
-            // what's going on
-            Gfx.TextIn(g, heading, fHero, C.Text, new RectangleF(38, 186, 480, 46));
-            Gfx.TextIn(g, sub, fBody, C.Muted, new RectangleF(40, 234, 470, 50));
-
-            // Play glow (breathes while ready)
-            if (play.Enabled)
+            string name = account?.Name;
+            string hello = name != null ? "Hey " + name + "." : "Hey there.";
+            Gfx.Text(g, hello, fHello, C.Text, 140, 80);
+            if (name != null)
             {
-                float k = 0.55f + 0.45f * (float)Math.Sin(playPulse);
-                Gfx.Glow(g, new RectangleF(40, 300, 480, 66), 10, C.Blue, 0.6f + 0.4f * k);
+                // a hand-drawn gold underline under your name
+                float start = 140 + g.MeasureString("Hey ", fHello).Width - 6;
+                float width = g.MeasureString(name, fHello).Width - 8;
+                Squiggle(g, start, 124, width);
+            }
+            Gfx.TextIn(g, checkedOnce ? line1 : "Checking for updates...", fBody, C.Muted, new RectangleF(141, 134, 420, 44));
+            string who = account != null ? "Signed in through the Minecraft Launcher." : "Not signed in yet.";
+            Gfx.Text(g, who, fSmall, C.Faint, 141, 182);
+            switchLink.Left = Dpi.D(141 + g.MeasureString(who, fSmall).Width + 2);
+            switchLink.Top = Dpi.D(180);
+
+            // a little sticker on Play when there's an update
+            if (stickerIn > 0.01f)
+            {
+                var s = g.Save();
+                g.TranslateTransform(342, 236);
+                g.RotateTransform(8f);
+                g.ScaleTransform(stickerIn, stickerIn);
+                var r = new RectangleF(-30, -11, 60, 22);
+                Gfx.Fill(g, r, 3, C.Gold);
+                using (var fmt = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+                using (var b = new SolidBrush(C.Bg)) g.DrawString("NEW!", fPixel, b, r, fmt);
+                g.Restore(s);
             }
 
             if (progress >= 0)
             {
-                Gfx.Fill(g, new RectangleF(40, 380, 480, 5), 2.5f, C.Line);
-                Gfx.Fill(g, new RectangleF(40, 380, (float)(480 * Math.Max(0.02, Math.Min(1, progress))), 5), 2.5f, C.Blue);
+                using (var b = new SolidBrush(C.Line)) g.FillRectangle(b, 48, 308, 300, 3);
+                using (var b = new SolidBrush(C.Blue)) g.FillRectangle(b, 48, 308, (float)(300 * Math.Max(0.02, Math.Min(1, progress))), 3);
             }
-            Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(40, 392, 480, 34));
+            Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(48, 318, 480, 36));
 
+            crashOpenRect = crashHideRect = RectangleF.Empty;
             if (crash != null)
             {
-                var banner = new RectangleF(40, 432, 480, 44);
-                Gfx.Fill(g, banner, 8, Color.FromArgb(0x2A, 0x12, 0x1A));
-                Gfx.Outline(g, banner, 8, C.Alpha(C.Bad, 0.5f));
-                Gfx.Text(g, "Minecraft crashed", fName, C.Bad, 54, 436);
-                Gfx.Text(g, crash.LastWriteTime.ToString("dddd h:mm tt"), fSmall, C.Faint, 55, 456);
+                using (var b = new SolidBrush(C.Bad)) g.FillRectangle(b, 48, 368, 6, 6);
+                string msg = "Minecraft crashed " + When(crash.LastWriteTime) + ".";
+                Gfx.Text(g, msg, fSmall, C.Bad, 60, 361);
+                float mx = 60 + g.MeasureString(msg, fSmall).Width + 8;
+                crashOpenRect = DrawnLink(g, "open the report", mx, 361, hotLink == 1);
+                crashHideRect = DrawnLink(g, "hide", crashOpenRect.Right + 12, 361, hotLink == 2);
             }
 
-            // what's new
-            var right = new RectangleF(560, 80, 360, 452);
-            Gfx.Fill(g, right, 12, C.Alpha(C.Panel, 0.94f));
-            Gfx.Outline(g, right, 12, C.Line);
-            Gfx.Text(g, "What's new", fName, C.Text, right.X + 20, right.Y + 16);
-            float y = right.Y + 50;
-            if (news.Count == 0) Gfx.Text(g, "Loading...", fSmall, C.Faint, right.X + 20, y);
-            foreach (var n in news)
+            // changelog, plain
+            float x = 600, y = 82;
+            Gfx.Text(g, "CHANGELOG", fPixelSmall, C.Faint, x, y);
+            y += 22;
+            if (news.Count == 0) Gfx.Text(g, "Loading...", fSmall, C.Faint, x, y);
+            for (int i = 0; i < news.Count; i++)
             {
-                var size = g.MeasureString(n.Value, fSmall, (int)(right.Width - 90));
-                if (y + size.Height > right.Bottom - 14) break;
-                Gfx.Fill(g, new RectangleF(right.X + 18, y, 42, 18), 4, C.Alpha(C.Gold, 0.13f));
-                Gfx.Text(g, "v" + n.Key, fMono, C.Gold, right.X + 21, y + 1);
-                using (var b = new SolidBrush(C.Muted)) g.DrawString(n.Value, fSmall, b, new RectangleF(right.X + 70, y, right.Width - 90, size.Height + 2));
-                y += Math.Max(22, size.Height) + 12;
+                var n = news[i];
+                var size = g.MeasureString(n.Value, fSmall, 290);
+                if (y + size.Height + 20 > 470) break;
+                Gfx.Text(g, Short(n.Key), fPixel, C.Gold, x, y);
+                using (var b = new SolidBrush(i == 0 ? C.Text : C.Muted)) g.DrawString(n.Value, fSmall, b, new RectangleF(x, y + 16, 300, size.Height + 2));
+                y += size.Height + 30;
+            }
+            changelogLink.Left = Dpi.D(x - 2);
+            changelogLink.Top = Dpi.D(Math.Min(470, y - 6));
+        }
+
+        /// <summary>A text link drawn straight onto the window (no separate control).</summary>
+        RectangleF DrawnLink(Graphics g, string text, float x, float y, bool hot)
+        {
+            var size = g.MeasureString(text, fLink);
+            Gfx.Text(g, text, fLink, hot ? C.BlueLight : C.Muted, x, y);
+            if (hot) using (var p = new Pen(C.BlueLight)) g.DrawLine(p, x + 2, y + size.Height - 3, x + size.Width - 3, y + size.Height - 3);
+            return new RectangleF(x, y, size.Width, size.Height);
+        }
+
+        PointF Logical(Point p) => new PointF(p.X / Dpi.Scale, p.Y / Dpi.Scale);
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            var p = Logical(e.Location);
+            int hot = tab != Tab.Home ? 0 : crashOpenRect.Contains(p) ? 1 : crashHideRect.Contains(p) ? 2 : 0;
+            if (hot != hotLink) { hotLink = hot; Cursor = hot != 0 ? Cursors.Hand : Cursors.Default; Invalidate(); }
+        }
+
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+            if (tab != Tab.Home || e.Button != MouseButtons.Left) return;
+            var p = Logical(e.Location);
+            if (crashOpenRect.Contains(p)) OpenCrash();
+            else if (crashHideRect.Contains(p)) DismissCrash();
+        }
+
+        static string When(DateTime t)
+        {
+            var d = DateTime.Now.Date - t.Date;
+            string day = d.TotalDays < 1 ? "today" : d.TotalDays < 2 ? "yesterday" : "on " + t.ToString("dddd");
+            return day + " at " + t.ToString("h:mm tt").ToLowerInvariant();
+        }
+
+        /// <summary>A wobbly hand-drawn underline (same idea as the website's).</summary>
+        static void Squiggle(Graphics g, float x, float y, float w)
+        {
+            using (var pen = new Pen(C.Gold, 2.6f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+            {
+                var pts = new[] {
+                    new PointF(x, y + 3), new PointF(x + w * 0.18f, y - 1), new PointF(x + w * 0.36f, y + 4),
+                    new PointF(x + w * 0.55f, y + 1), new PointF(x + w * 0.78f, y + 3), new PointF(x + w, y - 1) };
+                g.DrawCurve(pen, pts, 0.6f);
             }
         }
 
         void DrawMods(Graphics g)
         {
-            Gfx.Text(g, "Mods", fHero, C.Text, 38, 76);
-            string count = modsView.Count + " mods" + (modsView.OffCount > 0 ? "  ·  " + modsView.OffCount + " off" : "") + "  ·  changes apply the next time you play";
-            Gfx.Text(g, count, fSmall, C.Faint, 40, 114);
-            var box = new RectangleF(36, 128, 888, 400);
-            Gfx.Fill(g, box, 12, C.Panel);
-            Gfx.Outline(g, box, 12, C.Line);
-            if (playing) Gfx.Text(g, "Minecraft is running - close it to switch mods.", fSmall, C.Gold, 40, 538);
-            else Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(40, 536, 880, 20));
+            Gfx.Text(g, "Mods", fH2, C.Text, 46, 70);
+            int on = modsView.Count - modsView.OffCount;
+            string count = modsView.Count == 0 ? "None yet." : on + " on" + (modsView.OffCount > 0 ? ", " + modsView.OffCount + " switched off" : "") + ". Changes apply next time you play.";
+            Gfx.Text(g, count, fSmall, C.Faint, 48, 100);
+            if (playing) Gfx.Text(g, "Minecraft's running, so switching is paused until you close it.", fSmall, C.Gold, 48, 512);
+            else Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(48, 510, 844, 20));
         }
 
         void DrawSettings(Graphics g)
         {
-            // left card: the game
-            var left = new RectangleF(40, 80, 430, 452);
-            Gfx.Fill(g, left, 12, C.Alpha(C.Panel, 0.94f));
-            Gfx.Outline(g, left, 12, C.Line);
-            Gfx.Text(g, "Game", fName, C.Text, 60, 96);
+            Gfx.Text(g, "Settings", fH2, C.Text, 46, 70);
             int ramValue = settings.RamGb == 0 ? Installer.AutoRam() : settings.RamGb;
-            Gfx.Text(g, "Memory", fBody, C.Text, 60, 124);
-            string ramText = settings.RamGb == 0 ? "Auto (" + ramValue + " GB)" : ramValue + " GB";
-            Gfx.Text(g, ramText, fButton, C.Gold, 450 - g.MeasureString(ramText, fButton).Width, 126);
-            Gfx.Text(g, "How much RAM Minecraft can use. Far left is automatic.", fSmall, C.Faint, 60, 184);
-
-            Gfx.Text(g, "Shaders", fBody, C.Text, 60, 220);
             string pack = Game.ShaderPack();
-            Gfx.Text(g, pack == null ? "Pick a pack in game first (Cinematic tab)." : (playing ? "Close the game to change this." : pack.Replace(".zip", "")),
-                fSmall, C.Faint, 60, 242);
-            Gfx.Text(g, "Close when Minecraft opens", fBody, C.Text, 60, 296);
-            Gfx.Text(g, "Gets out of your way after you press Play.", fSmall, C.Faint, 60, 318);
-            Gfx.Text(g, "Repair", fBody, C.Text, 60, 366);
-            Gfx.Text(g, "Downloads Lmg Client and the mods again.", fSmall, C.Faint, 60, 388);
-            Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(60, 440, 390, 60));
+            Row(g, 116, "Memory", "How much RAM Minecraft gets. All the way left lets me pick (" + Installer.AutoRam() + " GB on this PC).",
+                settings.RamGb == 0 ? "auto" : ramValue + " GB");
+            Row(g, 174, "Shaders", pack == null ? "Pick a pack in game first (Right Shift, Cinematic tab)." : playing ? "Close Minecraft to change this." : "Using " + pack.Replace(".zip", "").Replace("_", " ") + ".", null);
+            Row(g, 232, "Close this app when Minecraft opens", "So it isn't sitting in your taskbar while you play.", null);
+            Row(g, 290, "Updates", "The app checks every time it opens. App " + AppSetup.CurrentText + ", Lmg Client " + (Short(Installer.InstalledVersion()) ?? "not installed") + ".", null);
+            Row(g, 348, "Repair", "Downloads Lmg Client and the mods again if something seems broken.", null);
+            Row(g, 406, "Game folder", Paths.GameDir, null);
+            Row(g, 458, "Remove the app", "Your worlds and settings stay where they are.", null, last: true);
+            Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(480, 516, 412, 20));
+        }
 
-            // right card: the app
-            var right = new RectangleF(490, 80, 430, 452);
-            Gfx.Fill(g, right, 12, C.Alpha(C.Panel, 0.94f));
-            Gfx.Outline(g, right, 12, C.Line);
-            Gfx.Text(g, "App", fName, C.Text, 510, 96);
-            Gfx.Text(g, "Lmg Client app " + AppSetup.CurrentText, fBody, C.Text, 510, 140);
-            Gfx.Text(g, "Updates itself every time it opens.", fSmall, C.Faint, 510, 162);
-            Gfx.Text(g, "Game folder", fBody, C.Text, 510, 290);
-            Gfx.TextIn(g, Paths.GameDir, fSmall, C.Faint, new RectangleF(510, 312, 280, 18));
-            Gfx.Text(g, "Remove the app", fBody, C.Text, 510, 366);
-            Gfx.Text(g, "Your worlds and settings stay.", fSmall, C.Faint, 510, 388);
-            Gfx.Text(g, "Shortcuts: Enter = Play, Esc = Home, Ctrl+1/2/3 = tabs.", fSmall, C.Faint, 510, 500);
+        void Row(Graphics g, float y, string title, string hint, string value, bool last = false)
+        {
+            Gfx.Text(g, title, fRow, C.Text, 48, y);
+            Gfx.TextIn(g, hint, fSmall, C.Faint, new RectangleF(48, y + 20, 470, 32));
+            if (value != null) Gfx.Text(g, value, fPixel, C.Gold, 800, y + 8);
+            if (!last) using (var pen = new Pen(C.Alpha(C.Line, 0.9f))) g.DrawLine(pen, 48, y + 50, 892, y + 50);
         }
 
         // ---- window ------------------------------------------------------------------------------
@@ -535,7 +605,7 @@ namespace LmgLauncher
                 settings.WindowY = Top;
                 settings.Save();
             }
-            twinkle.Stop();
+            anim.Stop();
             gameWatch.Stop();
             base.OnFormClosing(e);
         }
@@ -547,10 +617,9 @@ namespace LmgLauncher
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            // rounded corners on Windows 11 (ignored elsewhere)
             try
             {
-                int round = 2;
+                int round = 2;   // rounded corners on Windows 11 (ignored elsewhere)
                 DwmSetWindowAttribute(Handle, 33, ref round, sizeof(int));
             }
             catch { }
@@ -575,7 +644,7 @@ namespace LmgLauncher
             get
             {
                 var cp = base.CreateParams;
-                cp.Style |= 0x20000;      // WS_MINIMIZEBOX: taskbar button minimises it
+                cp.Style |= 0x20000;      // WS_MINIMIZEBOX
                 cp.ClassStyle |= 0x20000; // CS_DROPSHADOW
                 return cp;
             }

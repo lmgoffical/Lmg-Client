@@ -38,32 +38,32 @@
   "changelog": [
     {
       "version": "0.24",
-      "text": "The Lmg Client app. A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. App 1.1 shows your account and skin, and adds Mods and Settings tabs, crash alerts and download sizes."
+      "text": "The app. Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."
     },
     {
       "version": "0.23",
-      "text": "Smoother. A new FPS tab with a one-click FPS boost you can undo. The trail only spawns when you can see it, ore glow and the minimap do far less work, and the map scanner is lighter."
+      "text": "Smoother. A new FPS tab, and the trail, ore glow and minimap do a lot less work."
     },
     {
       "version": "0.22",
-      "text": "Cinematic. One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."
+      "text": "Cinematic. Golden-hour shaders in one click, a film mode on F7, and a proper colour picker."
     },
     {
       "version": "0.21",
-      "text": "See each other's pets. Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."
+      "text": "See each other's pets. Turn on sharing and other Lmg players can see your pets and cosmetics."
     },
     {
       "version": "0.20",
-      "text": "Pets. Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."
+      "text": "Pets. 25 animals or a tiny version of anyone. Name them, put them on your shoulder."
     },
     {
       "version": "0.19",
-      "text": "Safer by default. Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."
+      "text": "Safer by default. Freecam and ore glow stay off on servers. Real terms and privacy pages."
     }
   ],
   "launcher": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "file": "Lmg-Client.exe",
-    "sha1": "7820a13eccea84801e7ac8f3e1a7cb9c16218d48"
+    "sha1": "9bd5689abc002cbc60a383ab1d449665256cbdac"
   }
 }

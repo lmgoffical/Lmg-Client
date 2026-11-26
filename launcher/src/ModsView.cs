@@ -23,7 +23,7 @@ namespace LmgLauncher
             fSmall = small;
             fBadge = badge;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
-            BackColor = C.Panel;
+            BackColor = C.Bg;
         }
 
         public void Reload(bool gameRunning)
@@ -76,10 +76,11 @@ namespace LmgLauncher
         {
             var g = e.Graphics;
             Gfx.Setup(g);
-            g.Clear(C.Panel);
+            g.Clear(C.Bg);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
             if (mods.Count == 0)
             {
-                Gfx.TextIn(g, "No mods yet. Press Play on the Home tab and they'll be installed.", fSmall, C.Faint, new RectangleF(0, 0, Width, Height), true);
+                Gfx.TextIn(g, "Nothing here yet. Press Play on Home and I'll put the Lmg mods in.", fSmall, C.Faint, new RectangleF(0, 0, Width, Height), true);
                 return;
             }
             int first = scroll / RowH;
@@ -87,16 +88,17 @@ namespace LmgLauncher
             {
                 var m = mods[i];
                 float y = i * RowH - scroll;
-                var row = new RectangleF(Dpi.D(4), y + Dpi.D(3), Width - Dpi.D(8), RowH - Dpi.D(6));
-                Gfx.Fill(g, row, Dpi.D(8), i == hoverRow ? C.Hover : C.Panel2);
+                var row = new RectangleF(0, y, Width - Dpi.D(8), RowH);
+                if (i == hoverRow) Gfx.Fill(g, RectangleF.Inflate(row, 0, -Dpi.D(3)), Dpi.D(4), C.Alpha(Color.White, 0.03f));
+                using (var pen = new Pen(C.Line)) g.DrawLine(pen, row.X, row.Bottom - 1, row.Right, row.Bottom - 1);
 
                 // icon (or the first letter)
-                var icon = new RectangleF(row.X + Dpi.D(10), row.Y + (row.Height - Dpi.D(34)) / 2, Dpi.D(34), Dpi.D(34));
+                var icon = new RectangleF(row.X + Dpi.D(4), row.Y + (row.Height - Dpi.D(30)) / 2, Dpi.D(30), Dpi.D(30));
                 if (m.Icon != null)
                 {
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                     var state = g.Save();
-                    using (var clip = Gfx.Round(icon, Dpi.D(6))) g.SetClip(clip);
+                    using (var clip = Gfx.Round(icon, Dpi.D(3))) g.SetClip(clip);
                     if (!m.On)
                     {
                         using (var attrs = new System.Drawing.Imaging.ImageAttributes())
@@ -110,7 +112,7 @@ namespace LmgLauncher
                 }
                 else
                 {
-                    Gfx.Fill(g, icon, Dpi.D(6), C.Alpha(C.Blue, 0.2f));
+                    Gfx.Fill(g, icon, Dpi.D(3), C.Alpha(C.Blue, 0.2f));
                     Gfx.TextIn(g, m.Name.Substring(0, 1).ToUpperInvariant(), fName, C.Blue, icon, true);
                 }
 
@@ -119,13 +121,13 @@ namespace LmgLauncher
                 float nx = tx + g.MeasureString(m.Name, fName).Width + Dpi.D(4);
                 Gfx.Text(g, m.Version, fSmall, C.Faint, nx, row.Y + Dpi.D(10));
                 float bx = nx + g.MeasureString(m.Version, fSmall).Width + Dpi.D(6);
-                if (m.InPack) bx = Badge(g, "Lmg pack", C.Gold, bx, row.Y + Dpi.D(10));
-                if (m.IsRequired) Badge(g, "needed", C.Faint, bx, row.Y + Dpi.D(10));
+                if (m.InPack) bx = Badge(g, "LMG PACK", C.Gold, bx, row.Y + Dpi.D(12));
+                if (m.IsRequired) Badge(g, "NEEDED", C.Faint, bx, row.Y + Dpi.D(12));
                 string desc = string.IsNullOrWhiteSpace(m.Description) ? Path(m.File) : m.Description.Replace("\n", " ");
                 Gfx.TextIn(g, desc, fSmall, C.Faint, new RectangleF(tx, row.Y + Dpi.D(30), row.Right - Dpi.D(90) - tx, Dpi.D(18)));
 
                 // switch
-                var sw = new RectangleF(row.Right - Dpi.D(60), row.Y + (row.Height - Dpi.D(22)) / 2, Dpi.D(42), Dpi.D(22));
+                var sw = new RectangleF(row.Right - Dpi.D(46), row.Y + (row.Height - Dpi.D(18)) / 2, Dpi.D(36), Dpi.D(18));
                 Color track = m.IsRequired && m.On ? C.Mix(C.Line2, C.Blue, 0.5f) : (m.On ? C.Blue : C.Line2);
                 if (locked) track = C.Mix(track, C.Panel2, 0.5f);
                 Gfx.Fill(g, sw, sw.Height / 2, track);
@@ -143,10 +145,9 @@ namespace LmgLauncher
 
         float Badge(Graphics g, string text, Color c, float x, float y)
         {
-            float w = g.MeasureString(text, fBadge).Width + Dpi.D(6);
-            Gfx.Fill(g, new RectangleF(x, y, w, Dpi.D(16)), Dpi.D(4), C.Alpha(c, 0.15f));
-            Gfx.Text(g, text, fBadge, c, x + Dpi.D(3), y + Dpi.D(1));
-            return x + w + Dpi.D(4);
+            float w = g.MeasureString(text, fBadge).Width;
+            Gfx.Text(g, text, fBadge, c, x, y);
+            return x + w + Dpi.D(6);
         }
 
         static string Path(string file) => System.IO.Path.GetFileName(file);

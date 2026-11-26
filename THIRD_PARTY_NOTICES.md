@@ -19,6 +19,13 @@ Downloaded only when you pick them (Cinematic tab → Shaders), from Modrinth, u
 | Complementary Shaders - Unbound r5.9.3 | "Golden haze" shaders | Complementary License Agreement | https://modrinth.com/shader/complementary-unbound |
 | Complementary Shaders - Reimagined r5.9.3 | "Lighter" shaders | Complementary License Agreement | https://modrinth.com/shader/complementary-reimagined |
 
+Inside the Lmg Client app (launcher/fonts, with their licence files):
+
+| Component | Used for | Licence |
+|---|---|---|
+| IBM Plex Sans (Regular, Medium, SemiBold) | The app's text | SIL Open Font License 1.1 |
+| Silkscreen | Small pixel labels in the app | SIL Open Font License 1.1 |
+
 Website only:
 
 | Component | Used for | Licence |

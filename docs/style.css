@@ -227,3 +227,10 @@ label.check input { width: auto; margin-top: 3px; }
 .legal p, .legal li { color: var(--muted); line-height: 1.6; }
 .legal ul { padding-left: 20px; }
 footer span { display: block; }
+
+/* real pictures instead of mockups */
+.shot.photo { padding: 18px 6px 34px; }
+.shot.photo img { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line-2); transform: rotate(-1.2deg); }
+.shot.photo .caption { display: block; margin-top: 12px; font-family: var(--pixel); font-size: 10px; color: var(--faint); text-align: center; letter-spacing: 0.02em; }
+.app-shot { display: block; width: 100%; height: auto; margin-top: 22px; border-radius: 8px; border: 1px solid var(--line-2); transform: rotate(0.6deg); }
+details summary { cursor: pointer; color: var(--muted); }

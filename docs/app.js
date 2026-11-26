@@ -116,14 +116,14 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
-  ["0.24", "<b>The Lmg Client app.</b> A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. App 1.1 shows your account and skin, and adds Mods and Settings tabs, crash alerts and download sizes."],
-  ["0.23", "<b>Smoother.</b> A new FPS tab with a one-click FPS boost you can undo. The trail only spawns when you can see it, ore glow and the minimap do far less work, and the map scanner is lighter."],
-  ["0.22", "<b>Cinematic.</b> One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."],
-  ["0.21", "<b>See each other's pets.</b> Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."],
-  ["0.20", "<b>Pets.</b> Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."],
-  ["0.19", "<b>Safer by default.</b> Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."],
-  ["0.18", "<b>Maps and keys.</b> A minimap and a world map with waypoints, zoom, freecam, and a Keys tab to bind anything. The menu got friendlier too."],
-  ["0.17", "<b>Cosmetics menu.</b> A wardrobe with tabs for capes, wings, hats, glasses, ears and auras (24 items, each with its own colour), plus your own skins and Blockbench models."],
+  ["0.24", "<b>The app.</b> Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."],
+  ["0.23", "<b>Smoother.</b> A new FPS tab, and the trail, ore glow and minimap do a lot less work."],
+  ["0.22", "<b>Cinematic.</b> Golden-hour shaders in one click, a film mode on F7, and a proper colour picker."],
+  ["0.21", "<b>See each other\'s pets.</b> Turn on sharing and other Lmg players can see your pets and cosmetics."],
+  ["0.20", "<b>Pets.</b> 25 animals or a tiny version of anyone. Name them, put them on your shoulder."],
+  ["0.19", "<b>Safer by default.</b> Freecam and ore glow stay off on servers. Real terms and privacy pages."],
+  ["0.18", "<b>Maps and keys.</b> Minimap, world map, waypoints, zoom, freecam, and you can rebind everything."],
+  ["0.17", "<b>Cosmetics menu.</b> 24 things to wear, each in any colour, plus your own skins and Blockbench models."],
   ["0.16", "<b>Better cosmetics.</b> Wings bend and fold when they flap, a real 3D halo, crown and cat ears, and a nicer China hat."],
   ["0.15", "<b>Website + forum.</b> Accounts, threads, a config gallery, and a link to it from the in-game Configs menu."],
   ["0.14", "<b>Short config codes.</b> Share a setup as <code>LMG-ABC234</code> instead of a wall of text."],
@@ -160,24 +160,9 @@ async function pageHome() {
         </div>
         <div class="stat-line" id="stat-line"></div>
       </div>
-      <div class="shot" aria-label="Screenshot-style mockup of the Lmg menu">
-        <div class="hud"><span style="color:#f2c14e">&#10017;</span><b>lmg</b><i></i>hypixel.net<i></i>240 fps<i></i>21:04</div>
-        <div class="menu">
-          <div class="rainbow"></div>
-          <div class="side"><span>Style</span><span>Configs</span><span>Theme</span><span class="on">World</span><span>Avatar</span><span>Effects</span><span>PvP</span></div>
-          <div class="body">
-            <div class="box"><b>World</b>
-              <div class="opt"><span class="cb"></span>Sky theme</div><div class="dd"><span>Midnight</span><span>v</span></div>
-              <div class="opt"><span class="cb"></span>Fog</div><div class="dd"><span>None</span><span>v</span></div>
-              <div class="opt"><span class="cb on"></span>Always show stars</div>
-            </div>
-            <div class="box"><b>More</b>
-              <div class="opt"><span class="cb"></span>Aurora</div><div class="dd"><span>Purple</span><span>v</span></div>
-              <div class="opt"><span class="cb on"></span>Rain &amp; snow</div>
-              <div class="opt"><span class="cb"></span>Clouds</div>
-            </div>
-          </div>
-        </div>
+      <div class="shot photo">
+        <img src="img/outfits.jpg" alt="Four Minecraft characters wearing Lmg cosmetics: angel wings with a crown, neon wings with a visor, demon wings with a top hat, and butterfly wings with fox ears" width="1260" height="390">
+        <span class="caption">four outfits, all made in the cosmetics menu</span>
         <div class="sticker">it's free</div>
       </div>
     </section>
@@ -191,18 +176,20 @@ async function pageHome() {
       <div class="section-head"><h2>What you can change</h2><span class="label">press right shift in game</span></div>
       <div class="does">
         <div><h3>The sky</h3><p>Sunset, inferno, midnight or a void. Pin the time to night, kill the fog, add an aurora.</p></div>
-        <div><h3>Your character</h3><p>Wings that flap faster when you sprint, a halo, a crown, cat ears and the Lmg cape.</p></div>
-        <div><h3>PvP stuff</h3><p>Smaller swords, a cleaner block outline, a glow on whoever you're fighting and their health next to your crosshair.</p></div>
-        <div><h3>The menu itself</h3><p>Keep the Lmg look or switch it to a Skeet or Neverlose style. It's only looks, the settings are the same.</p></div>
-        <div><h3>Your HUD</h3><p>FPS, ping and potion timers that don't jitter. Drag everything where you want it.</p></div>
-        <div><h3>Sharing</h3><p>Save setups, then share them as <code>LMG-ABC234</code>. Your friend types it in and they've got your look.</p></div>
+        <div><h3>Your character</h3><p>Capes, wings, hats, glasses and auras, each in any colour. Or bring your own skin and Blockbench models.</p></div>
+        <div><h3>Pets</h3><p>A cat on your shoulder, a fox at your heels, or a tiny version of your friend. Name them whatever you want.</p></div>
+        <div><h3>PvP stuff</h3><p>A glow on whoever's close, a different colour once you can actually hit them, and smaller swords.</p></div>
+        <div><h3>Maps and keys</h3><p>A minimap, a world map with waypoints, zoom, freecam, and every key can be changed.</p></div>
+        <div><h3>Cinematic</h3><p>Golden-hour shaders in one click and a film mode with black bars, for when you're recording.</p></div>
+        <div><h3>The menu itself</h3><p>Keep the Lmg look or switch it to a Skeet or Neverlose style. Same settings, different look.</p></div>
+        <div><h3>Sharing</h3><p>Save a setup and send it as <code>LMG-ABC234</code>. Your friend types it in and has your look.</p></div>
       </div>
     </section>
 
     <section class="section grid two">
       <div>
-        <div class="section-head"><h2>Recent updates</h2><a class="small" href="https://github.com/lmgoffical/Lmg-Client/commits">full history</a></div>
-        <ul class="changelog">${CHANGELOG.map(([v, what]) => `<li><span class="v">v${v}</span><span class="what">${what}</span></li>`).join("")}</ul>
+        <div class="section-head"><h2>Recent updates</h2><a class="small" href="#/changelog">everything so far</a></div>
+        <ul class="changelog">${CHANGELOG.slice(0, 6).map(([v, what]) => `<li><span class="v">v${v}</span><span class="what">${what}</span></li>`).join("")}</ul>
       </div>
       <div>
         <div class="section-head"><h2>Questions</h2></div>
@@ -239,10 +226,11 @@ async function pageDownload() {
       <div>
         <div class="label" id="version">java edition</div>
         <h1 style="margin-top:8px">Get Lmg Client</h1>
-        <p class="muted">A small app (under 100 KB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
+        <p class="muted">A small app (under 1 MB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download the app</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the app isn't signed yet &mdash; click <i>More info &rarr; Run anyway</i>.</p>
-        <p class="muted small" style="margin-top:10px">Want to check the file? Its SHA-256 is <code>f41fc9c51f3d031e415deca894ae1ad77f074e9ed0d67ab1320fad77986e305f</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p>
+        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>8a2e7c6e28efd8dea03e747ae6ede544290f0348deb03b72d12b6eb54daa9b57</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
+        <img class="app-shot" src="img/app.png" alt="The Lmg Client app: a greeting with your skin, a Play button and the changelog" width="940" height="580">
       </div>
       <div class="card">
         <h3>Installing</h3>
@@ -657,6 +645,12 @@ const LEGAL = {
     <p>Minecraft is a trademark of Mojang AB. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. You need your own copy of Minecraft to use it.</p>`,
 };
 
+function pageChangelog() {
+  setActiveNav("");
+  render(`<div class="section-head"><h1>Changelog</h1><a class="small" href="https://github.com/lmgoffical/Lmg-Client/commits">every commit on GitHub</a></div>
+    <ul class="changelog">${CHANGELOG.map(([v, what]) => `<li><span class="v">v${v}</span><span class="what">${what}</span></li>`).join("")}</ul>`);
+}
+
 function pageLegal(title, body) {
   setActiveNav("");
   render(`<div class="card legal"><h1>${esc(title)}</h1>${body}</div>
@@ -690,6 +684,7 @@ async function route() {
       case "signup": return pageSignup();
       case "u": return await pageProfile(arg || "");
       case "admin": return await pageAdmin();
+      case "changelog": return pageChangelog();
       case "terms": return pageLegal("Terms of use", LEGAL.terms);
       case "privacy": return pageLegal("Privacy policy", LEGAL.privacy);
       case "rules": return pageLegal("Community rules", LEGAL.rules);

@@ -159,15 +159,21 @@ namespace LmgLauncher
         }
     }
 
-    /// <summary>A flat rounded button.</summary>
+    /// <summary>
+    /// Buttons. Most are plain text links (like the website); Play is the one solid button.
+    /// Text is drawn with GDI+ so the app's own fonts work.
+    /// </summary>
     class Btn : Widget
     {
-        public enum Kind { Primary, Ghost, Danger, Tab }
+        public enum Kind { Primary, Link, Danger, Nav, Window }
 
         readonly Kind kind;
         string label;
         public bool Selected { get; set; }
         public string Label { get => label; set { label = value; Invalidate(); } }
+        /// <summary>Small pixel-font text on the right of the Play button (the version).</summary>
+        public string Tag2 { get; set; }
+        public Font TagFont { get; set; }
 
         public Btn(string label, Font font, Kind kind)
         {
@@ -180,40 +186,67 @@ namespace LmgLauncher
         {
             var g = e.Graphics;
             Gfx.Setup(g);
-            var r = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
-            float radius = Math.Min(Dpi.D(8), Height / 2f);
-            Color fill, text, border;
-            switch (kind)
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            var r = new RectangleF(0, 0, Width, Height);
+            using (var fmt = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
             {
-                case Kind.Primary:
-                    fill = Enabled ? C.Mix(C.Blue, C.BlueLight, hover) : C.Line;
-                    text = Enabled ? Color.White : C.Faint;
-                    border = fill;
-                    break;
-                case Kind.Danger:
-                    fill = C.Mix(C.Panel2, Color.FromArgb(0x3A, 0x16, 0x1E), hover);
-                    text = C.Bad;
-                    border = C.Mix(C.Line, C.Bad, hover);
-                    break;
-                case Kind.Tab:
-                    fill = Selected ? C.Hover : C.Mix(Color.FromArgb(0, C.Panel2), C.Panel2, hover);
-                    text = Selected ? C.Text : C.Mix(C.Faint, C.Text, hover);
-                    border = Selected ? C.Line2 : C.Mix(Color.FromArgb(0, C.Line), C.Line, hover);
-                    radius = Height / 2f;
-                    break;
-                default:
-                    fill = C.Mix(C.Panel2, C.Hover, hover);
-                    text = Enabled ? C.Mix(C.Muted, Color.White, hover) : C.Faint;
-                    border = C.Mix(C.Line, C.Blue, hover * 0.8f);
-                    break;
+                switch (kind)
+                {
+                    case Kind.Primary:
+                    {
+                        Color fill = Enabled ? C.Mix(C.Blue, C.BlueLight, hover * 0.6f) : C.Line2;
+                        Gfx.Fill(g, r, Dpi.D(4), fill);
+                        // a 2px darker lip at the bottom, like a key you can press
+                        if (Enabled) Gfx.Fill(g, new RectangleF(0, Height - Dpi.D(3), Width, Dpi.D(3)), Dpi.D(2), C.Mix(fill, Color.Black, 0.25f));
+                        fmt.Alignment = StringAlignment.Near;
+                        using (var b = new SolidBrush(Enabled ? Color.White : C.Faint))
+                            g.DrawString(label, Font, b, new RectangleF(Dpi.D(20), 0, Width - Dpi.D(40), Height - Dpi.D(2)), fmt);
+                        if (!string.IsNullOrEmpty(Tag2) && TagFont != null)
+                        {
+                            fmt.Alignment = StringAlignment.Far;
+                            using (var b = new SolidBrush(Enabled ? C.Alpha(Color.White, 0.7f) : C.Faint))
+                                g.DrawString(Tag2, TagFont, b, new RectangleF(0, 0, Width - Dpi.D(18), Height - Dpi.D(2)), fmt);
+                        }
+                        break;
+                    }
+                    case Kind.Nav:
+                    {
+                        fmt.Alignment = StringAlignment.Center;
+                        Color c = Selected ? C.Text : C.Mix(C.Faint, C.Text, hover);
+                        using (var b = new SolidBrush(c)) g.DrawString(label, Font, b, new RectangleF(0, 0, Width, Height - Dpi.D(4)), fmt);
+                        if (Selected) using (var b = new SolidBrush(C.Blue)) g.FillRectangle(b, Width * 0.2f, Height - Dpi.D(3), Width * 0.6f, Dpi.D(2));
+                        break;
+                    }
+                    case Kind.Window:
+                    {
+                        if (hover > 0.01f) Gfx.Fill(g, r, Dpi.D(4), C.Alpha(Color.White, 0.06f * hover));
+                        fmt.Alignment = StringAlignment.Center;
+                        using (var b = new SolidBrush(C.Mix(C.Faint, C.Text, hover))) g.DrawString(label, Font, b, r, fmt);
+                        break;
+                    }
+                    default:
+                    {
+                        // a text link: muted, blue (or red) and underlined on hover
+                        Color baseColor = kind == Kind.Danger ? C.Mix(C.Bad, C.Faint, 0.35f) : C.Muted;
+                        Color hot = kind == Kind.Danger ? C.Bad : C.BlueLight;
+                        Color c = Enabled ? C.Mix(baseColor, hot, hover) : C.Line2;
+                        fmt.Alignment = StringAlignment.Near;
+                        using (var b = new SolidBrush(c)) g.DrawString(label, Font, b, new RectangleF(0, 0, Width, Height), fmt);
+                        if (hover > 0.05f && Enabled)
+                        {
+                            float tw = g.MeasureString(label, Font).Width - Dpi.D(4);
+                            using (var p = new Pen(C.Alpha(c, hover), 1)) g.DrawLine(p, Dpi.D(2), Height / 2f + Font.Height / 2f, Dpi.D(2) + tw, Height / 2f + Font.Height / 2f);
+                        }
+                        break;
+                    }
+                }
             }
-            using (var path = Gfx.Round(r, radius))
-            {
-                using (var b = new SolidBrush(fill)) g.FillPath(b, path);
-                using (var p = new Pen(border)) g.DrawPath(p, path);
-            }
-            TextRenderer.DrawText(g, label, Font, Rectangle.Round(r), text,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+        }
+
+        /// <summary>Makes a link exactly as wide as its text.</summary>
+        public void FitWidth()
+        {
+            using (var g = CreateGraphics()) Width = (int)Math.Ceiling(g.MeasureString(label, Font).Width) + Dpi.D(4);
         }
     }
 
@@ -256,6 +289,7 @@ namespace LmgLauncher
             if (knob < 0) knob = on ? 1 : 0;
             var r = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
             Color track = Enabled ? C.Mix(C.Line2, C.Blue, knob) : C.Line;
+            r = new RectangleF(r.X, r.Y + r.Height * 0.12f, r.Width, r.Height * 0.76f);
             Gfx.Fill(g, r, r.Height / 2, C.Mix(track, Color.White, hover * 0.08f));
             float d = r.Height - Dpi.D(6);
             float x = r.X + Dpi.D(3) + (r.Width - d - Dpi.D(6)) * knob;
@@ -313,7 +347,7 @@ namespace LmgLauncher
         {
             var g = e.Graphics;
             Gfx.Setup(g);
-            float pad = Height / 2f, cy = Height / 2f, th = Dpi.D(5);
+            float pad = Height / 2f, cy = Height / 2f, th = Dpi.D(3);
             var track = new RectangleF(pad, cy - th / 2, Width - pad * 2, th);
             Gfx.Fill(g, track, th / 2, C.Line2);
             var fill = new RectangleF(pad, cy - th / 2, Math.Max(th, (Width - pad * 2) * Fraction), th);
@@ -324,9 +358,9 @@ namespace LmgLauncher
                 using (var b = new SolidBrush(C.Alpha(C.Text, i <= value ? 0.5f : 0.25f))) g.FillEllipse(b, tx - 1.5f, cy + th, 3, 3);
             }
             float kx = pad + (Width - pad * 2) * Fraction;
-            float kr = Dpi.D(8) + hover * Dpi.D(1.5f);
-            using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, kx - kr, cy - kr, kr * 2, kr * 2);
-            using (var p = new Pen(C.Blue, 2)) g.DrawEllipse(p, kx - kr, cy - kr, kr * 2, kr * 2);
+            float kr = Dpi.D(6) + hover * Dpi.D(1f);
+            // a square knob, like a block
+            Gfx.Fill(g, new RectangleF(kx - kr, cy - kr, kr * 2, kr * 2), Dpi.D(2), Color.White);
         }
     }
 }
