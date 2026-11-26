@@ -185,6 +185,18 @@ public final class Social {
 		changed();
 	}
 
+	/** Forgets friends on this computer only (the server side is deleted by "Delete all my Lmg data"). */
+	public static void wipeLocal() {
+		LmgConfig.get().friendsEnabled = false;
+		LmgConfig.get().matchPartner = false;
+		forgetSession();
+		loaded = true;
+		firstSync = true;
+		state = State.EMPTY;
+		status = Status.OFF;
+		changed();
+	}
+
 	// ---- ticking -----------------------------------------------------------------------------------
 
 	public static void tick(Minecraft mc) {

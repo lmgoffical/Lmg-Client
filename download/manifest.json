@@ -1,9 +1,9 @@
 {
-  "version": "0.29.0",
+  "version": "0.30.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.29.0.jar",
-    "sha1": "d2e8ffb46aac41c8fdc55a250d81425cd9cb425d"
+    "file": "lmg-client-0.30.0.jar",
+    "sha1": "c6ea6f16d64e6a22b5903d076c3aa383856916ac"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.30",
+      "text": "Delete means delete. Menu &gt; Help &gt; Delete all my Lmg data wipes everything our server has about you: friends, invites, your UID, shared pets and cosmetics, and the config codes you shared. On the website, your profile page has Delete my account, which removes your login, profile and every post."
+    },
+    {
       "version": "0.29",
       "text": "Easier, and more of everything. Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.25",
       "text": "Snow. Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."
-    },
-    {
-      "version": "0.24",
-      "text": "The app. Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."
     }
   ],
   "launcher": {

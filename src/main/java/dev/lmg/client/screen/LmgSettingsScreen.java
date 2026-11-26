@@ -949,6 +949,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("What this mod does, and what it sends."));
 				r.add(SettingRow.button("Mods", "Open", () -> minecraft.gui.setScreen(new ModsScreen(this)))
 						.withHint("See your mods, switch them on or off."));
+				r.add(SettingRow.button("Delete all my Lmg data", () -> dev.lmg.client.social.DeleteMyData.busy() ? "Deleting..." : "Delete", this::confirmDeleteAll)
+						.withHint("Wipes everything the Lmg server has about you.").keywords("privacy remove erase account gdpr forget"));
 			}
 			case "Keys" -> {
 				for (dev.lmg.client.feature.LmgKeys.Bind b : dev.lmg.client.feature.LmgKeys.ALL) {
@@ -1054,6 +1056,25 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		for (int k = 0; k < all.length; k++) if (all[k].equals(LmgConfig.get().activeProfile)) i = k;
 		dev.lmg.client.feature.Looks.switchTo(all[Math.floorMod(i + dir, all.length)], msg -> toast("Profiles", msg));
 		rebuildWidgets();
+	}
+
+	/** Asks first, then deletes everything the Lmg server holds about you. */
+	private void confirmDeleteAll() {
+		if (dev.lmg.client.social.DeleteMyData.busy()) return;
+		minecraft.gui.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(yes -> {
+			minecraft.gui.setScreen(this);
+			if (!yes) return;
+			toast("Deleting your data...", "Checking it's your account with Mojang.");
+			dev.lmg.client.social.DeleteMyData.run(msg -> {
+				toast("Your Lmg data", msg);
+				rebuildWidgets();
+			});
+		}, Component.literal("Delete all your Lmg data?"),
+				Component.literal("This deletes everything the Lmg server has about you: your friends list, requests, partner and invites, "
+						+ "your UID (you'd get a new number if you claim one again), the pets and cosmetics you shared, and the config codes "
+						+ "you shared from this computer. Friends and sharing are switched off. Your settings, maps and screenshots never "
+						+ "left this computer and stay here."),
+				Component.literal("Delete everything"), Component.literal("Cancel")));
 	}
 
 	/** The four starting looks, one button each. */

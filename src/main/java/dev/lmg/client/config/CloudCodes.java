@@ -39,12 +39,67 @@ public final class CloudCodes {
 		return true;
 	}
 
-	/** Uploads a long code; completes with the short code, e.g. "LMG-ABC234". */
+	/**
+	 * Uploads a long code; completes with the short code, e.g. "LMG-ABC234". Each share gets a
+	 * random secret kept only on this computer, so "Delete all my Lmg data" can remove it later.
+	 */
 	public static CompletableFuture<String> share(String name, String longCode) {
+		byte[] raw = new byte[32];
+		new java.security.SecureRandom().nextBytes(raw);
+		String owner = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
+		rememberKey(owner);
 		JsonObject body = new JsonObject();
 		body.addProperty("p_name", name);
 		body.addProperty("p_data", longCode);
+		body.addProperty("p_owner", owner);
 		return call("share_config", body).thenApply(json -> "LMG-" + json.getAsString());
+	}
+
+	// ---- the secrets for configs you shared ----------------------------------------------------
+
+	private static final java.nio.file.Path KEYS = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir()
+			.resolve(LmgClient.MOD_ID + "-shared-keys.json");
+
+	private static synchronized java.util.List<String> keys() {
+		java.util.List<String> out = new java.util.ArrayList<>();
+		try {
+			if (java.nio.file.Files.exists(KEYS)) {
+				for (JsonElement e : JsonParser.parseString(java.nio.file.Files.readString(KEYS)).getAsJsonArray()) out.add(e.getAsString());
+			}
+		} catch (Exception e) {
+			LmgClient.LOGGER.debug("Couldn't read shared config keys", e);
+		}
+		return out;
+	}
+
+	private static synchronized void rememberKey(String key) {
+		java.util.List<String> all = keys();
+		all.add(key);
+		JsonArray arr = new JsonArray();
+		all.forEach(arr::add);
+		try {
+			java.nio.file.Files.writeString(KEYS, arr.toString());
+		} catch (Exception e) {
+			LmgClient.LOGGER.warn("Couldn't save a shared config key", e);
+		}
+	}
+
+	/** Deletes every config code shared from this computer. Completes with how many went. */
+	public static CompletableFuture<Integer> deleteMine() {
+		java.util.List<String> all = keys();
+		if (all.isEmpty()) return CompletableFuture.completedFuture(0);
+		JsonObject body = new JsonObject();
+		JsonArray arr = new JsonArray();
+		all.forEach(arr::add);
+		body.add("p_keys", arr);
+		return call("delete_my_configs", body).thenApply(json -> {
+			try {
+				java.nio.file.Files.deleteIfExists(KEYS);
+			} catch (Exception e) {
+				LmgClient.LOGGER.warn("Couldn't remove the shared config keys file", e);
+			}
+			return json.getAsInt();
+		});
 	}
 
 	/** Downloads the config behind a short code. */

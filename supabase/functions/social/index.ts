@@ -9,6 +9,9 @@
 //         nobody can make your character do something you didn't.
 // pubkey: the public half of that key (it's built into the mod).
 // uid:    your Lmg number (the next free one the first time), after the same Mojang check.
+// forget: deletes everything we hold for your Minecraft account, after the same Mojang check:
+//         friends (sessions, status, links, partner, invites), your UID and your shared
+//         pets and cosmetics. Nothing about you is left.
 //
 // Deployed as "social" (verify_jwt: false: the session token / Mojang check is the auth).
 // Tables and the friends functions: migrations/0004_social.sql
@@ -121,6 +124,23 @@ async function login(body: any) {
   return reply(200, { token, uuid, name, expires, uid });
 }
 
+/** "Delete all my Lmg data": everything tied to this Minecraft account goes. */
+async function forgetAll(body: any) {
+  const who = await mojang(body);
+  if (who instanceof Response) return who;
+  const uuid = who.uuid;
+  // lmg_players takes sessions, presence (and any emote), friend links both ways, partner and
+  // invites both ways with it (foreign keys cascade)
+  const friends = await db.from("lmg_players").delete({ count: "exact" }).eq("uuid", uuid);
+  const uid = await db.from("lmg_uids").delete({ count: "exact" }).eq("uuid", uuid);
+  const avatar = await db.from("player_avatars").delete({ count: "exact" }).eq("uuid", uuid);
+  if (friends.error || uid.error || avatar.error) return reply(500, { error: "Couldn't delete everything - try again" });
+  return reply(200, {
+    ok: true,
+    removed: { friends: friends.count ?? 0, uid: uid.count ?? 0, avatar: avatar.count ?? 0 },
+  });
+}
+
 async function emote(body: any) {
   const uuid = await sessionUuid(body?.token);
   if (!uuid) return reply(401, { error: "bad_session" });
@@ -171,6 +191,8 @@ Deno.serve(async (req) => {
         return await emote(body);
       case "uid":
         return await uidOnly(body);
+      case "forget":
+        return await forgetAll(body);
       case "pubkey":
         await loadKey();
         return reply(200, { key: publicKey });

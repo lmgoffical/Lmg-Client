@@ -258,7 +258,7 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 			if (yes) Social.disable();
 			minecraft.gui.setScreen(this);
 		}, Component.literal("Turn friends off?"),
-				Component.literal("This deletes your friends list, requests and partner from the Lmg server. You can turn it on again any time, but you'll need to add your friends again.")))));
+				Component.literal("This deletes your friends list, requests, partner and invites from the Lmg server. You can turn it on again any time, but you'll need to add your friends again. To delete everything else too (your UID, shared cosmetics and configs): Menu > Help > Delete all my Lmg data.")))));
 	}
 
 	private int footSwitch(GuiGraphicsExtractor g, CosmeticsScreen.Pal p, int x, int y, String label, boolean on,

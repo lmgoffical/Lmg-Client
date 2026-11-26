@@ -78,6 +78,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("xhair")) xhair(ctx, world);
 			if (want("tourskip")) tourSkip(ctx);
 			if (want("v29menu")) v29menu(ctx, world);
+			if (want("deletedata")) deleteData(ctx);
 			if (want("v29hud")) v29hud(ctx, world);
 			if (want("v29world")) v29world(ctx, world);
 			if (want("v29photo")) v29photo(ctx, world);
@@ -521,6 +522,49 @@ public class ShowcaseTest implements FabricClientGameTest {
 			throw new IllegalStateException("no row " + label);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/** "Delete all my Lmg data": the button, the question, and that it really deletes. */
+	private void deleteData(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.myUid = 7;
+			c.shareAvatar = true;
+			c.friendNicknames.put("00000000-0000-4000-8000-000000000001", "Testy");
+		});
+		// share a real (throwaway) config so there's something to delete
+		String code = dev.lmg.client.config.CloudCodes.share("Delete test", dev.lmg.client.config.ConfigProfiles.codeForCurrent("Delete test")).join();
+		System.out.println("[delete] shared " + code);
+		page(5, 2);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("delete-help-page");
+		ctx.runOnClient(mc -> {
+			try {
+				var m = LmgSettingsScreen.class.getDeclaredMethod("confirmDeleteAll");
+				m.setAccessible(true);
+				m.invoke(mc.gui.screen());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.waitTicks(10);
+		ctx.takeScreenshot("delete-confirm");
+		ctx.setScreen(() -> null);
+		String[] result = new String[1];
+		ctx.runOnClient(mc -> dev.lmg.client.social.DeleteMyData.run(msg -> result[0] = msg));
+		for (int i = 0; i < 200 && result[0] == null; i++) ctx.waitTicks(5);
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			System.out.println("[delete] result: " + result[0]);
+			System.out.println("[delete] local: uid=" + c.myUid + " share=" + c.shareAvatar + " friends=" + c.friendsEnabled + " nicks=" + c.friendNicknames.size());
+		});
+		try {
+			var p = dev.lmg.client.config.CloudCodes.fetch(code).join();
+			System.out.println("[delete] code still there: " + p.name());
+		} catch (Exception e) {
+			System.out.println("[delete] code gone: " + e.getMessage());
 		}
 	}
 

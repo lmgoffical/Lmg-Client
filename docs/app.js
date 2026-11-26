@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.30", "<b>Delete means delete.</b> Menu &gt; Help &gt; Delete all my Lmg data wipes everything our server has about you: friends, invites, your UID, shared pets and cosmetics, and the config codes you shared. On the website, your profile page has Delete my account, which removes your login, profile and every post."],
   ["0.29", "<b>Easier, and more of everything.</b> Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."],
   ["0.28", "<b>Your sword, your crosshair.</b> Move, turn and resize what you hold and watch it change as you drag (try Big &amp; low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."],
   ["0.27", "<b>Easier to find your way.</b> The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."],
@@ -554,7 +555,8 @@ async function pageProfile(name) {
     <div class="card"><div class="post">${avatar(p.username)}
       <div class="grow"><h2>${userLink(p)}</h2><div class="meta">Joined ${esc(new Date(p.created_at).toLocaleDateString())}</div>
         <div class="post-body" id="bio">${p.bio ? richText(p.bio) : `<span class="muted">No bio yet.</span>`}</div>
-        ${mine ? `<div class="row" style="margin-top:10px"><button class="btn small" id="edit-bio">Edit bio</button></div>` : ""}
+        ${mine ? `<div class="row" style="margin-top:10px"><button class="btn small" id="edit-bio">Edit bio</button><button class="btn small" id="delete-me">Delete my account</button></div>
+        <div id="delete-box"></div>` : ""}
       </div></div></div>
     <div class="section-title">Threads by ${esc(p.username)}</div>
     <div class="card list">${(threads || []).length ? threads.map(threadRow).join("") : `<div class="empty">No threads yet.</div>`}</div>`);
@@ -565,6 +567,28 @@ async function pageProfile(name) {
     document.getElementById("save-bio").onclick = async () => {
       const { error } = await sb.from("profiles").update({ bio: document.getElementById("bio-text").value.trim() }).eq("id", p.id);
       if (error) document.getElementById("bio-err").textContent = friendlyError(error); else route();
+    };
+  };
+  // deleting your account: type your username to be sure, then it all goes
+  const del = document.getElementById("delete-me");
+  if (del) del.onclick = () => {
+    document.getElementById("delete-box").innerHTML = `
+      <div class="card" style="margin-top:10px;padding:12px">
+        <p><b>Delete your account?</b> This deletes your login, your email address, your profile and bio, and every thread and reply you posted. It can't be undone.</p>
+        <p class="muted">Type <b>${esc(p.username)}</b> to confirm.</p>
+        <div class="row"><input id="delete-name" autocomplete="off" style="max-width:220px">
+          <button class="btn small" id="delete-go" disabled>Delete everything</button><span class="error" id="delete-err"></span></div>
+      </div>`;
+    const input = document.getElementById("delete-name"), go = document.getElementById("delete-go");
+    input.oninput = () => { go.disabled = input.value.trim().toLowerCase() !== p.username.toLowerCase(); };
+    go.onclick = async () => {
+      go.disabled = true;
+      const { error } = await sb.rpc("delete_my_account");
+      if (error) { document.getElementById("delete-err").textContent = friendlyError(error); go.disabled = false; return; }
+      await sb.auth.signOut();
+      state.me = null;
+      location.hash = "#/";
+      toast("Your account and everything you posted has been deleted.");
     };
   };
 }
@@ -631,7 +655,7 @@ const LEGAL = {
     <ul>
       <li><b>No analytics, no telemetry, no tracking.</b> The mod doesn't report what you play or click.</li>
       <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
-      <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
+      <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. From version 0.30, your game keeps a secret for each code you share, so <i>Delete all my Lmg data</i> can delete them later. The scrambled network address we use to stop spam is cleared after an hour.</li>
       <li><b>The Lmg Client app</b> downloads from GitHub, Fabric and Modrinth only, and saves its few settings in your user folder. It never asks for or sees your Minecraft password; you sign in with Mojang's own launcher. To say hi, it reads only your player name and ID from the Minecraft Launcher's account file (nothing else in that file is used, kept or sent), and loads your skin's face from Mojang's servers.</li>
       <li><b>Shaders.</b> If you pick a shader pack in Visuals &gt; Cinematic, it's downloaded from Modrinth, which sees your IP address like any download.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
@@ -640,21 +664,22 @@ const LEGAL = {
       <li><b>Emotes.</b> With Friends on, when you play an emote on a multiplayer server, our server signs it and passes it to other Lmg players on the same server. It goes to a channel named after a scrambled code of the server's address, not the address itself. An emote that lasts (sitting, dancing) is kept for up to 10 minutes so people who arrive later see it. In singleplayer nothing is sent.</li>
       <li><b>Invites (with Friends on).</b> When you invite friends to the server you're on, we store who you invited and when. They see it for 5 minutes, with the server you're on; old invites are deleted within an hour. Nicknames you give friends stay on your computer.</li>
       <li><b>UIDs (only if you press <i>Get mine</i>, or turn on Friends).</b> The game proves your account with Mojang (same check as above), then we save your Minecraft account ID, the number you got and when. Your number is public: anyone can look up the number for an account, and other Lmg players see it on your name tag. Numbers are handed out in order and aren't reused.</li>
+      <li><b>Delete all my Lmg data.</b> In game, <i>Menu &gt; Help &gt; Delete all my Lmg data</i> deletes everything our server holds about your Minecraft account, straight away: your friends list, requests, partner, invites, online status and sessions; your UID; the pets and cosmetics you shared; and the config codes you shared from that computer. It proves the account is yours with the same Mojang check. Config codes shared before version 0.30 were never linked to anyone, so nothing in them points to you.</li>
       <li><b>Photo mode, winter, the way back after dying, crosshairs, damage numbers, filters and motion blur, PvP stats, hit sounds, lens effects, mist and profiles.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
     </ul>
     <h3>The website</h3>
     <ul>
       <li><b>Account details:</b> your username and email address, and a password that is stored in scrambled (hashed) form. We don't see your password.</li>
-      <li><b>Your content:</b> forum threads, replies, bios and shared configs.</li>
+      <li><b>Your content:</b> forum threads, replies and bios.</li>
       <li><b>Technical logs:</b> the hosting services keep standard logs (such as IP addresses and browser type) for security and to keep the site running.</li>
       <li><b>Login storage:</b> your browser keeps your login so you stay signed in. We don't use advertising or tracking cookies.</li>
     </ul>
     <h3>Who helps run the site</h3>
     <p>Supabase hosts our database and sign-in. GitHub hosts the site and the mod's downloads. Each handles data under its own privacy policy.</p>
     <h3>How long we keep things</h3>
-    <p>Accounts and posts stay until you delete them or ask us to delete your account. Logs are kept only as long as the hosting services keep them by default.</p>
+    <p>Accounts and posts stay until you delete them. Config codes stay until whoever shared them deletes them (the scrambled network address we use to stop spam is cleared after an hour). Invites are deleted within an hour. Logs are kept only as long as the hosting services keep them by default.</p>
     <h3>Your choices</h3>
-    <p>You can edit or delete your own posts and bio at any time. To ask for your account and data to be deleted, or for a copy of what we hold, open a GitHub issue labelled <i>privacy</i> and ask for a private reply. Please don't post your email address in the issue. We'll act on requests within 30 days.</p>
+    <p>You can edit or delete your own posts and bio at any time. <b>Delete your website account</b> from your profile page (<i>Delete my account</i>): your login, email address, profile, threads and replies are all deleted straight away. <b>Delete your game data</b> in game with <i>Menu &gt; Help &gt; Delete all my Lmg data</i>. For a copy of what we hold, or if something can't be deleted that way, open a GitHub issue labelled <i>privacy</i> and ask for a private reply. Please don't post your email address in the issue. We'll act on requests within 30 days.</p>
     <h3>Children</h3>
     <p>The website is for people aged 13 and older. If we learn that someone younger has made an account, we'll delete it.</p>
     <h3>Changes</h3>
