@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Lmg Client desktop app. Targets .NET Framework 4.8, which is built into Windows 10 and 11,
+       so there is nothing else to install. Build with launcher/build.sh. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Lmg Client</AssemblyName>
+    <RootNamespace>LmgLauncher</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/VERSION').Trim())</Version>
+    <Product>Lmg Client</Product>
+    <Company>Lmg Client</Company>
+    <Description>Lmg Client - keeps Lmg Client up to date and opens Minecraft</Description>
+    <Copyright>Lmg Client team. Not affiliated with Mojang or Microsoft.</Copyright>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

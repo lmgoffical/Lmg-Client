@@ -48,6 +48,46 @@ def resolve_modpack(minecraft: str) -> list:
     return mods
 
 
+def changelog(limit: int = 6) -> list:
+    """The newest entries of the website changelog (docs/app.js), as plain text, for the app's "What's new"."""
+    text = (ROOT / "docs" / "app.js").read_text(encoding="utf-8")
+    block = text[text.index("const CHANGELOG = ["):]
+    block = block[:block.index("];")]
+    out = []
+    for version, what in re.findall(r'\["([0-9.]+)", "((?:[^"\\]|\\.)*)"\]', block)[:limit]:
+        what = re.sub(r"<[^>]+>", "", what).replace("\\'", "'").replace('\\"', '"').replace("&amp;", "&")
+        out.append({"version": version, "text": what})
+    return out
+
+
+def launcher(download: Path) -> dict | None:
+    """The desktop app (built by launcher/build.sh), so it can update itself."""
+    exe = download / "Lmg-Client.exe"
+    version_file = ROOT / "launcher" / "VERSION"
+    if not exe.exists() or not version_file.exists():
+        return None
+    return {"version": version_file.read_text().strip(), "file": exe.name, "sha1": hashlib.sha1(exe.read_bytes()).hexdigest()}
+
+
+def installer_zip(download: Path) -> None:
+    """Lmg-Client-Installer.zip: the one file people download. It holds the app."""
+    import zipfile
+    exe = download / "Lmg-Client.exe"
+    if not exe.exists():
+        return
+    path = download / "Lmg-Client-Installer.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        info = zipfile.ZipInfo("Lmg Client.exe", date_time=(2026, 1, 1, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        z.writestr(info, exe.read_bytes())
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    app_js = ROOT / "docs" / "app.js"
+    text = app_js.read_text(encoding="utf-8")
+    text = re.sub(r"Its SHA-256 is <code>[0-9a-f]{64}</code>", f"Its SHA-256 is <code>{digest}</code>", text)
+    app_js.write_text(text, encoding="utf-8")
+    print(f"  installer zip sha256 {digest}")
+
+
 def main() -> None:
     version = prop("version")
     minecraft = prop("minecraft_version")
@@ -69,7 +109,13 @@ def main() -> None:
         "minecraft": minecraft,
         "lmgClient": {"file": jar_name, "sha1": hashlib.sha1(data).hexdigest()},
         "mods": resolve_modpack(minecraft),
+        "changelog": changelog(),
     }
+    app = launcher(download)
+    if app:
+        manifest["launcher"] = app
+        print(f"  app {app['version']}")
+    installer_zip(download)
     (download / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"Released {jar_name} for Minecraft {minecraft}")
 

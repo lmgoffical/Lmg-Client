@@ -137,7 +137,7 @@ public class LmgTitleScreen extends Screen {
 		g.text(font, version, width - font.width(version) - 6, height - 12, Draw.withAlpha(0xF2C14E, 0.7f * intro), false);
 		String update = UpdateChecker.newerVersion();
 		if (update != null) {
-			String msg = "Update " + update + " is out! Run Install-Lmg-Client.bat to get it.";
+			String msg = "Update " + update + " is out! Open the Lmg Client app (or press Play there) to get it.";
 			float pulse = 0.75f + 0.25f * (float) Math.sin(time * 2.5f);
 			g.text(font, msg, 6, height - 12, Draw.withAlpha(Theme.accentSoft(), intro * pulse), false);
 		}

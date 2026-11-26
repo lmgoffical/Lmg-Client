@@ -27,13 +27,19 @@ Community site with accounts, a forum, announcements and a config gallery: <http
 ## Installing it (Windows), the easy way
 
 1. Open the Minecraft Launcher once and sign in, then close it.
-2. Download [**Lmg-Client-Installer.zip**](https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/download/Lmg-Client-Installer.zip), open it and double-click `Install-Lmg-Client.bat`.
+2. Download [**Lmg-Client-Installer.zip**](https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/download/Lmg-Client-Installer.zip), open it and double-click **Lmg Client.exe**.
    If Windows shows "Windows protected your PC", click **More info → Run anyway**.
-3. Open the Minecraft Launcher, pick **Lmg Client** next to the Play button, and press Play.
+3. The app puts itself in `%LOCALAPPDATA%\Programs\Lmg Client` with Desktop and Start menu shortcuts. Press **Play**: the first time it installs everything, then the Minecraft Launcher opens with **Lmg Client** picked. Press Play there.
 
-The installer sets up Fabric and downloads Lmg Client, Fabric API, **Sodium** (FPS), **Lithium** (smoother ticks) and **Iris** (shaders). The mod versions are pinned to a set known to work together. Everything goes into its own folder, `%appdata%\.lmgclient`, so it never clashes with other mods. Your worlds and resource packs are shared with normal Minecraft.
+The app installs Fabric, Lmg Client, Fabric API, **Sodium** (FPS), **Lithium** (smoother ticks) and **Iris** (shaders) at versions pinned to work together, checks every download against its SHA-1, and keeps everything in its own folder, `%appdata%\.lmgclient`, so it never clashes with other mods. Worlds and resource packs are shared with normal Minecraft.
 
-**To update**, run `Install-Lmg-Client.bat` again. It always fetches the newest version and removes old files. The main menu tells you when an update is out.
+**Updates are automatic:** each time you open the app it updates Lmg Client and the mods, and updates itself (the manifest lists the newest app with its SHA-1). It never signs you in or sees your password: Mojang's launcher does that.
+
+The old `installer/Install-Lmg-Client.bat` still works and does the same install.
+
+### The app's source
+
+`launcher/` is the app (C#, .NET Framework 4.8, so nothing to install on Windows 10/11). `launcher/build.sh` builds it into `download/Lmg-Client.exe` (needs the .NET SDK), and `tools/release.py` puts its version and SHA-1 in the manifest and rebuilds the zip. Bump `launcher/VERSION` to ship an app update.
 
 ### Manual install
 
@@ -84,8 +90,9 @@ Open them from the main menu (**Cosmetics**) or Right Shift → Avatar → Cosme
 
 1. Bump `version` in `gradle.properties`.
 2. `gradlew build`
-3. `python tools/release.py`: copies the jar to `download/` and rewrites `download/manifest.json`, including the pinned mods from `tools/modpack.json`.
-4. Commit and push. Players get it by rerunning the installer.
+3. If the app changed: bump `launcher/VERSION` and run `launcher/build.sh`.
+4. `python tools/release.py`: copies the jar to `download/`, rewrites `download/manifest.json` (pinned mods from `tools/modpack.json`, the changelog, the app) and rebuilds the download zip.
+5. Commit and push. Players get it the next time they open the app.
 
 ## Building it yourself (Windows)
 

@@ -1,9 +1,9 @@
 {
-  "version": "0.23.0",
+  "version": "0.24.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.23.0.jar",
-    "sha1": "f769f2bba06ad67bce7be09299372effae71dc3b"
+    "file": "lmg-client-0.24.0.jar",
+    "sha1": "b5402453bdaddec3dd603421e709ef4af0369cc5"
   },
   "mods": [
     {
@@ -34,5 +34,36 @@
       "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/vTN4NRGW/iris-fabric-1.11.7%2Bmc26.3.jar",
       "sha1": "fa03640ba1e4ef2f7ae3619c6373a06e46d0ba2c"
     }
-  ]
+  ],
+  "changelog": [
+    {
+      "version": "0.24",
+      "text": "The Lmg Client app. A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. Plus What's new, memory settings and repair."
+    },
+    {
+      "version": "0.23",
+      "text": "Smoother. A new FPS tab with a one-click FPS boost you can undo. The trail only spawns when you can see it, ore glow and the minimap do far less work, and the map scanner is lighter."
+    },
+    {
+      "version": "0.22",
+      "text": "Cinematic. One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."
+    },
+    {
+      "version": "0.21",
+      "text": "See each other's pets. Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."
+    },
+    {
+      "version": "0.20",
+      "text": "Pets. Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."
+    },
+    {
+      "version": "0.19",
+      "text": "Safer by default. Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."
+    }
+  ],
+  "launcher": {
+    "version": "1.0.0",
+    "file": "Lmg-Client.exe",
+    "sha1": "3b3a827e8392844c44156f19bc65bccc4240aec5"
+  }
 }
