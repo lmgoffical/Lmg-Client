@@ -15,7 +15,7 @@ const PET_TYPES = new Set([
   "BAT", "COPPER_GOLEM", "HAPPY_GHAST", "MINI_PLAYER",
 ]);
 const MODES = new Set(["FOLLOW", "LEFT_SHOULDER", "RIGHT_SHOULDER", "HEAD"]);
-const CATEGORIES = new Set(["capes", "wings", "hats", "glasses", "ears", "auras"]);
+const CATEGORIES = new Set(["capes", "wings", "hats", "glasses", "ears", "tails", "auras"]);
 const USERNAME = /^[A-Za-z0-9_]{1,16}$/;
 const ITEM_ID = /^[a-z0-9_]{1,40}$/;
 const COLOR = /^(#[0-9A-Fa-f]{6}|accent|rainbow)$/;

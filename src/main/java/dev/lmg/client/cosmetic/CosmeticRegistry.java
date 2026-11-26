@@ -19,10 +19,10 @@ import java.util.Map;
 /** All cosmetics: the built-in catalog (assets/lmgclient/cosmetics) plus imported custom models. */
 public final class CosmeticRegistry {
 	/** Categories in the order the Cosmetics screen shows them. */
-	public static final String[] CATEGORIES = {"capes", "wings", "hats", "glasses", "ears", "auras", "custom"};
+	public static final String[] CATEGORIES = {"capes", "wings", "hats", "glasses", "ears", "tails", "auras", "custom"};
 	public static final Map<String, String> CATEGORY_NAMES = Map.of(
 			"capes", "Capes", "wings", "Wings", "hats", "Hats", "glasses", "Glasses",
-			"ears", "Ears", "auras", "Auras", "custom", "Custom");
+			"ears", "Ears", "tails", "Tails", "auras", "Auras", "custom", "Custom");
 
 	private static final Gson GSON = new Gson();
 	private static final Map<String, CosmeticModel> MODELS = new LinkedHashMap<>();

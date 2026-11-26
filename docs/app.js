@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.35", "<b>34 new cosmetics and a new Tails tab.</b> Tails: cat, fox, bunny, devil, dragon and robot, and they swish as you walk. Hats: witch, cowboy, party, flower crown, frog, headphones and a star crown. Glasses: heart, round, star, snow goggles and a monocle. Ears: bear, devil horns, bug antennae and elf. Wings: fairy, dragon and crystal. Auras: heart orbit, planet rings, leaf swirl and spirit flames. Capes: Moonlit Sea, Inferno, Rainbow, Night Forest and Racer. Shared tails show for other Lmg players too."],
   ["0.34", "<b>Pets climb on you.</b> One setting: You &gt; Outfit &gt; Pets climb on me. Your pets on Follow hop up onto your head and shoulders one after another, sit there a while, then hop down and walk about. Players climbing on each other is gone: the Climbing page, its key and the asking are all removed, and so is everything the server kept for it."],
   ["0.33", "<b>No more asking - and pets play too.</b> Climbing is a setting now: Social &gt; Climbing &gt; Who can climb on me (nobody, your partner, friends or everyone). Pets can be set to Play around me, and pets on Follow come and play when you stand still: hopping round you, bouncing, nuzzling up, then sitting beside you."],
   ["0.32", "<b>Climb on anyone (who says yes).</b> You don't need to be friends or partners any more: look at someone with Lmg and climb - they get a little card asking, and press Y (yes for 2 hours), U (always) or N (no). See who can climb on you, clear it, or stop people asking, in Social &gt; Climbing."],
@@ -190,7 +191,7 @@ async function pageHome() {
       <div class="section-head"><h2>What you can change</h2><span class="label">press right shift in game</span></div>
       <div class="does">
         <div><h3>The sky</h3><p>Sunset, inferno, midnight or a void. Pin the time to night, kill the fog, add an aurora.</p></div>
-        <div><h3>Your character</h3><p>Capes, wings, hats, glasses and auras, each in any colour. Or bring your own skin and Blockbench models.</p></div>
+        <div><h3>Your character</h3><p>Over 50 capes, wings, hats, glasses, ears, tails and auras, each in any colour. Or bring your own skin and Blockbench models.</p></div>
         <div><h3>Pets</h3><p>A cat on your shoulder, a fox at your heels, or a tiny version of your friend. Name them whatever you want.</p></div>
         <div><h3>PvP stuff</h3><p>A glow on whoever's close, a different colour once you can actually hit them, and smaller swords.</p></div>
         <div><h3>Maps and keys</h3><p>A minimap, a world map with waypoints, zoom, freecam, and every key can be changed.</p></div>
@@ -216,6 +217,8 @@ async function pageHome() {
       <div class="section-head"><h2>Straight from the game</h2><span class="label">real screenshots, nothing touched up</span></div>
       <div class="gallery">
         ${[
+          ["newcos", "New in 0.35: tails, a witch hat, dragon wings, frog hat and more", "Eight players in different new outfits: a witch hat with fairy wings, devil horns with dragon wings and a fire cape, a frog hat with round glasses, headphones with goggles and crystal wings, a party hat with heart shades, a cowboy hat with a racing cape, a flower crown with fairy wings, and a star crown with star shades"],
+          ["tails", "The new Tails tab: cat, fox, bunny, devil, dragon and robot", "The Cosmetics menu on the Tails tab, with a fox tail picked and its colour sliders"],
           ["photo", "Photo mode (F8): a warm filter and a Polaroid frame", "A Polaroid-framed photo of a player waving in a cherry grove by a pond"],
           ["partner", "Partners match outfits, each in their own colour", "Two players from behind wearing the same butterfly wings, one pink and one blue, with a heart on one name tag"],
           ["wheel", "Hold G for emotes. The middle shows you doing it", "The emote wheel: eight emotes around a preview of the player dancing"],

@@ -120,3 +120,75 @@ export function bar(part, p0, p1, w, d, top, bottom = top, tint = 1) {
 
 // rotate a 2D point (degrees) - handy for laying out fans of bones/feathers
 export const polar = (len, deg) => [Math.cos(deg * Math.PI / 180) * len, Math.sin(deg * Math.PI / 180) * len];
+
+// ---- helpers for the v0.35 batch ----
+
+// a quad seen from both sides (for thin flat shapes drawn with a culling render type)
+export function dquad(part, a, b, c, d, top, bottom = top, tint = 1) {
+  part.quad(a, b, c, d, top, bottom, tint);
+  part.quad(d, c, b, a, bottom, top, tint);
+  return part;
+}
+
+// filled polygon as a triangle fan from `centre` (3D points), centre colour -> edge colour, both sides
+export function fan(part, pts, centre, cCol, eCol = cCol, tint = 1, twoSided = true) {
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    part.tri(centre, b, a, cCol, eCol, tint);
+    if (twoSided) part.tri(centre, a, b, cCol, eCol, tint);
+  }
+  return part;
+}
+
+// closed outline of 2D points at depth z, as little bars
+export function outline(part, pts2, z, w, d, col, tint = 1) {
+  for (let i = 0; i < pts2.length; i++) {
+    const a = pts2[i], b = pts2[(i + 1) % pts2.length];
+    bar(part, [a[0], a[1], z], [b[0], b[1], z], w, d, col, col, tint);
+  }
+  return part;
+}
+
+// 2D heart outline (y points down, point at the bottom), about `size` wide
+export function heartPts(cx, cy, size, n = 28) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const t = Math.PI * 2 * i / n;
+    const x = 16 * Math.sin(t) ** 3;
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    pts.push([cx + x * size / 34, cy - y * size / 34]);
+  }
+  return pts;
+}
+
+// 2D star outline
+export function starPts(cx, cy, outer, inner, points = 5, rot = 0) {
+  const pts = [];
+  for (let i = 0; i < points * 2; i++) {
+    const a = rot - Math.PI / 2 + Math.PI * i / points, r = i % 2 === 0 ? outer : inner;
+    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+  }
+  return pts;
+}
+
+// 2D ellipse outline, turned by `deg`
+export function ellipsePts(cx, cy, rx, ry, deg = 0, n = 24) {
+  const c = Math.cos(deg * Math.PI / 180), s = Math.sin(deg * Math.PI / 180), pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = Math.PI * 2 * i / n, x = Math.cos(a) * rx, y = Math.sin(a) * ry;
+    pts.push([cx + x * c - y * s, cy + x * s + y * c]);
+  }
+  return pts;
+}
+
+// a short cylinder along z (a disc with thickness), centred at (cx, cy)
+export function disc(part, cx, cy, r, z0, z1, col, tint = 1, segs = 16, edge = col) {
+  const pts = ellipsePts(cx, cy, r, r, 0, segs);
+  fan(part, pts.map(p => [p[0], p[1], z0]), [cx, cy, z0], col, col, tint);
+  fan(part, pts.map(p => [p[0], p[1], z1]), [cx, cy, z1], col, col, tint);
+  for (let i = 0; i < segs; i++) {
+    const a = pts[i], b = pts[(i + 1) % segs];
+    dquad(part, [a[0], a[1], z0, 0, 0], [b[0], b[1], z0, 1, 0], [b[0], b[1], z1, 1, 1], [a[0], a[1], z1, 0, 1], edge, edge, tint);
+  }
+  return part;
+}

@@ -84,6 +84,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("v29world")) v29world(ctx, world);
 			if (want("v29photo")) v29photo(ctx, world);
 			if (want("cosmetics")) cosmetics(ctx);
+			if (want("newcos")) newCosmetics(ctx, world);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -915,6 +916,64 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.waitTicks(30);
 		ctx.takeScreenshot("cosmetics-colour");
+		ctx.setScreen(() -> null);
+	}
+
+	/** The v0.35 batch: four outfits made only of new pieces, front and back, and the Tails tab. */
+	private void newCosmetics(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		String[][] outfits = {
+				{"witch", "hats=hat_witch", "wings=wings_fairy", "tails=tail_cat", "ears=ears_bear", "auras=aura_hearts", "capes=cape_forest"},
+				{"dragon", "ears=ears_horns", "wings=wings_dragon", "tails=tail_dragon", "glasses=glasses_star", "auras=aura_flames", "capes=cape_inferno"},
+				{"frog", "hats=hat_frog", "glasses=glasses_round", "tails=tail_fox", "auras=aura_leaves", "capes=cape_rainbow"},
+				{"tech", "hats=hat_headphones", "glasses=glasses_goggles", "wings=wings_crystal", "tails=tail_robot", "auras=aura_rings", "capes=cape_racer"},
+				{"party", "hats=hat_party", "glasses=glasses_heart", "ears=ears_antennae", "tails=tail_devil", "capes=cape_ocean"},
+				{"cowboy", "hats=hat_cowboy", "glasses=glasses_monocle", "ears=ears_elf", "tails=tail_bunny", "capes=cape_racer"},
+				{"flowers", "hats=hat_flowers", "ears=ears_elf", "wings=wings_fairy", "tails=tail_fox", "auras=aura_leaves", "capes=cape_forest"},
+				{"stars", "hats=hat_starcrown", "glasses=glasses_star", "wings=wings_crystal", "tails=tail_cat", "auras=aura_rings", "capes=cape_ocean"},
+		};
+		for (String[] o : outfits) {
+			ctx.runOnClient(mc -> {
+				var c = LmgConfig.get();
+				c.equipped.clear();
+				c.pets.clear();
+				for (int i = 1; i < o.length; i++) {
+					String[] kv = o[i].split("=");
+					c.equipped.put(kv[0], kv[1]);
+				}
+				mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+			});
+			ctx.waitTicks(40);
+			ctx.takeScreenshot("newcos-" + o[0] + "-front");
+			ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));
+			ctx.waitTicks(30);
+			ctx.takeScreenshot("newcos-" + o[0] + "-back");
+		}
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		for (String[] tab : new String[][]{{"tails", "tail_fox"}, {"hats", "hat_witch"}, {"capes", "cape_inferno"}}) {
+			ctx.runOnClient(mc -> LmgConfig.get().equipped.put(tab[0], tab[1]));
+			ctx.setScreen(() -> new dev.lmg.client.screen.CosmeticsScreen(null));
+			ctx.waitTicks(10);
+			ctx.runOnClient(mc -> {
+				try {
+					var cs = mc.gui.screen();
+					var f = cs.getClass().getDeclaredField("tab");
+					f.setAccessible(true);
+					f.set(cs, tab[0]);
+					var sel = cs.getClass().getDeclaredField("selected");
+					sel.setAccessible(true);
+					sel.set(cs, tab[1]);
+					var rb = net.minecraft.client.gui.screens.Screen.class.getDeclaredMethod("rebuildWidgets");
+					rb.setAccessible(true);
+					rb.invoke(cs);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			ctx.waitTicks(40);
+			ctx.takeScreenshot("newcos-tab-" + tab[0]);
+		}
 		ctx.setScreen(() -> null);
 	}
 

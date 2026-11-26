@@ -220,8 +220,113 @@ def cherry():
     return face
 
 
+def ocean():
+    face = vgrad(FW, FH, [(0, (10, 22, 58)), (0.5, (24, 70, 130)), (0.52, (12, 48, 98)), (1, (4, 16, 40))])
+    d = ImageDraw.Draw(face)
+    stars(face, (0, 0, FW, FH * 0.45), 26, 4)
+    moon = Image.new("RGBA", face.size, (0, 0, 0, 0)); md = ImageDraw.Draw(moon)
+    md.ellipse([FW / 2 - 7, 7, FW / 2 + 7, 21], fill=(255, 246, 220, 255))
+    glow_layer(face, moon, 4)
+    hz = FH * 0.51
+    for i in range(14):   # moonlight on the water
+        y = hz + 2 + i * 2.2
+        half = 6 - i * 0.3 + (i % 2) * 1.5
+        d.line([(FW / 2 - half, y), (FW / 2 + half, y)], fill=(255, 240, 200, max(40, 200 - i * 12)), width=1)
+    for row in range(6):  # wave crests
+        y = hz + 6 + row * 5
+        for x in range(-4, FW + 4, 8):
+            off = (row % 2) * 4
+            d.arc([x + off, y, x + off + 8, y + 4], 200, 340, fill=(140, 200, 255, 150 - row * 15), width=1)
+    trim(face, (120, 190, 255, 255), 1)
+    return face
+
+
+def inferno():
+    face = vgrad(FW, FH, [(0, (20, 4, 4)), (0.45, (90, 14, 6)), (1, (255, 120, 20))])
+    rnd = random.Random(7)
+    fire = Image.new("RGBA", face.size, (0, 0, 0, 0)); fd = ImageDraw.Draw(fire)
+    for layer, (col, scale) in enumerate([((255, 70, 20), 1.0), ((255, 150, 30), 0.75), ((255, 230, 120), 0.45)]):
+        for k in range(9):
+            x = (k + 0.5) * FW / 9 + rnd.uniform(-2, 2)
+            h = FH * (0.45 + rnd.uniform(0, 0.35)) * scale
+            w = FW / 9 * (1.2 - layer * 0.25)
+            pts = [(x - w / 2, FH), (x - w / 4, FH - h * 0.55), (x + rnd.uniform(-2, 2), FH - h), (x + w / 4, FH - h * 0.5), (x + w / 2, FH)]
+            fd.polygon(pts, fill=col + (235,))
+    glow_layer(face, fire, 3)
+    for _ in range(22):   # embers
+        x, y = rnd.uniform(2, FW - 2), rnd.uniform(2, FH * 0.6)
+        ImageDraw.Draw(face).point((x, y), fill=(255, rnd.randint(150, 230), 80, 255))
+    trim(face, (255, 140, 40, 255), 1)
+    return face
+
+
+def rainbow():
+    cols = [(232, 64, 72), (247, 141, 54), (250, 214, 70), (88, 196, 104), (64, 150, 232), (138, 92, 220)]
+    face = Image.new("RGBA", (FW, FH), (255, 255, 255, 255))
+    d = ImageDraw.Draw(face)
+    band = FH / len(cols)
+    for i, c in enumerate(cols):
+        d.rectangle([0, i * band, FW, (i + 1) * band], fill=c + (255,))
+    clouds = Image.new("RGBA", face.size, (0, 0, 0, 0)); cd = ImageDraw.Draw(clouds)
+    for (cx, cy) in [(12, 14), (31, 40), (14, 58)]:
+        for dx, dy, r in [(-5, 1, 4), (0, -2, 5), (5, 1, 4), (0, 2, 4)]:
+            cd.ellipse([cx + dx - r, cy + dy - r, cx + dx + r, cy + dy + r], fill=(255, 255, 255, 245))
+    glow_layer(face, clouds, 1)
+    trim(face, (255, 255, 255, 255), 1)
+    return face
+
+
+def forest():
+    face = vgrad(FW, FH, [(0, (14, 18, 44)), (0.6, (34, 52, 86)), (1, (12, 26, 22))])
+    d = ImageDraw.Draw(face)
+    stars(face, (0, 0, FW, FH * 0.5), 30, 9)
+    d.ellipse([FW - 15, 5, FW - 6, 14], fill=(240, 240, 255, 255))
+    d.ellipse([FW - 12, 4, FW - 4, 12], fill=(20, 26, 54, 255))   # crescent
+    rnd = random.Random(3)
+    for layer, (col, base, hmin) in enumerate([((40, 78, 74), FH * 0.62, 14), ((26, 56, 50), FH * 0.78, 18), ((14, 32, 28), FH, 24)]):
+        x = -4
+        while x < FW + 4:
+            h = rnd.uniform(hmin, hmin + 10); w = h * 0.42
+            d.polygon([(x - w / 2, base), (x, base - h), (x + w / 2, base)], fill=col + (255,))
+            x += w * rnd.uniform(0.55, 0.85)
+        d.rectangle([0, base - 1, FW, FH], fill=col + (255,))
+    flies = Image.new("RGBA", face.size, (0, 0, 0, 0)); fl = ImageDraw.Draw(flies)
+    for _ in range(14):
+        x, y = rnd.uniform(3, FW - 3), rnd.uniform(FH * 0.55, FH - 4)
+        fl.ellipse([x - 0.8, y - 0.8, x + 0.8, y + 0.8], fill=(255, 240, 120, 255))
+    glow_layer(face, flies, 2)
+    trim(face, (120, 170, 140, 255), 1)
+    return face
+
+
+def racer():
+    face = Image.new("RGBA", (FW, FH), (20, 20, 24, 255))
+    d = ImageDraw.Draw(face)
+    sq = FW / 8
+    for r in range(int(FH / sq) + 1):
+        for k in range(8):
+            if (r + k) % 2 == 0:
+                d.rectangle([k * sq, r * sq, (k + 1) * sq - 1, (r + 1) * sq - 1], fill=(240, 240, 240, 255))
+    # a red stripe down the middle with a number
+    d.rectangle([FW / 2 - 7, 0, FW / 2 + 6, FH], fill=(220, 36, 48, 255))
+    d.rectangle([FW / 2 - 9, 0, FW / 2 - 8, FH], fill=(255, 255, 255, 255))
+    d.rectangle([FW / 2 + 7, 0, FW / 2 + 8, FH], fill=(255, 255, 255, 255))
+    digits = {"0": ["111", "101", "101", "101", "111"], "1": ["010", "110", "010", "010", "111"]}
+    px, y = 2, FH * 0.36
+    x = FW / 2 - 7 * px / 2
+    for ch in "01":
+        for ry, row in enumerate(digits[ch]):
+            for rx, bit in enumerate(row):
+                if bit == "1":
+                    d.rectangle([x + rx * px, y + ry * px, x + rx * px + px - 1, y + ry * px + px - 1], fill=(255, 255, 255, 255))
+        x += 4 * px
+    trim(face, (220, 36, 48, 255), 1)
+    return face
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, fn in [("cape", lmg), ("cape_aurora", aurora), ("cape_royal", royal), ("cape_void", void), ("cape_sunset", sunset), ("cape_cherry", cherry)]:
+    for name, fn in [("cape", lmg), ("cape_aurora", aurora), ("cape_royal", royal), ("cape_void", void), ("cape_sunset", sunset), ("cape_cherry", cherry),
+                     ("cape_ocean", ocean), ("cape_inferno", inferno), ("cape_rainbow", rainbow), ("cape_forest", forest), ("cape_racer", racer)]:
         base(fn()).save(OUT / f"{name}.png")
         print("wrote", name)

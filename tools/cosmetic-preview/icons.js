@@ -17,6 +17,7 @@ const CAMERA = {
   glasses: "view=threefront&player=head&dist=1.75&aty=1.72",
   ears: "view=threefront&player=head&dist=2.0&aty=1.86",
   auras: "view=threefront&player=1&dist=4.0&aty=1.15",
+  tails: "view=three&player=1&dist=3.3&aty=0.72",
 };
 const OVERRIDE = { aura_halo: "view=threefront&player=head&dist=2.3&aty=1.9", hat_top: "view=threefront&player=head&dist=2.5&aty=1.9" };
 
@@ -25,7 +26,8 @@ const OVERRIDE = { aura_halo: "view=threefront&player=head&dist=2.3&aty=1.9", ha
   const browser = await chromium.launch({ args: ["--use-gl=swiftshader", "--enable-unsafe-swiftshader"],
     proxy: process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: "127.0.0.1,localhost" } : undefined });
   const page = await browser.newPage({ viewport: { width: 128, height: 128 }, deviceScaleFactor: 2 });
-  for (const item of index.items) {
+  const only = process.argv[2] ? new Set(process.argv[2].split(",")) : null;   // optional: just these ids
+  for (const item of index.items.filter(i => !only || only.has(i.id))) {
     const json = JSON.parse(fs.readFileSync(path.join(ASSETS, "cosmetics", item.id + ".json"), "utf8"));
     let q = (OVERRIDE[item.id] || CAMERA[item.category] || CAMERA.hats) + "&bg=none&t=30";
     q += json.capeTexture ? "&cape=" + json.capeTexture : "&cape=0&items=" + item.id;

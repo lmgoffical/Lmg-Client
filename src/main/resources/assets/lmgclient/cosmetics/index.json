@@ -26,6 +26,38 @@
    "defaultColor": "#6AA8FF"
   },
   {
+   "id": "aura_hearts",
+   "name": "Heart Orbit",
+   "category": "auras",
+   "description": "Four glowing hearts float around you.",
+   "tintable": true,
+   "defaultColor": "#FF5C8A"
+  },
+  {
+   "id": "aura_rings",
+   "name": "Planet Rings",
+   "category": "auras",
+   "description": "Two tilted rings spin around you, with a tiny moon riding along.",
+   "tintable": true,
+   "defaultColor": "#9AD7FF"
+  },
+  {
+   "id": "aura_leaves",
+   "name": "Leaf Swirl",
+   "category": "auras",
+   "description": "Leaves spiral round you like a tiny whirlwind.",
+   "tintable": true,
+   "defaultColor": "#6CCB5F"
+  },
+  {
+   "id": "aura_flames",
+   "name": "Spirit Flames",
+   "category": "auras",
+   "description": "Flickering ghost-fire licks around your feet.",
+   "tintable": true,
+   "defaultColor": "#6BB8FF"
+  },
+  {
    "id": "cape_lmg",
    "name": "Lmg Cape",
    "category": "capes",
@@ -74,6 +106,46 @@
    "defaultColor": "#FFFFFF"
   },
   {
+   "id": "cape_ocean",
+   "name": "Moonlit Sea",
+   "category": "capes",
+   "description": "The moon shining on night waves.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_inferno",
+   "name": "Inferno",
+   "category": "capes",
+   "description": "Flames licking up from the bottom, with floating embers.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_rainbow",
+   "name": "Rainbow",
+   "category": "capes",
+   "description": "Bright rainbow stripes with fluffy clouds.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_forest",
+   "name": "Night Forest",
+   "category": "capes",
+   "description": "Pine trees, a crescent moon and fireflies.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_racer",
+   "name": "Racer",
+   "category": "capes",
+   "description": "A checkered flag with a red racing stripe.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
    "id": "ears_cat",
    "name": "Cat Ears",
    "category": "ears",
@@ -96,6 +168,38 @@
    "description": "Long bunny ears - the left one flops over.",
    "tintable": true,
    "defaultColor": "#F2EEF4"
+  },
+  {
+   "id": "ears_bear",
+   "name": "Bear Ears",
+   "category": "ears",
+   "description": "Round fuzzy bear ears. They wiggle a little.",
+   "tintable": true,
+   "defaultColor": "#7A5234"
+  },
+  {
+   "id": "ears_horns",
+   "name": "Devil Horns",
+   "category": "ears",
+   "description": "Curved little devil horns. Goes with the Devil Tail.",
+   "tintable": true,
+   "defaultColor": "#C2183A"
+  },
+  {
+   "id": "ears_antennae",
+   "name": "Bug Antennae",
+   "category": "ears",
+   "description": "Wobbly antennae with glowing tips.",
+   "tintable": true,
+   "defaultColor": "#FFD23F"
+  },
+  {
+   "id": "ears_elf",
+   "name": "Elf Ears",
+   "category": "ears",
+   "description": "Long pointy elf ears. Pick your skin tone with the colour.",
+   "tintable": true,
+   "defaultColor": "#E9B894"
   },
   {
    "id": "glasses_aviator",
@@ -130,6 +234,46 @@
    "defaultColor": "#FF3B6B"
   },
   {
+   "id": "glasses_heart",
+   "name": "Heart Shades",
+   "category": "glasses",
+   "description": "Heart-shaped shades. The colour sets the frame and the lens tint.",
+   "tintable": true,
+   "defaultColor": "#FF3B7A"
+  },
+  {
+   "id": "glasses_round",
+   "name": "Round Specs",
+   "category": "glasses",
+   "description": "Thin round wire glasses with clear lenses. Smart look.",
+   "tintable": true,
+   "defaultColor": "#2A2A2E"
+  },
+  {
+   "id": "glasses_star",
+   "name": "Star Shades",
+   "category": "glasses",
+   "description": "Glowing star-shaped lenses. They light up at night.",
+   "tintable": true,
+   "defaultColor": "#FFD23F"
+  },
+  {
+   "id": "glasses_goggles",
+   "name": "Snow Goggles",
+   "category": "glasses",
+   "description": "Big mirrored snow goggles. The colour sets the mirror.",
+   "tintable": true,
+   "defaultColor": "#FF8A3D"
+  },
+  {
+   "id": "glasses_monocle",
+   "name": "Monocle",
+   "category": "glasses",
+   "description": "A gold monocle on a little chain. Quite right.",
+   "tintable": false,
+   "defaultColor": "#E2B851"
+  },
+  {
    "id": "hat_crown",
    "name": "Royal Crown",
    "category": "hats",
@@ -162,6 +306,110 @@
    "defaultColor": "#D94848"
   },
   {
+   "id": "hat_witch",
+   "name": "Witch Hat",
+   "category": "hats",
+   "description": "Wide brim, crooked tip, orange band. The tip flops when you move.",
+   "tintable": true,
+   "defaultColor": "#3B2A5A"
+  },
+  {
+   "id": "hat_cowboy",
+   "name": "Cowboy Hat",
+   "category": "hats",
+   "description": "Curled brim, pinched crown, leather band. Yeehaw.",
+   "tintable": true,
+   "defaultColor": "#9A6434"
+  },
+  {
+   "id": "hat_party",
+   "name": "Party Hat",
+   "category": "hats",
+   "description": "Striped party cone with a pom-pom. Every day is a party.",
+   "tintable": true,
+   "defaultColor": "#FF5FA2"
+  },
+  {
+   "id": "hat_flowers",
+   "name": "Flower Crown",
+   "category": "hats",
+   "description": "A vine of little flowers and leaves. The colour picks the flowers.",
+   "tintable": true,
+   "defaultColor": "#FF9BC8"
+  },
+  {
+   "id": "hat_frog",
+   "name": "Frog Hat",
+   "category": "hats",
+   "description": "A bucket hat with frog eyes that blink every so often.",
+   "tintable": true,
+   "defaultColor": "#6BCB5A"
+  },
+  {
+   "id": "hat_headphones",
+   "name": "Headphones",
+   "category": "hats",
+   "description": "Chunky headphones with glowing rings on the cups.",
+   "tintable": true,
+   "defaultColor": "#7A5CFF"
+  },
+  {
+   "id": "hat_starcrown",
+   "name": "Star Crown",
+   "category": "hats",
+   "description": "Tiny glowing stars that circle above your head.",
+   "tintable": true,
+   "defaultColor": "#FFE27A"
+  },
+  {
+   "id": "tail_cat",
+   "name": "Cat Tail",
+   "category": "tails",
+   "description": "A long cat tail that swishes and curls up when you walk. Goes with Cat Ears.",
+   "tintable": true,
+   "defaultColor": "#2B2530"
+  },
+  {
+   "id": "tail_fox",
+   "name": "Fox Tail",
+   "category": "tails",
+   "description": "Big fluffy fox tail with a white tip. Goes with Fox Ears.",
+   "tintable": true,
+   "defaultColor": "#E8752C"
+  },
+  {
+   "id": "tail_bunny",
+   "name": "Bunny Tail",
+   "category": "tails",
+   "description": "A round cotton puff that wiggles now and then. Goes with Bunny Ears.",
+   "tintable": true,
+   "defaultColor": "#F2EEF4"
+  },
+  {
+   "id": "tail_devil",
+   "name": "Devil Tail",
+   "category": "tails",
+   "description": "A thin, twitchy tail with a spade on the end. Goes with Devil Horns.",
+   "tintable": true,
+   "defaultColor": "#C2183A"
+  },
+  {
+   "id": "tail_dragon",
+   "name": "Dragon Tail",
+   "category": "tails",
+   "description": "A heavy scaled tail with spikes down its back. It drags low and sways slowly.",
+   "tintable": true,
+   "defaultColor": "#3A8A5C"
+  },
+  {
+   "id": "tail_robot",
+   "name": "Robo Tail",
+   "category": "tails",
+   "description": "Metal links with glowing joints and a blinking light on the end.",
+   "tintable": true,
+   "defaultColor": "#45E0FF"
+  },
+  {
    "id": "wings_angel",
    "name": "Angel Wings",
    "category": "wings",
@@ -192,6 +440,30 @@
    "description": "Blades of light that glow in the dark.",
    "tintable": true,
    "defaultColor": "#45E0FF"
+  },
+  {
+   "id": "wings_fairy",
+   "name": "Fairy Wings",
+   "category": "wings",
+   "description": "See-through glittery wings that flutter fast.",
+   "tintable": true,
+   "defaultColor": "#B98CFF"
+  },
+  {
+   "id": "wings_dragon",
+   "name": "Dragon Wings",
+   "category": "wings",
+   "description": "Huge scaled dragon wings with slow, heavy flaps. Goes with the Dragon Tail.",
+   "tintable": true,
+   "defaultColor": "#3A8A5C"
+  },
+  {
+   "id": "wings_crystal",
+   "name": "Crystal Wings",
+   "category": "wings",
+   "description": "Floating glowing crystal shards that drift in and out.",
+   "tintable": true,
+   "defaultColor": "#7FE7FF"
   }
  ]
 }

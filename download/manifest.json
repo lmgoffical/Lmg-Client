@@ -1,9 +1,9 @@
 {
-  "version": "0.34.0",
+  "version": "0.35.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.34.0.jar",
-    "sha1": "a7a0abbb112a973a818a6ba4583baec04df3040c"
+    "file": "lmg-client-0.35.0.jar",
+    "sha1": "4b48ab64a8e0fb788bf141f6badee51f2f2e3c45"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.35",
+      "text": "34 new cosmetics and a new Tails tab. Tails: cat, fox, bunny, devil, dragon and robot, and they swish as you walk. Hats: witch, cowboy, party, flower crown, frog, headphones and a star crown. Glasses: heart, round, star, snow goggles and a monocle. Ears: bear, devil horns, bug antennae and elf. Wings: fairy, dragon and crystal. Auras: heart orbit, planet rings, leaf swirl and spirit flames. Capes: Moonlit Sea, Inferno, Rainbow, Night Forest and Racer. Shared tails show for other Lmg players too."
+    },
+    {
       "version": "0.34",
       "text": "Pets climb on you. One setting: You &gt; Outfit &gt; Pets climb on me. Your pets on Follow hop up onto your head and shoulders one after another, sit there a while, then hop down and walk about. Players climbing on each other is gone: the Climbing page, its key and the asking are all removed, and so is everything the server kept for it."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.30",
       "text": "Delete means delete. Menu &gt; Help &gt; Delete all my Lmg data wipes everything our server has about you: friends, invites, your UID, shared pets and cosmetics, and the config codes you shared. On the website, your profile page has Delete my account, which removes your login, profile and every post."
-    },
-    {
-      "version": "0.29",
-      "text": "Easier, and more of everything. Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."
     }
   ],
   "launcher": {
