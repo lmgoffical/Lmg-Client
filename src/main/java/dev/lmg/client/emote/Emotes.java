@@ -159,7 +159,7 @@ public final class Emotes {
 			if (pl.emote().withPartner()) {
 				Player with = pl.with() == null ? null : level.getPlayerByUUID(pl.with());
 				if (with == null || p == null || with.distanceTo(p) > dev.lmg.client.social.PartnerPlay.MAX_DISTANCE) gone = true;
-				if (mine && !dev.lmg.client.social.ClimbRequests.mayClimbOn(pl.with())) gone = true;
+				if (mine && !dev.lmg.client.social.ClimbAllow.mayClimbOn(pl.with())) gone = true;
 			}
 			if (mine && mc.player != null && (mc.options.keyJump.isDown() || mc.options.keyShift.isDown())) moved = true;
 			if (over || gone || moved || busy) {

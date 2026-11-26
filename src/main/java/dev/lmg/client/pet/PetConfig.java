@@ -2,8 +2,8 @@ package dev.lmg.client.pet;
 
 /** One pet as saved in lmgclient.json. */
 public class PetConfig {
-	public static final String[] MODES = {"FOLLOW", "LEFT_SHOULDER", "RIGHT_SHOULDER", "HEAD"};
-	public static final String[] MODE_LABELS = {"Follow me", "Left shoulder", "Right shoulder", "On my head"};
+	public static final String[] MODES = {"FOLLOW", "LEFT_SHOULDER", "RIGHT_SHOULDER", "HEAD", "PLAY"};
+	public static final String[] MODE_LABELS = {"Follow me", "Left shoulder", "Right shoulder", "On my head", "Play around me"};
 	public static final float[] SIZES = {0.35f, 0.55f, 0.8f, 1f};
 	public static final String[] SIZE_LABELS = {"Tiny", "Small", "Medium", "Full size"};
 
@@ -29,8 +29,9 @@ public class PetConfig {
 		return 0;
 	}
 
+	/** Riding on you (shoulder or head), as opposed to walking about. */
 	public boolean attached() {
-		return !"FOLLOW".equals(mode);
+		return !"FOLLOW".equals(mode) && !"PLAY".equals(mode);
 	}
 
 	/** Something that changes the entity itself (so it has to be rebuilt). */

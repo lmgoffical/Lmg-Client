@@ -882,43 +882,34 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				}).withHint("Their items, in your colours."));
 			}
 			case "Climbing" -> {
-				// answer anyone who's asking right now
-				for (dev.lmg.client.social.ClimbRequests.Ask ask : dev.lmg.client.social.ClimbRequests.waiting()) {
-					String what = ask.kind() == dev.lmg.client.emote.Emote.PERCH_HEAD ? "your head" : ask.kind() == dev.lmg.client.emote.Emote.PERCH_SHOULDER ? "your shoulder" : "playing";
-					r.add(SettingRow.choice(ask.name() + " asks: " + what, () -> "Yes / No",
-							() -> { dev.lmg.client.social.ClimbRequests.answer(ask, "once"); rebuildWidgets(); },
-							() -> { dev.lmg.client.social.ClimbRequests.answer(ask, "no"); rebuildWidgets(); })
-							.withHint("Click for yes (2 hours), right-click for no."));
-				}
+				String[] whoIds = {"nobody", "partner", "friends", "everyone"};
+				String[] whoLabels = {"Nobody", "My partner", "Friends", "Everyone"};
+				r.add(SettingRow.choice("Who can climb on me", () -> {
+							String w = dev.lmg.client.social.Social.state().climbWho();
+							for (int i = 0; i < whoIds.length; i++) if (whoIds[i].equals(w)) return whoLabels[i];
+							return "Nobody";
+						},
+						() -> setClimbWho(whoIds, 1), () -> setClimbWho(whoIds, -1))
+						.withHint("They can sit on your head or shoulder and play around you. No asking.").keywords("partner ride carry consent"));
 				r.add(SettingRow.button("Sit on their head", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_HEAD, "Climb"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_HEAD))
-						.withHint("Whoever you're looking at (or your partner). Asks them first.").keywords("partner ride climb"));
+						.withHint("Whoever you're looking at (or your partner), if their setting lets you.").keywords("partner ride climb"));
 				r.add(SettingRow.button("Sit on their shoulder", () -> partnerAction(dev.lmg.client.emote.Emote.PERCH_SHOULDER, "Climb"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PERCH_SHOULDER))
-						.withHint("Tiny, on their left shoulder like a parrot. Asks them first.").keywords("partner ride"));
+						.withHint("Tiny, on their left shoulder like a parrot.").keywords("partner ride"));
 				r.add(SettingRow.button("Play around them", () -> partnerAction(dev.lmg.client.emote.Emote.PLAY, "Play"),
 						() -> partnerToggle(dev.lmg.client.emote.Emote.PLAY))
 						.withHint("Hop round them, pull their arm, poke them, then sit together."));
 				r.add(SettingRow.toggle("Play when I'm idle", () -> c.partnerPlayIdle, v -> c.partnerPlayIdle = v)
-						.withHint("Idle next to someone who said yes and you start playing around them.")
-						.withMore(() -> more("Play when idle", "Next to someone who said yes, doing nothing", () -> List.of(
+						.withHint("Idle next to someone who lets you, and you start playing around them.")
+						.withMore(() -> more("Play when idle", "When you're standing still for a while", () -> List.of(
 								SettingRow.slider("Start after", () -> c.partnerIdleSeconds, v -> c.partnerIdleSeconds = (int) Math.round(v), 5, 120, 5,
-										v -> Math.round(v) + " s").withHint("How long you have to be idle first.")),
+										v -> Math.round(v) + " s").withHint("How long you have to be idle first (pets too).")),
 								() -> c.partnerIdleSeconds = 20)));
-				r.add(SettingRow.toggle("Let people ask to climb on me", () -> dev.lmg.client.social.Social.state().climbAsks(), v -> {
-					if (!dev.lmg.client.social.Social.signedIn()) { toast("Turn on Friends first", "Climbing uses the same sign-in (you don't need to add anyone)."); return; }
-					dev.lmg.client.social.Social.climbAsks(v, err -> { if (err != null) toast("Couldn't change it", err); });
-				}).withHint("Off: nobody can ask. Asking never lets them on until you say yes."));
-				int n = dev.lmg.client.social.Social.state().climbers().size();
-				r.add(SettingRow.button("Who can climb on me", () -> n == 0 ? "Nobody" : n + (n == 1 ? " person - clear" : " people - clear"), () -> {
-					if (n == 0) return;
-					dev.lmg.client.social.Social.climbRevoke(null, err -> { toast(err != null ? "Couldn't clear it" : "Done", err != null ? err : "Nobody can climb on you now (except your partner, if you said yes)."); rebuildWidgets(); });
-				}).withHint(n == 0 ? "People you said yes to show here." : "Yes to: " + String.join(", ", dev.lmg.client.social.Social.state().climbers().stream().map(y -> y.name()).toList())));
-				r.add(SettingRow.toggle("Let my partner climb on me", () -> dev.lmg.client.social.Social.state().iAllowClimb(), v -> {
-					if (dev.lmg.client.social.Social.partner() == null) { toast("No partner yet", "You don't need one - anyone can ask you. Partners just skip asking."); return; }
-					dev.lmg.client.social.Social.allowClimb(v, err -> toast(err != null ? "Couldn't change it" : v ? "Climbing allowed" : "Climbing off",
-							err != null ? err : v ? "Your partner can climb on you without asking." : "They get down straight away."));
-				}).withHint("Partners only: they can climb on you without asking each time.").keywords("partner climb ride carry"));
+				r.add(SettingRow.toggle("Pets play when I'm idle", () -> c.petsPlayIdle, v -> c.petsPlayIdle = v)
+						.withHint("Pets on Follow come and hop round you, bounce, nuzzle, then sit.").keywords("animals"));
+				r.add(SettingRow.button("Pets", "Open", () -> minecraft.gui.setScreen(new PetsScreen(this)))
+						.withHint("Put them on your head or shoulder, or set them to Play around me.").keywords("animals"));
 			}
 			case "Emotes" -> {
 				r.add(SettingRow.button("Emote wheel", "Open", () -> {
@@ -1095,6 +1086,21 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		for (int k = 0; k < all.length; k++) if (all[k].equals(LmgConfig.get().activeProfile)) i = k;
 		dev.lmg.client.feature.Looks.switchTo(all[Math.floorMod(i + dir, all.length)], msg -> toast("Profiles", msg));
 		rebuildWidgets();
+	}
+
+	private void setClimbWho(String[] ids, int dir) {
+		if (!dev.lmg.client.social.Social.signedIn()) {
+			toast("Turn on Friends first", "Climbing uses the same sign-in. You don't need to add anyone.");
+			return;
+		}
+		String now = dev.lmg.client.social.Social.state().climbWho();
+		int i = 0;
+		for (int k = 0; k < ids.length; k++) if (ids[k].equals(now)) i = k;
+		String next = ids[Math.floorMod(i + dir, ids.length)];
+		dev.lmg.client.social.Social.setClimbWho(next, err -> {
+			if (err != null) toast("Couldn't change it", err);
+			rebuildWidgets();
+		});
 	}
 
 	/** "Climb" / "Get down" for a partner button. */

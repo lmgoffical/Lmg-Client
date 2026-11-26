@@ -6,11 +6,9 @@
 //         We hand back a random session token and keep only its SHA-256.
 // emote:  checks the session token, saves the emote (for players who walk up later) and
 //         broadcasts it to everyone on the same server, signed with an Ed25519 key, so
-//         nobody can make your character do something you didn't. Partner emotes (sitting on
-//         their head or shoulder, playing around them) also need your partner's yes, and
-//         carry who they're with.
-// climb_ask / climb_answer: climbing on someone you're not partners with. One asks (it pops up
-//         for the other, signed like an emote); the other says "once" (2 hours), "always" or "no".
+//         nobody can make your character do something you didn't. Climbing emotes (sitting on
+//         someone's head or shoulder, playing around them) are only sent if that person's
+//         "Who can climb on me" setting includes you, and carry who they're with.
 // pubkey: the public half of that key (it's built into the mod).
 // uid:    your Lmg number (the next free one the first time), after the same Mojang check.
 // forget: deletes everything we hold for your Minecraft account, after the same Mojang check:
@@ -24,7 +22,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 const USERNAME = /^[A-Za-z0-9_]{1,16}$/;
 const ROOM = /^[0-9a-f]{16}$/;
 const EMOTES = new Set(["wave", "hug", "sit", "dance", "clap", "cheer", "point", "bow"]);
-// done together with your partner: only if you're partners and they said yes to being climbed on
+// done with someone: only if their "Who can climb on me" setting includes you
 const PARTNER_EMOTES = new Set(["perch_head", "perch_shoulder", "play"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const SESSION_DAYS = 30;
@@ -75,29 +73,10 @@ async function loadKey() {
   publicKey = data!.public_key;
 }
 
-async function sign(message: string): Promise<string> {
-  await loadKey();
-  return b64(await crypto.subtle.sign({ name: "Ed25519" }, signingKey!, new TextEncoder().encode(message)));
-}
-
-async function broadcast(room: string, event: string, payload: unknown): Promise<boolean> {
-  const res = await fetch(`${URL_}/realtime/v1/api/broadcast`, {
-    method: "POST",
-    headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: [{ topic: `lmg-emotes-${room}`, event, payload }] }),
-  });
-  return res.ok;
-}
-
-/** Can {@code climber} climb on {@code owner}? (Their partner who said yes, or a yes from asking.) */
+/** Does {@code owner}'s "Who can climb on me" setting include {@code climber}? */
 async function mayClimb(climber: string, owner: string): Promise<boolean> {
-  const { data: partner } = await db.from("lmg_partners").select("to_uuid, allow_climb").eq("from_uuid", owner).maybeSingle();
-  if (partner && partner.to_uuid === climber && partner.allow_climb) {
-    const { data: back } = await db.from("lmg_partners").select("to_uuid").eq("from_uuid", climber).maybeSingle();
-    if (back && back.to_uuid === owner) return true;
-  }
-  const { data: yes } = await db.from("lmg_climb_allows").select("until").eq("owner", owner).eq("climber", climber).maybeSingle();
-  return !!yes && (yes.until === null || new Date(yes.until).getTime() > Date.now());
+  const { data, error } = await db.rpc("lmg_may_climb", { p_climber: climber, p_owner: owner });
+  return !error && data === true;
 }
 
 // ---- actions ---------------------------------------------------------------------------------
@@ -173,57 +152,6 @@ async function forgetAll(body: any) {
   });
 }
 
-/** "Can I sit on you?" - pops up for them (if they take asks). */
-async function climbAsk(body: any) {
-  const me = await sessionUuid(body?.token);
-  if (!me) return reply(401, { error: "bad_session" });
-  const room = String(body?.room ?? "");
-  const to = String(body?.to ?? "");
-  const kind = String(body?.kind ?? "");
-  if (!ROOM.test(room) || !UUID_RE.test(to) || to === me || !PARTNER_EMOTES.has(kind)) return reply(400, { error: "Bad request" });
-  const { data: them } = await db.from("lmg_players").select("uuid, climb_asks").eq("uuid", to).maybeSingle();
-  if (!them) return reply(404, { error: "not_lmg" });
-  if (await mayClimb(me, to)) return reply(200, { ok: true, allowed: true });
-  if (!them.climb_asks) return reply(403, { error: "asks_off" });
-  // one ask to the same person every 20 seconds
-  const { data: last } = await db.from("lmg_climb_asks").select("at").eq("asker", me).eq("asked", to).maybeSingle();
-  if (last && Date.now() - new Date(last.at).getTime() < 20_000) return reply(429, { error: "too_fast" });
-  await db.from("lmg_climb_asks").upsert({ asker: me, asked: to, at: new Date().toISOString() });
-  const { data: mine } = await db.from("lmg_players").select("name").eq("uuid", me).maybeSingle();
-  const t = Date.now();
-  const s = await sign(`lmg-climb-ask|${me}|${to}|${kind}|${room}|${t}`);
-  if (!(await broadcast(room, "climb_ask", { u: me, n: mine?.name ?? "Someone", to, k: kind, r: room, t, s }))) {
-    return reply(502, { error: "Couldn't send it" });
-  }
-  return reply(200, { ok: true, asked: true });
-}
-
-/** Your answer to someone asking to climb on you: once (2 hours), always, or no. */
-async function climbAnswer(body: any) {
-  const me = await sessionUuid(body?.token);
-  if (!me) return reply(401, { error: "bad_session" });
-  const room = String(body?.room ?? "");
-  const climber = String(body?.climber ?? "");
-  const answer = String(body?.answer ?? "");
-  if (!ROOM.test(room) || !UUID_RE.test(climber) || climber === me || !["once", "always", "no"].includes(answer)) {
-    return reply(400, { error: "Bad request" });
-  }
-  const { data: them } = await db.from("lmg_players").select("uuid").eq("uuid", climber).maybeSingle();
-  if (!them) return reply(404, { error: "not_lmg" });
-  if (answer === "no") {
-    await db.from("lmg_climb_allows").delete().eq("owner", me).eq("climber", climber);
-    await db.from("lmg_presence").update({ emote: null, emote_with: null, emote_room: null, emote_at: null })
-      .eq("uuid", climber).eq("emote_with", me);
-  } else {
-    const until = answer === "once" ? new Date(Date.now() + 2 * 3600_000).toISOString() : null;
-    await db.from("lmg_climb_allows").upsert({ owner: me, climber, until });
-  }
-  const t = Date.now();
-  const s = await sign(`lmg-climb-answer|${me}|${climber}|${answer}|${room}|${t}`);
-  await broadcast(room, "climb_answer", { o: me, c: climber, a: answer, r: room, t, s });
-  return reply(200, { ok: true });
-}
-
 async function emote(body: any) {
   const uuid = await sessionUuid(body?.token);
   if (!uuid) return reply(401, { error: "bad_session" });
@@ -231,7 +159,7 @@ async function emote(body: any) {
   const what = body?.emote === null ? null : String(body?.emote ?? "");
   if (!ROOM.test(room) || (what !== null && !EMOTES.has(what) && !PARTNER_EMOTES.has(what))) return reply(400, { error: "Bad request" });
 
-  // climbing / playing: with whom (your partner if you don't say), and did they say yes?
+  // climbing / playing: with whom (your partner if you don't say), and does their setting allow it?
   let withUuid: string | null = null;
   if (what !== null && PARTNER_EMOTES.has(what)) {
     let target = typeof body?.with === "string" && UUID_RE.test(body.with) ? body.with : null;
@@ -291,10 +219,6 @@ Deno.serve(async (req) => {
         return await uidOnly(body);
       case "forget":
         return await forgetAll(body);
-      case "climb_ask":
-        return await climbAsk(body);
-      case "climb_answer":
-        return await climbAnswer(body);
       case "pubkey":
         await loadKey();
         return reply(200, { key: publicKey });

@@ -71,6 +71,9 @@ public final class Pets {
 		final boolean remote;   // belongs to another Lmg player
 		int idleTicks;
 		double bob;
+		// playing around the owner
+		int ownerStill, playTicks;
+		double ownerX = Double.NaN, ownerZ;
 
 		Live(PetConfig cfg, Entity entity, ClientLevel level) {
 			this(cfg, entity, level, false);
@@ -187,6 +190,20 @@ public final class Pets {
 		PetConfig cfg = l.cfg;
 		PetType type = cfg.type();
 
+		// has the owner been standing still? (then pets on Follow come and play)
+		double odx = owner.getX() - l.ownerX, odz = owner.getZ() - l.ownerZ;
+		if (Double.isNaN(l.ownerX) || odx * odx + odz * odz > 0.0004) l.ownerStill = 0;
+		else l.ownerStill++;
+		l.ownerX = owner.getX();
+		l.ownerZ = owner.getZ();
+		boolean idlePlay = "FOLLOW".equals(cfg.mode) && LmgConfig.get().petsPlayIdle
+				&& l.ownerStill > LmgConfig.get().partnerIdleSeconds * 20;
+		if ("PLAY".equals(cfg.mode) || idlePlay) {
+			play(l, owner, level, slot);
+			return;
+		}
+		l.playTicks = 0;
+
 		if (cfg.attached()) {
 			// position is worked out per frame in extract(); keep the entity near you for lighting
 			e.setPos(owner.getX(), owner.getY() + owner.getBbHeight(), owner.getZ());
@@ -251,6 +268,74 @@ public final class Pets {
 			living.walkAnimation.update((float) Math.min(step * 4, 1.0), 0.4f, baby ? 3f : 1f);
 		}
 		setSitting(e, l.idleTicks > 80 && !type.flying);
+		mirrorCrouch(e, owner);
+	}
+
+	/**
+	 * Playing around the owner, the same routine as playing around a person: hopping round in
+	 * circles, bouncing in front of them, nuzzling up close, then sitting down beside them. Each
+	 * pet is a little out of step with the others.
+	 */
+	private static void play(Live l, Player owner, ClientLevel level, int slot) {
+		Entity e = l.entity;
+		PetType type = l.cfg.type();
+		l.playTicks++;
+		float t = l.playTicks / 20f + slot * 2.3f;
+		int seg = dev.lmg.client.social.PartnerPlay.segment(t);
+		float st = dev.lmg.client.social.PartnerPlay.segmentTime(t);
+		double yawR = Math.toRadians(owner.yBodyRot);
+		double fx = -Math.sin(yawR), fz = Math.cos(yawR);   // forward
+		double rx = -Math.cos(yawR), rz = -Math.sin(yawR);  // right hand
+		double side = slot % 2 == 0 ? 1 : -1;
+		double tx, tz, hop;
+		boolean faceOwner = true;
+		switch (seg) {
+			case 0 -> {
+				// round and round
+				double a = st * 1.5 + slot * 2.1;
+				double r = 1.4 + slot * 0.35;
+				tx = owner.getX() + Math.cos(a) * r;
+				tz = owner.getZ() + Math.sin(a) * r;
+				hop = Math.abs(Math.sin(st * 7 + slot)) * 0.5;
+				faceOwner = false;
+			}
+			case 1 -> {
+				// bouncing in front of you, excited
+				tx = owner.getX() + fx * 1.1 + rx * side * 0.5 * slot;
+				tz = owner.getZ() + fz * 1.1 + rz * side * 0.5 * slot;
+				hop = Math.abs(Math.sin(st * 9 + slot)) * 0.7;
+			}
+			case 2 -> {
+				// nuzzling up close
+				tx = owner.getX() + rx * side * 0.6 + fx * 0.2;
+				tz = owner.getZ() + rz * side * 0.6 + fz * 0.2;
+				hop = Math.abs(Math.sin(st * 3)) * 0.06;
+			}
+			default -> {
+				// a rest beside you
+				tx = owner.getX() + rx * side * (0.9 + slot * 0.4) + fx * 0.2;
+				tz = owner.getZ() + rz * side * (0.9 + slot * 0.4) + fz * 0.2;
+				hop = 0;
+			}
+		}
+		double nx = Mth.lerp(0.3, e.getX(), tx), nz = Mth.lerp(0.3, e.getZ(), tz);
+		double base = type.flying ? owner.getY() + 1.3 + Math.sin(l.playTicks * 0.15) * 0.15
+				: groundY(level, nx, nz, e.getY(), owner.getY());
+		e.setPos(nx, base + hop, nz);
+		e.setOnGround(hop < 0.02);
+		double mx = nx - e.xo, mz = nz - e.zo;
+		float yaw = faceOwner || mx * mx + mz * mz < 1e-4
+				? (float) (Mth.atan2(owner.getZ() - nz, owner.getX() - nx) * Mth.RAD_TO_DEG) - 90f
+				: (float) (Mth.atan2(mz, mx) * Mth.RAD_TO_DEG) - 90f;
+		float smooth = Mth.approachDegrees(e.getYRot(), yaw, 30f);
+		e.setYRot(smooth);
+		if (e instanceof LivingEntity living) {
+			living.setYBodyRot(smooth);
+			living.setYHeadRot(Mth.approachDegrees(living.getYHeadRot(), yaw, 40f));
+			boolean baby = e instanceof AgeableMob m && m.isBaby();
+			living.walkAnimation.update((float) Math.min(Math.sqrt(mx * mx + mz * mz) * 4 + hop, 1.0), 0.4f, baby ? 3f : 1f);
+		}
+		setSitting(e, seg == 3 && st > 0.6f && !type.flying);
 		mirrorCrouch(e, owner);
 	}
 

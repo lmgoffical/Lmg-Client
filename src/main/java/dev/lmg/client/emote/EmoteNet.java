@@ -162,7 +162,7 @@ public final class EmoteNet {
 				.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
 		Social.http().sendAsync(req, HttpResponse.BodyHandlers.ofString()).thenAccept(res -> {
 			if (res.statusCode() == 200 || res.statusCode() == 429) return;
-			String why = res.body() != null && res.body().contains("not_allowed") ? "They haven't said yes to that (yet)."
+			String why = res.body() != null && res.body().contains("not_allowed") ? "Their setting doesn't let you climb on them."
 					: res.body() != null && res.body().contains("no_partner") ? "You need a partner for that (Friends > Partner)."
 					: "Couldn't do that right now.";
 			refused.accept(why);
@@ -173,55 +173,6 @@ public final class EmoteNet {
 		return HttpRequest.newBuilder(URI.create("https://fieakrewvbyubtyxpqhr.supabase.co/functions/v1/social"))
 				.header("apikey", Social.publishableKey()).header("Content-Type", "application/json").timeout(Duration.ofSeconds(10))
 				.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
-	}
-
-	/**
-	 * Asks someone if you can climb on them / play around them. {@code result} gets "asked",
-	 * "allowed" (they'd already said yes), or why not ("asks_off", "not_lmg", "too_fast", "no_room"...).
-	 */
-	public static void askClimb(UUID to, Emote kind, java.util.function.Consumer<String> result) {
-		String r = room;
-		String token = Social.token();
-		if (r == null || token == null) {
-			result.accept("no_room");
-			return;
-		}
-		JsonObject body = new JsonObject();
-		body.addProperty("action", "climb_ask");
-		body.addProperty("token", token);
-		body.addProperty("room", r);
-		body.addProperty("to", to.toString());
-		body.addProperty("kind", kind.id);
-		Social.http().sendAsync(function(body), HttpResponse.BodyHandlers.ofString()).whenComplete((res, err) -> {
-			if (err != null || res == null) {
-				result.accept("error");
-				return;
-			}
-			String b = res.body() == null ? "" : res.body();
-			if (res.statusCode() == 200) result.accept(b.contains("\"allowed\"") ? "allowed" : "asked");
-			else if (b.contains("asks_off")) result.accept("asks_off");
-			else if (b.contains("not_lmg")) result.accept("not_lmg");
-			else if (b.contains("too_fast")) result.accept("too_fast");
-			else result.accept("error");
-		});
-	}
-
-	/** Answers someone who asked to climb on you: "once", "always" or "no". */
-	public static void answerClimb(UUID climber, String answer, java.util.function.Consumer<Boolean> ok) {
-		String r = room;
-		String token = Social.token();
-		if (r == null || token == null) {
-			ok.accept(false);
-			return;
-		}
-		JsonObject body = new JsonObject();
-		body.addProperty("action", "climb_answer");
-		body.addProperty("token", token);
-		body.addProperty("room", r);
-		body.addProperty("climber", climber.toString());
-		body.addProperty("answer", answer);
-		Social.http().sendAsync(function(body), HttpResponse.BodyHandlers.ofString())
-				.whenComplete((res, err) -> ok.accept(err == null && res != null && res.statusCode() == 200));
 	}
 
 	// ---- receiving -------------------------------------------------------------------------------
@@ -264,10 +215,6 @@ public final class EmoteNet {
 		String kind = str(outer, "event");
 		JsonObject p = outer.getAsJsonObject("payload");
 		if (p == null || kind == null) return;
-		if (kind.equals("climb_ask") || kind.equals("climb_answer")) {
-			handleClimb(kind, p);
-			return;
-		}
 		if (!"emote".equals(kind)) return;
 		String u = str(p, "u"), e = str(p, "e"), r = str(p, "r"), s = str(p, "s");
 		long t = p.has("t") ? p.get("t").getAsLong() : 0;
@@ -283,29 +230,6 @@ public final class EmoteNet {
 		if (emote == null && !"stop".equals(e)) return;
 		if (emote != null && emote.withPartner() && w == null) return;   // partner emotes always say who with
 		Emotes.remote(UUID.fromString(u), emote, t, w == null ? null : UUID.fromString(w));
-	}
-
-	/** Someone asking to climb on you, or answering your ask (both signed by our server). */
-	private static void handleClimb(String kind, JsonObject p) {
-		String r = str(p, "r"), s = str(p, "s");
-		long t = p.has("t") ? p.get("t").getAsLong() : 0;
-		if (r == null || s == null || !r.equals(room) || Math.abs(System.currentTimeMillis() - t) > 30_000) return;
-		UUID me = Social.me();
-		if (me == null) return;
-		if (kind.equals("climb_ask")) {
-			String u = str(p, "u"), to = str(p, "to"), k = str(p, "k"), n = str(p, "n");
-			if (u == null || to == null || k == null) return;
-			if (!verify("lmg-climb-ask|" + u + "|" + to + "|" + k + "|" + r + "|" + t, s)) return;
-			Emote e = Emote.byId(k);
-			if (!to.equals(me.toString()) || e == null || !e.withPartner()) return;
-			dev.lmg.client.social.ClimbRequests.asked(UUID.fromString(u), n == null ? "Someone" : n, e);
-		} else {
-			String o = str(p, "o"), c = str(p, "c"), a = str(p, "a");
-			if (o == null || c == null || a == null) return;
-			if (!verify("lmg-climb-answer|" + o + "|" + c + "|" + a + "|" + r + "|" + t, s)) return;
-			if (!c.equals(me.toString())) return;
-			dev.lmg.client.social.ClimbRequests.answered(UUID.fromString(o), a);
-		}
 	}
 
 	static boolean verify(String message, String signatureB64) {

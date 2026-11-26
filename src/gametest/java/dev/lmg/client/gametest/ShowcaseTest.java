@@ -533,7 +533,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			f.setAccessible(true);
 			var mia = new dev.lmg.client.social.Social.Friend(MIA, "Mia_Builds", true, "singleplayer", null, null, null);
 			f.set(null, new dev.lmg.client.social.Social.State(java.util.List.of(mia), java.util.List.of(), java.util.List.of(),
-					MIA, null, java.util.List.of(), true, true, java.util.List.of(), java.util.List.of(), true));
+					MIA, null, java.util.List.of(), "partner", true));
 			var loaded = dev.lmg.client.social.Social.class.getDeclaredField("loaded");
 			loaded.setAccessible(true);
 			loaded.set(null, true);
@@ -593,42 +593,42 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(10);
 		ctx.takeScreenshot("climb-me-shoulder-eyes");
 		ctx.runOnClient(mc -> dev.lmg.client.social.PartnerPlay.getDown());
-		// someone who's NOT a friend or partner: Theo. Climbing on him asks first; he asks us too.
-		java.util.UUID theo = java.util.UUID.fromString("33333333-3333-4333-8333-333333333333");
+		// pets play too: a cat and a fox set to "Play around me", seen from the front
 		ctx.runOnClient(mc -> {
-			dev.lmg.client.social.PartnerPlay.testAllowed = false;
-			var p = mc.player;
-			var t = new net.minecraft.client.player.RemotePlayer(mc.level, new com.mojang.authlib.GameProfile(theo, "TheoMC"));
-			t.setId(-424244);
-			t.snapTo(p.getX() - 1.4, p.getY(), p.getZ() + 0.4, 0f, 0f);
-			mc.level.addEntity(t);
+			LmgConfig c = LmgConfig.get();
+			c.pets.clear();
+			var cat = new dev.lmg.client.pet.PetConfig();
+			cat.type = "CAT";
+			cat.mode = "PLAY";
+			cat.size = 2;
+			var fox = new dev.lmg.client.pet.PetConfig();
+			fox.type = "FOX";
+			fox.mode = "PLAY";
+			fox.size = 2;
+			c.pets.add(cat);
+			c.pets.add(fox);
+			var mia = mc.level.getPlayerByUUID(MIA);
+			if (mia != null) mia.discard();
 			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
 		});
-		ctx.waitTicks(10);
+		ctx.waitTicks(50);
+		ctx.takeScreenshot("climb-pets-hop");
+		ctx.waitTicks(110);
+		ctx.takeScreenshot("climb-pets-bounce");
+		ctx.waitTicks(200);
+		ctx.takeScreenshot("climb-pets-rest");
+		// a pet on Follow comes to play once you've been still a while
 		ctx.runOnClient(mc -> {
-			var t = mc.level.getPlayerByUUID(theo);
-			System.out.println("[climb] may climb on Theo before: " + dev.lmg.client.social.ClimbRequests.mayClimbOn(theo));
-			dev.lmg.client.social.ClimbRequests.ask(t, dev.lmg.client.emote.Emote.PERCH_SHOULDER);
-			System.out.println("[climb] after asking, doing: " + dev.lmg.client.social.PartnerPlay.mine());
-			// Theo asks to sit on our head: the card shows up
-			dev.lmg.client.social.ClimbRequests.asked(theo, "TheoMC", dev.lmg.client.emote.Emote.PERCH_HEAD);
+			LmgConfig c = LmgConfig.get();
+			c.pets.get(0).mode = "FOLLOW";
+			c.pets.get(1).mode = "HEAD";
+			c.partnerIdleSeconds = 5;
 		});
-		ctx.waitTicks(15);
-		ctx.takeScreenshot("climb-ask-card");
-		ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_N);
-		ctx.waitTicks(5);
-		ctx.runOnClient(mc -> System.out.println("[climb] card after N: " + dev.lmg.client.social.ClimbRequests.current()));
-		// Theo says yes to ours: we climb straight on
-		ctx.runOnClient(mc -> dev.lmg.client.social.ClimbRequests.answered(theo, "once"));
-		ctx.waitTicks(25);
-		ctx.runOnClient(mc -> System.out.println("[climb] after Theo's yes, doing: " + dev.lmg.client.social.PartnerPlay.mine()
-				+ " may=" + dev.lmg.client.social.ClimbRequests.mayClimbOn(theo)));
-		ctx.takeScreenshot("climb-on-theo");
+		ctx.waitTicks(140);
+		ctx.takeScreenshot("climb-pets-idle");
 		ctx.runOnClient(mc -> {
-			dev.lmg.client.social.PartnerPlay.getDown();
-			var t = mc.level.getPlayerByUUID(theo);
-			if (t != null) t.discard();
-			dev.lmg.client.social.PartnerPlay.testAllowed = true;
+			LmgConfig.get().pets.clear();
+			LmgConfig.get().partnerIdleSeconds = 20;
 		});
 		ctx.waitTicks(5);
 		// the menu page
@@ -639,6 +639,11 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.setScreen(() -> null);
 		// going idle next to Mia starts the play routine by itself; moving stops it
 		ctx.runOnClient(mc -> {
+			var p = mc.player;
+			var mia = new net.minecraft.client.player.RemotePlayer(mc.level, new com.mojang.authlib.GameProfile(MIA, "Mia_Builds"));
+			mia.setId(-424245);
+			mia.snapTo(p.getX() + 1.3, p.getY(), p.getZ(), 0f, 0f);
+			mc.level.addEntity(mia);
 			LmgConfig.get().partnerPlayIdle = true;
 			LmgConfig.get().partnerIdleSeconds = 5;
 			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);

@@ -83,23 +83,9 @@ public final class Social {
 	}
 
 	/** Everything the Friends screen shows. */
-	/** Someone who said yes to you climbing on them (or you to them). {@code until} null = always. */
-	public record ClimbYes(UUID uuid, String name, Instant until) {
-		public boolean valid() {
-			return until == null || until.isAfter(Instant.now());
-		}
-	}
-
 	public record State(List<Friend> friends, List<Person> incoming, List<Person> outgoing, UUID partner, UUID partnerRequest,
-						List<Invite> invites, boolean iAllowClimb, boolean partnerAllowsClimb,
-						List<ClimbYes> climbAllowedBy, List<ClimbYes> climbers, boolean climbAsks) {
-		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null, List.of(), false, false, List.of(), List.of(), true);
-
-		/** Has {@code owner} said yes to you climbing on them (not counting being partners)? */
-		public boolean mayClimbOn(UUID owner) {
-			for (ClimbYes y : climbAllowedBy) if (y.uuid().equals(owner) && y.valid()) return true;
-			return false;
-		}
+						List<Invite> invites, String climbWho, boolean partnerAllowsClimb) {
+		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null, List.of(), "nobody", false);
 
 		public Friend friend(UUID id) {
 			for (Friend f : friends) if (f.uuid.equals(id)) return f;
@@ -455,8 +441,7 @@ public final class Social {
 		State s = state;
 		List<Invite> left = new ArrayList<>(s.invites());
 		left.remove(i);
-		state = new State(s.friends(), s.incoming(), s.outgoing(), s.partner(), s.partnerRequest(), left, s.iAllowClimb(), s.partnerAllowsClimb(),
-				s.climbAllowedBy(), s.climbers(), s.climbAsks());
+		state = new State(s.friends(), s.incoming(), s.outgoing(), s.partner(), s.partnerRequest(), left, s.climbWho(), s.partnerAllowsClimb());
 		changed();
 	}
 
@@ -497,35 +482,11 @@ public final class Social {
 		act("lmg_social_remove", a, done);
 	}
 
-	private static List<ClimbYes> climbYes(JsonObject o, String key) {
-		List<ClimbYes> out = new ArrayList<>();
-		for (JsonElement e : arr(o, key)) {
-			JsonObject y = e.getAsJsonObject();
-			out.add(new ClimbYes(UUID.fromString(y.get("uuid").getAsString()), y.get("name").getAsString(), instant(y, "until")));
-		}
-		return out;
-	}
-
-	/** Lets people (not just your partner) ask to climb on you. */
-	public static void climbAsks(boolean on, Consumer<String> done) {
+	/** "Who can climb on me": "nobody", "partner", "friends" or "everyone". */
+	public static void setClimbWho(String who, Consumer<String> done) {
 		JsonObject a = new JsonObject();
-		a.addProperty("p_on", on);
-		act("lmg_social_climb_asks", a, done);
-	}
-
-	/** Takes back a yes: one person, or everyone ({@code null}). They get down straight away. */
-	public static void climbRevoke(UUID climber, Consumer<String> done) {
-		JsonObject a = new JsonObject();
-		if (climber == null) a.add("p_climber", com.google.gson.JsonNull.INSTANCE);
-		else a.addProperty("p_climber", climber.toString());
-		act("lmg_social_climb_revoke", a, done);
-	}
-
-	/** Lets (or stops) your partner sitting on you and playing around you. */
-	public static void allowClimb(boolean allow, Consumer<String> done) {
-		JsonObject a = new JsonObject();
-		a.addProperty("p_allow", allow);
-		act("lmg_social_allow_climb", a, done);
+		a.addProperty("p_who", who);
+		act("lmg_social_climb_who", a, done);
 	}
 
 	/** Ask (or say yes to) a friend as partner. {@code null} ends it. */
@@ -557,8 +518,7 @@ public final class Social {
 					str(i, "server"), str(i, "serverName"), at));
 		}
 		State next = new State(friends, people(o, "incoming"), people(o, "outgoing"), uuid(o, "partner"), uuid(o, "partnerRequest"), invites,
-				bool(o, "iAllowClimb"), bool(o, "partnerAllowsClimb"), climbYes(o, "climbAllowedBy"), climbYes(o, "climbers"),
-				!o.has("climbAsks") || bool(o, "climbAsks"));
+				o.has("climbWho") && !o.get("climbWho").isJsonNull() ? o.get("climbWho").getAsString() : "nobody", bool(o, "partnerAllowsClimb"));
 		state = next;
 		if (!firstSync) notifyChanges(mc, old, next);
 		firstSync = false;
@@ -599,7 +559,7 @@ public final class Social {
 		}
 		if (next.partner() != null && next.partnerAllowsClimb() && !old.partnerAllowsClimb()) {
 			Friend f = next.friend(next.partner());
-			if (f != null) FriendToast.show(f.uuid(), f.name(), "says you can climb on them ❤");
+			if (f != null) FriendToast.show(f.uuid(), f.name(), "lets you climb on them ❤");
 		}
 		if (next.partner() != null && !next.partner().equals(old.partner())) {
 			Friend f = next.friend(next.partner());

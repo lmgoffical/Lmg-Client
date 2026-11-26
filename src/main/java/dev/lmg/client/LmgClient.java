@@ -64,7 +64,6 @@ public class LmgClient implements ClientModInitializer {
 		// lens effects sit right on the world, under everything else on screen
 		HudElementRegistry.attachElementBefore(VanillaHudElements.MISC_OVERLAYS, id("lens"), dev.lmg.client.render.LensOverlay::draw);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("pvp_hud"), new dev.lmg.client.hud.PvpHud());
-		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("climb_ask"), dev.lmg.client.social.ClimbRequests::draw);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("armour_hud"), new dev.lmg.client.hud.ArmourHud());
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("death_compass"),
 				(graphics, delta) -> dev.lmg.client.map.DeathTrail.drawCompass(graphics, Minecraft.getInstance()));
@@ -135,7 +134,7 @@ public class LmgClient implements ClientModInitializer {
 			dev.lmg.client.map.DeathTrail.tick(mc);
 			dev.lmg.client.feature.Visuals.tick(mc);
 			dev.lmg.client.social.PartnerPlay.tick(mc);
-			dev.lmg.client.social.ClimbRequests.tick(mc);
+			dev.lmg.client.social.ClimbAllow.tick(mc);
 			dev.lmg.client.social.Uids.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});

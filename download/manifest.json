@@ -1,9 +1,9 @@
 {
-  "version": "0.32.0",
+  "version": "0.33.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.32.0.jar",
-    "sha1": "34c66df75ed03fd18e3ed3440ff421596887e654"
+    "file": "lmg-client-0.33.0.jar",
+    "sha1": "549eed3271a586c3281bebb4ece245ee7c0283d2"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.33",
+      "text": "No more asking - and pets play too. Climbing is a setting now: Social &gt; Climbing &gt; Who can climb on me (nobody, your partner, friends or everyone). Pets can be set to Play around me, and pets on Follow come and play when you stand still: hopping round you, bouncing, nuzzling up, then sitting beside you."
+    },
+    {
       "version": "0.32",
       "text": "Climb on anyone (who says yes). You don't need to be friends or partners any more: look at someone with Lmg and climb - they get a little card asking, and press Y (yes for 2 hours), U (always) or N (no). See who can climb on you, clear it, or stop people asking, in Social &gt; Climbing."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.28",
       "text": "Your sword, your crosshair. Move, turn and resize what you hold and watch it change as you drag (try Big & low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."
-    },
-    {
-      "version": "0.27",
-      "text": "Easier to find your way. The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."
     }
   ],
   "launcher": {

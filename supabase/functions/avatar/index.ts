@@ -14,7 +14,7 @@ const PET_TYPES = new Set([
   "MOOSHROOM", "PANDA", "POLAR_BEAR", "OCELOT", "GOAT", "LLAMA", "TURTLE", "ARMADILLO", "SNIFFER", "ALLAY",
   "BAT", "COPPER_GOLEM", "HAPPY_GHAST", "MINI_PLAYER",
 ]);
-const MODES = new Set(["FOLLOW", "LEFT_SHOULDER", "RIGHT_SHOULDER", "HEAD"]);
+const MODES = new Set(["FOLLOW", "LEFT_SHOULDER", "RIGHT_SHOULDER", "HEAD", "PLAY"]);
 const CATEGORIES = new Set(["capes", "wings", "hats", "glasses", "ears", "auras"]);
 const USERNAME = /^[A-Za-z0-9_]{1,16}$/;
 const ITEM_ID = /^[a-z0-9_]{1,40}$/;

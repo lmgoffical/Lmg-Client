@@ -16,8 +16,8 @@ import java.util.UUID;
 /**
  * Sitting on someone's head or shoulder, or (when you've been idle a while next to them)
  * playing around them - hopping round in circles, pulling their arm, poking them, then sitting
- * down next to them for a rest. Your partner (if they said yes), or anyone who said yes when
- * you asked (ClimbRequests).
+ * down next to them for a rest. Only on people whose "Who can climb on me" setting includes
+ * you (ClimbAllow) - no asking.
  *
  * Only your character's picture moves (for you and other Lmg players). Your real position on
  * the server doesn't change, so you have to stay close: it ends if you get more than a few
@@ -245,20 +245,22 @@ public final class PartnerPlay {
 	}
 
 	/**
-	 * Sits on (or plays around) whoever you'd climb on. If they've said yes it starts right away;
-	 * if not, they're asked first. Returns null if it started or the ask went out, else why not.
+	 * Sits on (or plays around) whoever you'd climb on, if their "Who can climb on me" setting
+	 * includes you. Returns null if it started, else why not.
 	 */
 	public static String climb(Emote where) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return "Join a world first.";
 		Player p = target(mc);
 		if (p == null) return "Stand next to someone (or look at them) first.";
-		if (ClimbRequests.mayClimbOn(p.getUUID())) return climbOn(p.getUUID(), where);
-		ClimbRequests.ask(p, where);
-		return null;
+		// their "Who can climb on me" setting decides; if we haven't checked yet, the server will
+		if (!ClimbAllow.mayClimbOn(p.getUUID()) && ClimbAllow.known(p.getUUID())) {
+			return p.getGameProfile().name() + "'s setting doesn't let you climb on them.";
+		}
+		return climbOn(p.getUUID(), where);
 	}
 
-	/** Climbs on someone who has said yes. Returns null if it worked, else why not. */
+	/** Climbs on someone (the server checks their setting). Returns null if it started, else why not. */
 	public static String climbOn(UUID who, Emote where) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null || mc.level == null) return "Join a world first.";
@@ -316,10 +318,10 @@ public final class PartnerPlay {
 		if (now - lastActive < c.partnerIdleSeconds * 1000L) return;
 		// your partner first, else anyone close by who has said yes
 		Player p = Partner.inWorld(mc);
-		if (p == null || p.distanceTo(pl) > START_DISTANCE + 1 || !ClimbRequests.mayClimbOn(p.getUUID())) {
+		if (p == null || p.distanceTo(pl) > START_DISTANCE + 1 || !ClimbAllow.mayClimbOn(p.getUUID())) {
 			p = null;
 			for (Player q : mc.level.players()) {
-				if (q != pl && q.distanceTo(pl) <= START_DISTANCE + 1 && ClimbRequests.mayClimbOn(q.getUUID())) {
+				if (q != pl && q.distanceTo(pl) <= START_DISTANCE + 1 && ClimbAllow.mayClimbOn(q.getUUID())) {
 					p = q;
 					break;
 				}

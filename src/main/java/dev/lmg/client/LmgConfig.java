@@ -560,6 +560,7 @@ public final class LmgConfig {
 	public boolean matchPartner = false;        // wear the same items as your partner (in your own colours)
 	public boolean partnerHearts = true;        // hearts between you and your partner when you're close
 	public boolean partnerPlayIdle = true;      // play around your partner when you've been idle next to them
+	public boolean petsPlayIdle = true;         // pets on "Follow me" come and play around you when you're idle
 	public int partnerIdleSeconds = 20;
 	public boolean emoteCamera = true;          // switch to the front camera while you emote (from first person)
 	/** True while the database has your shared setup (so switching off removes it). */

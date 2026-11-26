@@ -15,8 +15,5 @@
 	"key.lmgclient.emote": "Emote wheel",
 	"key.lmgclient.photo": "Photo mode",
 	"key.lmgclient.profile": "Next profile",
-	"key.lmgclient.climb": "Climb on someone",
-	"key.lmgclient.climb_yes": "Climbing: say yes",
-	"key.lmgclient.climb_always": "Climbing: say always",
-	"key.lmgclient.climb_no": "Climbing: say no"
+	"key.lmgclient.climb": "Climb on someone"
 }
