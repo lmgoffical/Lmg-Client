@@ -16,6 +16,7 @@
 		"GameRendererMixin",
 		"GuiMixin",
 		"GuiSetScreenMixin",
+		"HudMixin",
 		"KeyboardInputMixin",
 		"LightmapMixin",
 		"MinecraftMixin",

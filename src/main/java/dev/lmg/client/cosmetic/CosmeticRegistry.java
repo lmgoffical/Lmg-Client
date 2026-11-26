@@ -78,7 +78,7 @@ public final class CosmeticRegistry {
 	/** Same, for a colour that came from somewhere else (another player's shared setup). */
 	public static int colorFor(CosmeticModel model, String c, float ticks) {
 		if (c == null || c.isBlank()) return model.defaultRgb();
-		if (c.equals("accent")) return LmgConfig.get().accent.rgb;
+		if (c.equals("accent")) return LmgConfig.get().accentRgb();
 		if (c.equals("rainbow")) return java.awt.Color.HSBtoRGB((ticks / 120f) % 1f, 0.55f, 1f) & 0xFFFFFF;
 		try {
 			return Integer.parseInt(c.replace("#", ""), 16) & 0xFFFFFF;

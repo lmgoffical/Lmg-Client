@@ -30,6 +30,7 @@ public final class LmgKeys {
 	public static final KeyMapping ORE_GLOW = key("ore_glow", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping COSMETICS = key("cosmetics", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping HUD_BAR = key("hud_bar", InputConstants.UNKNOWN.getValue());
+	public static final KeyMapping CINEMATIC = key("cinematic", InputConstants.KEY_F7);
 
 	public static final List<Bind> ALL = List.of(
 			new Bind(OPEN_MENU, "Open this menu", "Works anywhere in game."),
@@ -41,7 +42,8 @@ public final class LmgKeys {
 			new Bind(WAYPOINT, "Drop a waypoint", "Marks where you're standing."),
 			new Bind(ORE_GLOW, "Ore glow on/off", "Outlines nearby ores you can already see."),
 			new Bind(COSMETICS, "Hide cosmetics", "Quick way to see your plain skin."),
-			new Bind(HUD_BAR, "HUD bar on/off", "The info bar at the top."));
+			new Bind(HUD_BAR, "HUD bar on/off", "The info bar at the top."),
+			new Bind(CINEMATIC, "Cinematic mode", "Film bars, no HUD, smooth camera."));
 
 	private LmgKeys() {}
 
@@ -96,6 +98,9 @@ public final class LmgKeys {
 		while (HUD_BAR.consumeClick()) {
 			c.hudEnabled = !c.hudEnabled;
 			LmgConfig.save();
+		}
+		while (CINEMATIC.consumeClick()) {
+			if (mc.player != null) Cinematic.toggle();
 		}
 		Freecam.tick(mc);
 	}

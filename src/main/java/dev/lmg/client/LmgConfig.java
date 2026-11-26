@@ -155,7 +155,7 @@ public final class LmgConfig {
 
 		/** RGB for this choice at the given time in ticks (Rainbow cycles, Accent follows the theme). */
 		public int rgb(float ticks) {
-			if (rgb == -1) return LmgConfig.get().accent.rgb;
+			if (rgb == -1) return LmgConfig.get().accentRgb();
 			if (rgb == -2) return java.awt.Color.HSBtoRGB((ticks / 120f) % 1f, 0.55f, 1f) & 0xFFFFFF;
 			return rgb;
 		}
@@ -324,6 +324,43 @@ public final class LmgConfig {
 	/** False until the "before you start" screen has been shown once. */
 	public boolean welcomeSeen = false;
 
+	// ---- custom colours (from the colour picker; -1 = use the preset) ----
+	public int accentRgb = -1;
+	public int overlayRgb = -1;
+	public boolean overlayRainbow = false;
+
+	/** Your accent colour: the one you picked, or the preset. */
+	public int accentRgb() {
+		return accentRgb >= 0 ? accentRgb & 0xFFFFFF : accent.rgb;
+	}
+
+	/** Block overlay colour right now. */
+	public int overlayRgb(float ticks) {
+		if (overlayRainbow) return java.awt.Color.HSBtoRGB((ticks / 120f) % 1f, 0.6f, 1f) & 0xFFFFFF;
+		if (overlayRgb >= 0) return overlayRgb & 0xFFFFFF;
+		return overlayColor == CosmeticColor.ACCENT ? accentRgb() : overlayColor.rgb(ticks);
+	}
+
+	// ---- target highlight ----
+	public static final int[] TARGET_RANGES = {4, 8, 12, 16, 24, 32};
+	public int targetRange = 3;          // index into TARGET_RANGES (16 blocks)
+	public int targetColor = -1;         // -1 = accent
+	public boolean reachColorOn = true;
+	public int reachColor = 0xFF4D5E;
+
+	public int targetRgb() {
+		return targetColor >= 0 ? targetColor & 0xFFFFFF : accentRgb();
+	}
+
+	// ---- cinematic mode ----
+	public static final float[] BAR_SIZES = {0.07f, 0.11f, 0.15f};
+	public static final String[] BAR_SIZE_LABELS = {"Thin", "Normal", "Wide"};
+	public boolean cinematicBars = true;
+	public int barSize = 1;
+	public boolean cinematicVignette = true;
+	public boolean cinematicSmoothCam = true;
+	public boolean smoothFreecam = true;
+
 	// ---- sharing pets and cosmetics with other Lmg players ----
 	/** Off until you turn it on. */
 	public boolean shareAvatar = false;
@@ -435,6 +472,8 @@ public final class LmgConfig {
 		hudOpacity = clampIndex(hudOpacity, HUD_OPACITIES.length, d.hudOpacity);
 		if (pets == null) pets = new java.util.ArrayList<>();
 		dev.lmg.client.pet.PetConfig.sanitize(pets);
+		targetRange = clampIndex(targetRange, TARGET_RANGES.length, d.targetRange);
+		barSize = clampIndex(barSize, BAR_SIZES.length, d.barSize);
 		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
 		freecamSpeed = clampIndex(freecamSpeed, FREECAM_SPEEDS.length, d.freecamSpeed);
 		minimapSize = clampIndex(minimapSize, MINIMAP_SIZES.length, d.minimapSize);

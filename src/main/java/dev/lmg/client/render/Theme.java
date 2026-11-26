@@ -9,7 +9,7 @@ public final class Theme {
 
 	/** Accent color as RGB (no alpha). */
 	public static int accent() {
-		return LmgConfig.get().accent.rgb;
+		return LmgConfig.get().accentRgb();
 	}
 
 	/** Accent color with an alpha of 0..1. */

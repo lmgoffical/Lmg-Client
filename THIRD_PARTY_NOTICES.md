@@ -12,6 +12,13 @@ keeps its own licence. Links go to each project's licence and source.
 | Lithium | Faster game logic | GNU LGPL v3.0 | https://github.com/CaffeineMC/lithium-fabric |
 | Iris | Shader support | GNU LGPL v3.0 | https://github.com/IrisShaders/Iris |
 
+Downloaded only when you pick them (Cinematic tab → Shaders), from Modrinth, unchanged:
+
+| Component | Used for | Licence | Source |
+|---|---|---|---|
+| Complementary Shaders - Unbound r5.9.3 | "Golden haze" shaders | Complementary License Agreement | https://modrinth.com/shader/complementary-unbound |
+| Complementary Shaders - Reimagined r5.9.3 | "Lighter" shaders | Complementary License Agreement | https://modrinth.com/shader/complementary-reimagined |
+
 Website only:
 
 | Component | Used for | Licence |

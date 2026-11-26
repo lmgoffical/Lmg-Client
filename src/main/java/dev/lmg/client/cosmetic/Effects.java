@@ -41,7 +41,7 @@ public final class Effects {
 		if (tick % every != 0) return;
 		ParticleOptions particle = switch (cfg.trail) {
 			case SPARKLE -> ParticleTypes.END_ROD;
-			case ACCENT_DUST -> new DustParticleOptions(cfg.accent.rgb, 1.0f);
+			case ACCENT_DUST -> new DustParticleOptions(cfg.accentRgb(), 1.0f);
 			case HEARTS -> ParticleTypes.HEART;
 			case NOTES -> ParticleTypes.NOTE;
 			case SOUL_FLAMES -> ParticleTypes.SOUL_FIRE_FLAME;

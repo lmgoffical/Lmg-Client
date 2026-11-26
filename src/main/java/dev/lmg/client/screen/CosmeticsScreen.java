@@ -405,6 +405,7 @@ public class CosmeticsScreen extends Screen {
 		g.text(font, "Colour", px + 2, ty - 11, Draw.withAlpha(p.dim, a), false);
 		String cur = LmgConfig.get().cosmeticColors.get(m.id);
 		int sx = px + 2;
+		boolean custom = cur != null && cur.startsWith("#") && !java.util.Arrays.asList(PRESETS).contains(cur.toUpperCase(java.util.Locale.ROOT));
 		for (int i = 0; i < 3 + PRESETS.length; i++) {
 			int col = i < 3 ? 0 : 0xFF000000 | Integer.parseInt(PRESETS[i - 3].substring(1), 16);
 			String value = swatchValue(i);
@@ -425,6 +426,19 @@ public class CosmeticsScreen extends Screen {
 				}
 				default -> Draw.roundRect(g, bx, by, bx + 14, by + 12, 2, Draw.fade(col, a));
 			}
+		}
+		// last swatch: pick any colour
+		int ci = 3 + PRESETS.length;
+		int cbx = sx + (ci % 6) * 20, cby = ty + (ci / 6) * 16;
+		Draw.roundRect(g, cbx - 1, cby - 1, cbx + 15, cby + 13, 3, custom ? Draw.withAlpha(p.accent, a) : Draw.fade(p.border, a));
+		if (custom) {
+			Draw.roundRect(g, cbx, cby, cbx + 14, cby + 12, 2, Draw.withAlpha(CosmeticRegistry.colorFor(m, cur, 0), a));
+		} else {
+			for (int k = 0; k < 14; k++) {
+				int rgb = java.awt.Color.HSBtoRGB(k / 14f, 1f, 1f) & 0xFFFFFF;
+				g.fill(cbx + k, cby + 1, cbx + k + 1, cby + 11, Draw.withAlpha(Draw.lerpRgb(rgb, 0x000000, 0.35f), a));
+			}
+			g.centeredText(font, "+", cbx + 7, cby + 2, Draw.white(a));
 		}
 	}
 
@@ -531,6 +545,15 @@ public class CosmeticsScreen extends Screen {
 					LmgConfig.save();
 					return true;
 				}
+			}
+			int ci = 3 + PRESETS.length;
+			int cbx = px + 2 + (ci % 6) * 20, cby = ty + (ci / 6) * 16;
+			if (mx >= cbx - 1 && mx < cbx + 15 && my >= cby - 1 && my < cby + 13) {
+				String id = m.id;
+				minecraft.gui.setScreen(new ColorPickerScreen(this, m.name + " colour", CosmeticRegistry.colorFor(m, 0),
+						v -> LmgConfig.get().cosmeticColors.put(id, String.format(java.util.Locale.ROOT, "#%06X", v & 0xFFFFFF)),
+						() -> LmgConfig.get().cosmeticColors.remove(id)));
+				return true;
 			}
 		}
 		return false;

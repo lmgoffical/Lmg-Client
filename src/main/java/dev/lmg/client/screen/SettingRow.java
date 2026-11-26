@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *  - button: runs an action
  */
 public class SettingRow extends AbstractWidget {
-	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN, KEY }
+	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN, KEY, COLOR }
 
 	// same text colours as the website: muted labels, bright values, faint arrows
 	private static final int LABEL = 0xA3B0C4;
@@ -115,6 +115,13 @@ public class SettingRow extends AbstractWidget {
 		return row;
 	}
 
+	/** A colour: shows a swatch; clicking opens the colour picker. {@code rainbow} may be null. */
+	public static SettingRow color(String label, IntSupplier rgb, java.util.function.BooleanSupplier rainbow, Runnable open) {
+		SettingRow row = new SettingRow(Kind.COLOR, label, null, () -> "", open, open, rgb);
+		row.waiting = rainbow == null ? () -> false : rainbow;
+		return row;
+	}
+
 	/** A short, plain-English explanation shown at the bottom of the menu while you hover the row. */
 	public SettingRow withHint(String hint) {
 		this.hint = hint == null ? "" : hint;
@@ -156,6 +163,10 @@ public class SettingRow extends AbstractWidget {
 			drawKey(g, font, x, y, appear);
 			return;
 		}
+		if (kind == Kind.COLOR) {
+			drawColor(g, font, x, y, appear);
+			return;
+		}
 		switch (MenuSkin.style()) {
 			case SKEET -> drawSkeet(g, font, x, y, mouseX, appear, dt);
 			case NEVERLOSE -> drawNeverlose(g, font, x, y, mouseX, appear, dt);
@@ -171,6 +182,39 @@ public class SettingRow extends AbstractWidget {
 		boolean on = on();
 		if (knob < 0) knob = on ? 1 : 0;
 		knob = Draw.approach(knob, on ? 1f : 0f, 18f * Theme.speed(), dt);
+	}
+
+	// ---- colour rows (all styles): a swatch that opens the picker ----------------------------------
+
+	private void drawColor(GuiGraphicsExtractor g, Font font, int x, int y, float appear) {
+		LmgConfig.MenuStyle style = MenuSkin.style();
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int right = x + width - 6;
+		int labelX = style == LmgConfig.MenuStyle.SKEET ? x + 18 : x + 6;
+		int labelRgb = switch (style) {
+			case SKEET -> MenuSkin.SK_TEXT;
+			case NEVERLOSE -> MenuSkin.NL_TEXT;
+			default -> LABEL;
+		};
+		if (style == LmgConfig.MenuStyle.LMG && hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
+		g.text(font, getMessage(), labelX, textY, Draw.withAlpha(Draw.lerpRgb(labelRgb, 0xFFFFFF, hover), appear), false);
+		int sw1 = right + 2, sw0 = sw1 - 30, sy0 = y + 2, sy1 = y + height - 2;
+		boolean rainbow = waiting.getAsBoolean();
+		int border = Draw.lerpRgb(0x1C2943, MenuSkin.accent(), hover);
+		if (style == LmgConfig.MenuStyle.SKEET) g.fill(sw0 - 1, sy0 - 1, sw1 + 1, sy1 + 1, Draw.withAlpha(0x000000, appear));
+		else Draw.roundRect(g, sw0 - 1, sy0 - 1, sw1 + 1, sy1 + 1, 3, Draw.withAlpha(border, appear));
+		if (rainbow) {
+			for (int i = 0; i < sw1 - sw0; i++) {
+				int c = java.awt.Color.HSBtoRGB((i / 30f + Util.getMillis() / 3000f) % 1f, 0.6f, 1f) & 0xFFFFFF;
+				g.fill(sw0 + i, sy0, sw0 + i + 1, sy1, Draw.withAlpha(c, appear));
+			}
+		} else if (style == LmgConfig.MenuStyle.SKEET) {
+			g.fill(sw0, sy0, sw1, sy1, Draw.withAlpha(swatch.getAsInt(), appear));
+		} else {
+			Draw.roundRect(g, sw0, sy0, sw1, sy1, 2, Draw.withAlpha(swatch.getAsInt(), appear));
+		}
+		String edit = "edit";
+		g.text(font, edit, sw0 - 6 - font.width(edit), textY, Draw.withAlpha(DIM, appear * (0.4f + 0.6f * hover)), false);
 	}
 
 	// ---- key binding rows (all styles) -----------------------------------------------------------

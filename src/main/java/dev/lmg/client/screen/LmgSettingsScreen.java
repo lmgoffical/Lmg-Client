@@ -28,9 +28,9 @@ import java.util.function.Supplier;
  * Drag the header to move the panel; its position is remembered.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "Configs", "World", "Avatar", "Target", "PvP", "Items", "HUD", "Maps", "Keys", "Tools"};
+	private static final String[] TABS = {"Theme", "Configs", "World", "Cinematic", "Avatar", "Target", "PvP", "Items", "HUD", "Maps", "Keys", "Tools"};
 	/** One plain line under each tab's name, so you know what you're looking at. */
-	private static final String[] SUBTITLES = {"how this menu looks", "save setups, share them with a code", "sky, fog, clouds and weather",
+	private static final String[] SUBTITLES = {"how this menu looks", "save setups, share them with a code", "sky, fog, clouds and weather", "shaders and film mode, for videos",
 			"cosmetics, trails and particles", "whatever you're aiming at", "seeing clearly in a fight", "held items and the totem",
 			"the bar at the top and what's on it", "minimap, world map and waypoints", "click a key, then press the new one", "zoom, freecam and a few extras"};
 	private static final String[] TIPS = {"drag the top bar to move this menu", "double-click the top bar to re-center it",
@@ -42,7 +42,7 @@ public class LmgSettingsScreen extends Screen {
 	private static final int HEADER_H = 24;
 	private static final int ROW_H = 14;
 	private static final int ROW_GAP = 16;
-	private static final int MAX_ROWS = 10;
+	private static final int MAX_ROWS = 11;
 	private static final int FOOTER_H = 18;
 
 	private static int lastTab = 2; // World
@@ -192,13 +192,12 @@ public class LmgSettingsScreen extends Screen {
 			case "Theme" -> {
 				r.add(SettingRow.dropdown("Menu style",
 						List.of("Lmg Client (original)", "Skeet", "Neverlose"),
-						List.of(c.accent.rgb, MenuSkin.SK_ACCENT, MenuSkin.NL_ACCENT),
+						List.of(c.accentRgb(), MenuSkin.SK_ACCENT, MenuSkin.NL_ACCENT),
 						() -> c.menuStyle.ordinal(),
 						i -> { c.menuStyle = LmgConfig.MenuStyle.values()[i]; rebuildWidgets(); })
 						.withHint("Three looks, same settings."));
-				r.add(SettingRow.choice("Accent color", () -> c.accent.label,
-						() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, 1),
-						() -> c.accent = cycle(LmgConfig.Accent.values(), c.accent, -1), () -> c.accent.rgb)
+				r.add(SettingRow.color("Accent color", c::accentRgb, null, () -> picker("Accent color", c.accentRgb(),
+						v -> c.accentRgb = v, () -> c.accentRgb = -1, null, null))
 						.withHint("Switches, HUD and minimap use it."));
 				r.add(SettingRow.toggle("Accent on Skeet/Neverlose", () -> c.menuUseAccent, v -> c.menuUseAccent = v)
 						.withHint("Off keeps their own green/blue."));
@@ -283,6 +282,32 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.toggle("Rain & snow", () -> c.showWeather, v -> c.showWeather = v)
 						.withHint("Off hides falling rain and snow."));
 			}
+			case "Cinematic" -> {
+				r.add(SettingRow.toggle("Cinematic mode", dev.lmg.client.feature.Cinematic::on, v -> {
+					if (minecraft.player == null) { toast("Join a world first", "Then press F7 (or this switch)."); return; }
+					if (v != dev.lmg.client.feature.Cinematic.on()) dev.lmg.client.feature.Cinematic.toggle();
+				}).withHint("Film bars, no HUD, smooth camera. Key: F7"));
+				r.add(SettingRow.toggle("Film bars", () -> c.cinematicBars, v -> c.cinematicBars = v));
+				r.add(SettingRow.choice("Bar size", () -> LmgConfig.BAR_SIZE_LABELS[c.barSize],
+						() -> c.barSize = step(c.barSize, LmgConfig.BAR_SIZES.length, 1),
+						() -> c.barSize = step(c.barSize, LmgConfig.BAR_SIZES.length, -1)));
+				r.add(SettingRow.toggle("Vignette", () -> c.cinematicVignette, v -> c.cinematicVignette = v)
+						.withHint("Darker corners, like a camera lens."));
+				r.add(SettingRow.toggle("Smooth camera", () -> c.cinematicSmoothCam, v -> c.cinematicSmoothCam = v)
+						.withHint("Slow, floaty mouse look while filming."));
+				r.add(SettingRow.toggle("Smooth freecam", () -> c.smoothFreecam, v -> c.smoothFreecam = v)
+						.withHint("Freecam glides instead of stopping dead."));
+				r.add(SettingRow.choice("Shaders", this::shaderLabel, () -> pickShader(1), () -> pickShader(-1))
+						.withHint("Golden haze = the video's look. Big FPS cost."));
+				r.add(SettingRow.button("Shader settings", "Open", () -> {
+					Screen iris = dev.lmg.client.feature.Shaders.settingsScreen(this);
+					if (iris != null) minecraft.gui.setScreen(iris);
+					else toast("Shaders need Iris", "Run the Lmg installer again to add it.");
+				}).withHint("Iris's own menu: fine-tune the pack."));
+				r.add(SettingRow.toggle("Golden hour", () -> c.timeOfDay == LmgConfig.TimeOfDay.SUNSET,
+						v -> c.timeOfDay = v ? LmgConfig.TimeOfDay.SUNSET : LmgConfig.TimeOfDay.VANILLA)
+						.withHint("Keeps the sun low and warm (only for you)."));
+			}
 			case "Avatar" -> {
 				r.add(SettingRow.button("Cosmetics & skins", "Open", () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))
 						.withHint("Capes, wings, hats and your own skins."));
@@ -299,6 +324,18 @@ public class LmgSettingsScreen extends Screen {
 			case "Target" -> {
 				r.add(SettingRow.toggle("Glowing outline", () -> c.targetOutline, v -> c.targetOutline = v)
 						.withHint("Outlines whoever you aim at."));
+				r.add(SettingRow.choice("Highlight distance", () -> LmgConfig.TARGET_RANGES[c.targetRange] + " blocks",
+						() -> c.targetRange = step(c.targetRange, LmgConfig.TARGET_RANGES.length, 1),
+						() -> c.targetRange = step(c.targetRange, LmgConfig.TARGET_RANGES.length, -1))
+						.withHint("Nothing further away than this lights up."));
+				r.add(SettingRow.color("Highlight color", c::targetRgb, null, () -> picker("Highlight color", c.targetRgb(),
+						v -> c.targetColor = v, () -> c.targetColor = -1, null, null))
+						.withHint("Default follows your accent colour."));
+				r.add(SettingRow.toggle("New color in reach", () -> c.reachColorOn, v -> c.reachColorOn = v)
+						.withHint("Changes colour when you can hit them."));
+				r.add(SettingRow.color("In-reach color", () -> c.reachColor, null, () -> picker("In-reach color", c.reachColor,
+						v -> c.reachColor = v, () -> c.reachColor = 0xFF4D5E, null, null))
+						.withHint("Shown once they're close enough to hit."));
 				r.add(SettingRow.toggle("Target info panel", () -> c.targetHud, v -> c.targetHud = v)
 						.withHint("Their health, armour and effects."));
 				r.add(SettingRow.toggle("Target reticle", () -> c.targetReticle, v -> c.targetReticle = v)
@@ -310,10 +347,11 @@ public class LmgSettingsScreen extends Screen {
 			case "PvP" -> {
 				r.add(enumRow("Block overlay", LmgConfig.BlockOverlay.values(), () -> c.blockOverlay, v -> c.blockOverlay = v, v -> v.label)
 						.withHint("The box around the block you look at."));
-				r.add(SettingRow.choice("Overlay color", () -> c.overlayColor.label,
-						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, 1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
-						() -> { do c.overlayColor = cycle(LmgConfig.CosmeticColor.values(), c.overlayColor, -1); while (c.overlayColor == LmgConfig.CosmeticColor.OFF); },
-						() -> c.overlayColor.rgb(Util.getMillis() / 50f)));
+				r.add(SettingRow.color("Overlay color", () -> c.overlayRgb(Util.getMillis() / 50f), () -> c.overlayRainbow,
+						() -> picker("Overlay color", c.overlayRgb(0), v -> c.overlayRgb = v,
+								() -> { c.overlayRgb = -1; c.overlayColor = LmgConfig.CosmeticColor.ACCENT; },
+								() -> c.overlayRainbow, v -> c.overlayRainbow = v))
+						.withHint("The box around the block you look at."));
 				r.add(SettingRow.toggle("Fullbright", () -> c.fullbright, v -> c.fullbright = v)
 						.withHint("See in caves without torches. Key: B"));
 				r.add(SettingRow.toggle("Ore edges", OreOutlines::isEnabled, OreOutlines::setEnabled)
@@ -413,6 +451,31 @@ public class LmgSettingsScreen extends Screen {
 			}
 		}
 		return r;
+	}
+
+	private String shaderLabel() {
+		if (dev.lmg.client.feature.Shaders.busy()) return "Loading...";
+		if (!dev.lmg.client.feature.Shaders.irisInstalled()) return "Needs Iris";
+		var p = dev.lmg.client.feature.Shaders.current();
+		if (p != null) return p.label;
+		return dev.lmg.client.feature.Shaders.anyOn() ? "Your own" : "Off";
+	}
+
+	/** Off -> Golden haze -> Lighter -> Off ... */
+	private void pickShader(int dir) {
+		var packs = dev.lmg.client.feature.Shaders.Pack.values();
+		var cur = dev.lmg.client.feature.Shaders.current();
+		int idx = cur == null ? 0 : cur.ordinal() + 1;
+		int next = Math.floorMod(idx + dir, packs.length + 1);
+		java.util.function.Consumer<String> say = msg -> minecraft.execute(() -> toast("Shaders", msg));
+		if (next == 0) dev.lmg.client.feature.Shaders.off(say);
+		else dev.lmg.client.feature.Shaders.use(packs[next - 1], say);
+	}
+
+	/** Opens the colour picker; this menu comes back when it closes. */
+	private void picker(String title, int rgb, java.util.function.IntConsumer set, Runnable reset,
+						java.util.function.BooleanSupplier rainbowGet, Consumer<Boolean> rainbowSet) {
+		minecraft.gui.setScreen(new ColorPickerScreen(this, title, rgb, set, reset, rainbowGet, rainbowSet));
 	}
 
 	/** The key a binding is set to, as short as possible ("none" if it isn't set). */

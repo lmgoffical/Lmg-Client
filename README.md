@@ -48,6 +48,12 @@ The installer sets up Fabric and downloads Lmg Client, Fabric API, **Sodium** (F
 - **Mods:** main menu → Mods (or Tools → Mods). Lists everything in your mods folder with its version and description, marks the Lmg pack, and lets you switch mods on or off. Changes apply the next time you start the game. On Windows a running mod's file is locked, so switching it off finishes right after the game closes.
 - **Minecraft settings:** with "Themed vanilla menus" on, Minecraft's own buttons, sliders and lists use the Lmg look (following your menu style), and Options opens a hub with FOV, render distance, brightness and volume up top and a card for each settings page. "Classic options" opens the original screen.
 
+## Cinematic, colours and target highlight
+
+- **Cinematic tab:** *Shaders* switches between Off, **Golden haze** (Complementary Unbound, the warm foggy look with light rays) and **Lighter** (Complementary Reimagined). Packs are downloaded from Modrinth at pinned versions, checked against their SHA-1, and turned on through Iris. *Shader settings* opens Iris's own menu. **Cinematic mode** (F7) hides the HUD, turns on the smooth camera and adds film bars and a vignette. *Golden hour* locks the sun low (client-side), and *Smooth freecam* makes freecam glide.
+- **Colour picker:** accent, block overlay, highlight colours and cosmetics use a picker with a drag-the-dot box, a hue slider, hex and quick picks (block overlay and cosmetics can also be rainbow).
+- **Target highlight:** the outline and reticle only show within the *Highlight distance* (16 blocks by default), and switch to the *In-reach color* once the target is within your attack reach.
+
 ## Keys, maps and tools
 
 - **Keys:** Right Shift → Keys. Click a key, press the new one (Esc clears it). Defaults: Right Shift menu, C zoom (scroll while holding), B fullbright, F6 freecam, M world map. Minimap, waypoint, ore glow, hide cosmetics and HUD bar start unbound.

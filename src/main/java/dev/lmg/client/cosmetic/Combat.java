@@ -64,7 +64,7 @@ public final class Combat {
 			case CRITS -> ParticleTypes.CRIT;
 			case STARS -> ParticleTypes.END_ROD;
 			case HEARTS -> ParticleTypes.HEART;
-			case ACCENT -> new DustParticleOptions(cfg.accent.rgb, 1.2f);
+			case ACCENT -> new DustParticleOptions(cfg.accentRgb(), 1.2f);
 			default -> null;
 		};
 		if (particle == null) return;
@@ -90,7 +90,7 @@ public final class Combat {
 				level.playLocalSound(x, y, z, SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 1.2f, 1f, false);
 			}
 			case STAR_BURST -> {
-				DustParticleOptions dust = new DustParticleOptions(cfg.accent.rgb, 1.6f);
+				DustParticleOptions dust = new DustParticleOptions(cfg.accentRgb(), 1.6f);
 				spiral(level, dust, x, y, z, height);
 				sphere(level, ParticleTypes.END_ROD, x, y + height * 0.5, z, 40, 0.18);
 				level.playLocalSound(x, y, z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5f, 1.2f, false);

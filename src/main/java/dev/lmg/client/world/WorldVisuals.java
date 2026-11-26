@@ -38,7 +38,7 @@ public final class WorldVisuals {
 			case COTTON_CANDY -> new Palette(rgb(0.76f, 0.66f, 1.00f), rgb(0.16f, 0.10f, 0.26f),
 					rgb(1.00f, 0.76f, 0.90f), rgb(0.18f, 0.10f, 0.22f), rgb(1.00f, 0.55f, 0.85f), 1.1f, false);
 			case ACCENT -> {
-				Vector3f a = fromRgbInt(LmgConfig.get().accent.rgb);
+				Vector3f a = fromRgbInt(LmgConfig.get().accentRgb());
 				yield new Palette(mix(a, rgb(1, 1, 1), 0.15f), scale(a, 0.16f),
 						mix(a, rgb(1, 1, 1), 0.30f), scale(a, 0.12f), a, 1.0f, false);
 			}
@@ -81,7 +81,7 @@ public final class WorldVisuals {
 			if (cfg.clouds != LmgConfig.CloudMode.THEMED) return value;
 			Vector3fc tint = p != null
 					? mix(p.fogNight(), p.fogDay(), smooth(daylight))
-					: fromRgbInt(LmgConfig.get().accent.rgb);
+					: fromRgbInt(LmgConfig.get().accentRgb());
 			Vector3f t = mix(tint, rgb(1, 1, 1), 0.35f);
 			return new Vector4f(clamp01(cloud.x() * t.x * 1.1f), clamp01(cloud.y() * t.y * 1.1f),
 					clamp01(cloud.z() * t.z * 1.1f), cloud.w());

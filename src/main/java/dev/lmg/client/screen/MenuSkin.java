@@ -47,7 +47,7 @@ public final class MenuSkin {
 	/** The accent color for the current menu style (RGB). */
 	public static int accent() {
 		LmgConfig c = LmgConfig.get();
-		if (c.menuUseAccent || c.menuStyle == MenuStyle.LMG) return c.accent.rgb;
+		if (c.menuUseAccent || c.menuStyle == MenuStyle.LMG) return c.accentRgb();
 		return c.menuStyle == MenuStyle.SKEET ? SK_ACCENT : NL_ACCENT;
 	}
 

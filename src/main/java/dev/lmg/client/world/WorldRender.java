@@ -43,7 +43,7 @@ public final class WorldRender {
 		if (cfg.blockOverlay == LmgConfig.BlockOverlay.VANILLA || outline == null) return true;
 
 		float t = seconds();
-		int rgb = cfg.overlayColor.rgb(t * 20f);
+		int rgb = cfg.overlayRgb(t * 20f);
 		float pulse = 0.5f + 0.5f * (float) Math.sin(t * 4f);
 		float edgeAlpha = cfg.blockOverlay == LmgConfig.BlockOverlay.GLOW ? 0.55f + 0.45f * pulse : 0.95f;
 		float fillAlpha = switch (cfg.blockOverlay) {
@@ -81,6 +81,8 @@ public final class WorldRender {
 		Minecraft mc = Minecraft.getInstance();
 		LivingEntity living = Targeting.current();
 		if (living == null || living == mc.player) return;
+		LmgConfig cfg = LmgConfig.get();
+		if (living.distanceTo(mc.player) > LmgConfig.TARGET_RANGES[cfg.targetRange]) return;
 		Entity target = living;
 
 		float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
@@ -88,7 +90,7 @@ public final class WorldRender {
 		Vec3 at = target.getPosition(partial);
 		float t = seconds();
 		float radius = target.getBbWidth() * 0.85f + 0.25f;
-		int rgb = LmgConfig.get().accent.rgb;
+		int rgb = cfg.reachColorOn && mc.player.isWithinEntityInteractionRange(living, 0.0) ? cfg.reachColor & 0xFFFFFF : cfg.targetRgb();
 		float hurt = living.hurtTime > 0 ? 1f : 0f;
 		int color = argb(0.85f, hurt > 0 ? 0xFF5050 : rgb);
 
@@ -173,7 +175,7 @@ public final class WorldRender {
 
 	private static int auroraColor(LmgConfig cfg, double angle, float t) {
 		return switch (cfg.aurora) {
-			case ACCENT -> cfg.accent.rgb;
+			case ACCENT -> cfg.accentRgb();
 			case RAINBOW -> java.awt.Color.HSBtoRGB((float) ((angle / (Math.PI * 2) + t * 0.03) % 1.0), 0.6f, 1f) & 0xFFFFFF;
 			default -> cfg.aurora.rgb;
 		};

@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.22", "<b>Cinematic.</b> One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."],
   ["0.21", "<b>See each other's pets.</b> Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."],
   ["0.20", "<b>Pets.</b> Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."],
   ["0.19", "<b>Safer by default.</b> Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."],
@@ -598,6 +599,7 @@ const LEGAL = {
       <li><b>No analytics, no telemetry, no tracking.</b> The mod doesn't report what you play or click.</li>
       <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
       <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
+      <li><b>Shaders.</b> If you pick a shader pack in the Cinematic tab, it's downloaded from Modrinth, which sees your IP address like any download.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
       <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>
     </ul>

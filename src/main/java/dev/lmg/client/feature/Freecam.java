@@ -14,6 +14,7 @@ public final class Freecam {
 	private static boolean on;
 	private static double x, y, z, px, py, pz;
 	private static float yaw, pitch;
+	private static double vx, vy, vz;   // for smooth (cinematic) flying
 
 	private Freecam() {}
 
@@ -36,6 +37,7 @@ public final class Freecam {
 			z = pz = eye.z;
 			yaw = mc.player.getYRot();
 			pitch = mc.player.getXRot();
+			vx = vy = vz = 0;
 		}
 		LmgKeys.say(on ? "Freecam on" : "Freecam off");
 	}
@@ -69,11 +71,20 @@ public final class Freecam {
 		double sin = Math.sin(rad), cos = Math.cos(rad);
 		double mx = (-sin * fwd + cos * side), mz = (cos * fwd + sin * side);
 		double len = Math.sqrt(mx * mx + mz * mz + up * up);
+		double tx = 0, ty = 0, tz = 0;
 		if (len > 0) {
-			x += mx / len * speed;
-			y += up / len * speed;
-			z += mz / len * speed;
+			tx = mx / len * speed;
+			ty = up / len * speed;
+			tz = mz / len * speed;
 		}
+		// smooth flying eases in and out, like a camera on a dolly
+		double k = LmgConfig.get().smoothFreecam ? 0.08 : 1.0;
+		vx += (tx - vx) * k;
+		vy += (ty - vy) * k;
+		vz += (tz - vz) * k;
+		x += vx;
+		y += vy;
+		z += vz;
 	}
 
 	public static Vec3 position(float partial) {
