@@ -1,9 +1,9 @@
 {
-  "version": "0.26.0",
+  "version": "0.27.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.26.0.jar",
-    "sha1": "c461870fe1c651f492692bbdabdaa90a21811ae7"
+    "file": "lmg-client-0.27.0.jar",
+    "sha1": "e19c384f337fa0cfeee6223ab4b38eea0b698dc5"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.27",
+      "text": "Easier to find your way. The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."
+    },
+    {
       "version": "0.26",
       "text": "Friends & more. Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.22",
       "text": "Cinematic. Golden-hour shaders in one click, a film mode on F7, and a proper colour picker."
-    },
-    {
-      "version": "0.21",
-      "text": "See each other's pets. Turn on sharing and other Lmg players can see your pets and cosmetics."
     }
   ],
   "launcher": {

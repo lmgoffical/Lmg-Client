@@ -171,11 +171,17 @@ public final class Winter {
 				float x0 = (float) (c[0] - cam.x), z0 = (float) (c[2] - cam.z);
 				float y0 = (float) (c[1] / 16.0 - cam.y) + 0.002f, y1 = y0 + thick;
 				float x1 = x0 + 1, z1 = z0 + 1;
-				int light = c[3], argb = 0xFFFFFFFF, sideArgb = 0xFFE4ECF4;
+				// each block's snow is turned and shaded a little differently, so there's no grid
+				int h = (int) (hash(c[0] * 31 + 7, c[2] * 17 + 3) * 65535);
+				int rot = h & 3;
+				boolean flip = (h & 4) != 0;
+				float shade = 0.93f + ((h >> 3) & 15) / 15f * 0.07f;
+				int sc = Math.round(255 * shade);
+				int light = c[3], argb = 0xFF000000 | sc << 16 | sc << 8 | Math.min(255, sc + 4), sideArgb = 0xFFE4ECF4;
 				float v1 = thick;   // texture rows for the thin sides
 				int mask = c[5];
 				if (mask == 0xFFFF) {
-					Quads.quad(vc, p, x0, y1, z1, x1, y1, z1, x1, y1, z0, x0, y1, z0, 0, 0, 1, 1, argb, light, 0, 1, 0);
+					top(vc, p, x0, y1, z0, 1f, 0f, 0f, 1f, rot, flip, argb, light);
 				} else {
 					// still settling: only the covered patches, a little thinner
 					float ty = y0 + thick * 0.6f;
@@ -183,7 +189,7 @@ public final class Winter {
 						if ((mask & 1 << i) == 0) continue;
 						float px0 = x0 + (i & 3) * 0.25f, pz0 = z0 + (i >> 2) * 0.25f, px1 = px0 + 0.25f, pz1 = pz0 + 0.25f;
 						float u0 = (i & 3) * 0.25f, v0 = (i >> 2) * 0.25f;
-						Quads.quad(vc, p, px0, ty, pz1, px1, ty, pz1, px1, ty, pz0, px0, ty, pz0, u0, v0, u0 + 0.25f, v0 + 0.25f, argb, light, 0, 1, 0);
+						top(vc, p, px0, ty, pz0, 0.25f, u0, v0, 0.25f, rot, flip, argb, light);
 					}
 				}
 				int s = c[4];
@@ -193,6 +199,17 @@ public final class Winter {
 				if ((s & 8) != 0) Quads.quad(vc, p, x1, y1, z1, x1, y1, z0, x1, y0, z0, x1, y0, z1, 0, 0, 1, v1, sideArgb, light, 1, 0, 0);
 			}
 		});
+	}
+
+	/** A flat square of snow, its texture turned by {@code rot} quarter turns (and maybe mirrored). */
+	private static void top(com.mojang.blaze3d.vertex.VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float size,
+							float u, float v, float uvSize, int rot, boolean flip, int argb, int light) {
+		float[][] uv = {{u, v}, {u + uvSize, v}, {u + uvSize, v + uvSize}, {u, v + uvSize}};
+		float[][] at = {{x, z + size}, {x + size, z + size}, {x + size, z}, {x, z}};
+		for (int k = 0; k < 4; k++) {
+			int i = flip ? (3 - k + rot) & 3 : (k + rot) & 3;
+			Quads.vertex(vc, p, at[k][0], y, at[k][1], uv[i][0], uv[i][1], argb, light, 0, 1, 0);
+		}
 	}
 
 	/** For the in-game tests: skip the wait. */

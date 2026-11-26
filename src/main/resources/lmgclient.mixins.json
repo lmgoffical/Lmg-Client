@@ -24,6 +24,7 @@
 		"MinecraftMixin",
 		"MouseHandlerMixin",
 		"OptionsMixin",
+		"OverlayTextureMixin",
 		"PlayerSkinWidgetAccessor",
 		"ScreenBackgroundMixin",
 		"ScreenEffectRendererMixin",

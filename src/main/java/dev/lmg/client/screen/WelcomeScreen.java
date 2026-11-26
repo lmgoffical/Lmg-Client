@@ -82,7 +82,7 @@ public class WelcomeScreen extends Screen {
 		String mode = LmgConfig.get().serverSafe ? "Server-safe mode: on" : "Server-safe mode: off";
 		g.text(f, mode, x0 + 12, y, Draw.withAlpha(LmgConfig.get().serverSafe ? 0x7CFF9E : 0xFF8C7C, a), false);
 		y += 11;
-		g.text(f, "Change it any time in the Tools tab.", x0 + 12, y, Draw.withAlpha(0x7C8BA3, a), false);
+		g.text(f, "Change it any time in Game > Tools.", x0 + 12, y, Draw.withAlpha(0x7C8BA3, a), false);
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 	}

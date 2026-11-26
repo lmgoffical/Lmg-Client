@@ -32,6 +32,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			LmgConfig c = LmgConfig.get();
 			c.welcomeSeen = true;
 			c.showSplash = false;
+			c.tourDone = true;
 		});
 		ctx.getInput().resizeWindow(1280, 720);
 		ctx.waitTicks(5);
@@ -48,13 +49,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 				world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
 				ctx.waitTicks(10);
 				world.getConnection().waitForChunksRender();
-				try {
-					var f = LmgSettingsScreen.class.getDeclaredField("lastTab");
-					f.setAccessible(true);
-					f.setInt(null, 0);   // the Theme tab, where the weather setting is
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+				page(5, 0);   // Menu > Look, where the weather setting is
 				for (var w : new dev.lmg.client.render.MenuSnow.Weather[]{dev.lmg.client.render.MenuSnow.Weather.SNOW,
 						dev.lmg.client.render.MenuSnow.Weather.LEAVES, dev.lmg.client.render.MenuSnow.Weather.PETALS,
 						dev.lmg.client.render.MenuSnow.Weather.FIREFLIES}) {
@@ -76,6 +71,10 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("avatar")) avatar(ctx, world);
 			if (want("winter")) winter(ctx, world);
 			if (want("death")) death(ctx, world);
+			if (want("newmenu")) newMenu(ctx, world);
+			if (want("tour")) tour(ctx);
+			if (want("effects")) effects(ctx, world);
+			if (want("cosmetics")) cosmetics(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -113,6 +112,20 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(25);
 		ctx.takeScreenshot("friends-toast");
 		ctx.waitTicks(140);
+	}
+
+	/** Opens the menu on a group and page next time (0 Visuals, 1 You, 2 Combat, 3 HUD, 4 Social, 5 Menu, 6 Game). */
+	static void page(int cat, int page) {
+		try {
+			var c = LmgSettingsScreen.class.getDeclaredField("lastCat");
+			c.setAccessible(true);
+			c.setInt(null, cat);
+			var p = LmgSettingsScreen.class.getDeclaredField("lastPage");
+			p.setAccessible(true);
+			((int[]) p.get(null))[cat] = page;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	static final UUID MIA = UUID.fromString("22222222-2222-4222-8222-222222222222");
@@ -182,13 +195,35 @@ public class ShowcaseTest implements FabricClientGameTest {
 				"place feature minecraft:cherry -13 -60 10",
 				"place feature minecraft:cherry 13 -60 24",
 				"fill -4 -61 8 2 -61 11 minecraft:water",
-				"fill -14 -60 2 14 -60 26 minecraft:pink_petals[flower_amount=3] replace minecraft:air",
 				"setblock 3 -60 6 minecraft:lantern",
 				"time set 12400"};
 		for (String c : cmds) {
 			System.out.println("[scene] " + c);
 			srv.runCommand(c);
 		}
+		// a natural meadow: petals in patches (different amounts and directions), grass, a few flowers
+		srv.runOnServer(server -> {
+			var level = server.overworld();
+			var rnd = new java.util.Random(42);
+			String[] facing = {"north", "south", "east", "west"};
+			String[] flowers = {"dandelion", "poppy", "cornflower", "azure_bluet", "oxeye_daisy", "lily_of_the_valley"};
+			for (int x = -16; x <= 16; x++) {
+				for (int z = 0; z <= 28; z++) {
+					var pos = new net.minecraft.core.BlockPos(x, -60, z);
+					if (!level.getBlockState(pos).isAir()) continue;
+					// patches: petals are thick near the trees and thin out in between
+					double patch = Math.sin(x * 0.45 + z * 0.2) * Math.cos(z * 0.38 - x * 0.15);
+					double r = rnd.nextDouble();
+					String block = null;
+					if (patch > 0.15 && r < 0.75) block = "pink_petals[flower_amount=" + (1 + rnd.nextInt(4)) + ",facing=" + facing[rnd.nextInt(4)] + "]";
+					else if (r < 0.22) block = "short_grass";
+					else if (r < 0.26) block = flowers[rnd.nextInt(flowers.length)];
+					if (block == null) continue;
+					String cmd = "setblock " + x + " -60 " + z + " minecraft:" + block;
+					server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd);
+				}
+			}
+		});
 	}
 
 	private void photo(ClientGameTestContext ctx, TestSingleplayerContext world) {
@@ -261,13 +296,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.getInput().resizeWindow(1920, 1080);
 		ctx.waitTicks(10);
 		world.getConnection().waitForChunksRender();
-		try {
-			var f = LmgSettingsScreen.class.getDeclaredField("lastTab");
-			f.setAccessible(true);
-			f.setInt(null, 4);   // the Avatar tab
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		page(1, 0);   // You > Outfit
 		ctx.setScreen(() -> new LmgSettingsScreen(null));
 		ctx.getInput().setCursorPos(1500, 300);
 		ctx.waitTicks(120);
@@ -351,6 +380,122 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.setScreen(() -> new dev.lmg.client.screen.WorldMapScreen(null));
 		ctx.waitTicks(30);
 		ctx.takeScreenshot("death-map");
+		ctx.setScreen(() -> null);
+	}
+
+	/** The regrouped menu: a few pages, a long page that scrolls, and the other two styles. */
+	private void newMenu(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		ctx.runOnClient(mc -> LmgConfig.get().myUid = 7);
+		int[][] pages = {{0, 0}, {0, 2}, {4, 2}, {6, 0}, {1, 1}};
+		for (int[] pg : pages) {
+			page(pg[0], pg[1]);
+			ctx.setScreen(() -> new LmgSettingsScreen(null));
+			ctx.waitTicks(25);
+			ctx.takeScreenshot("newmenu-" + pg[0] + "-" + pg[1]);
+		}
+		for (var style : new LmgConfig.MenuStyle[]{LmgConfig.MenuStyle.SKEET, LmgConfig.MenuStyle.NEVERLOSE}) {
+			ctx.runOnClient(mc -> LmgConfig.get().menuStyle = style);
+			page(0, 2);
+			ctx.setScreen(() -> new LmgSettingsScreen(null));
+			ctx.waitTicks(25);
+			ctx.takeScreenshot("newmenu-" + style.name().toLowerCase());
+		}
+		ctx.runOnClient(mc -> LmgConfig.get().menuStyle = LmgConfig.MenuStyle.LMG);
+		ctx.setScreen(() -> null);
+	}
+
+	/** The first-time tour, a few of its steps. */
+	private void tour(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> LmgConfig.get().tourDone = false);
+		page(0, 0);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		for (int step = 1; step <= 10; step++) {
+			if (step == 1 || step == 3 || step == 4 || step == 5 || step == 6 || step == 7 || step == 9) ctx.takeScreenshot("tour-" + step);
+			ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
+			ctx.waitTicks(12);
+		}
+		ctx.runOnClient(mc -> System.out.println("[tour] done=" + LmgConfig.get().tourDone));
+		ctx.setScreen(() -> null);
+	}
+
+	/** Crosshair, damage numbers, the hurt colour and a colour filter, with a real hit on a mob. */
+	private void effects(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("time set 1000");
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		world.getServer().runCommand("summon minecraft:zombie 0.5 -60 3.0 {NoAI:1b,Rotation:[180f,0f],Health:200f,Attributes:[{id:\"minecraft:max_health\",base:200}]}");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.crosshair = LmgConfig.Crosshair.CROSS_DOT;
+			c.crosshairRgb = 0x7CF2FF;
+			c.damageNumbers = true;
+			c.damageRgb = 0xFFD24A;
+			c.hurtRgb = 0x3D7BFF;
+			dev.lmg.client.feature.Visuals.applyHurtColor();
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		});
+		ctx.waitTicks(30);
+		world.getConnection().waitForChunksRender();
+		ctx.getInput().lookAt(new net.minecraft.core.BlockPos(0, -59, 3));
+		ctx.waitTicks(10);
+		for (int i = 0; i < 3; i++) {
+			ctx.runOnClient(mc -> {
+				var z = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, mc.player.getBoundingBox().inflate(6)).stream().findFirst().orElse(null);
+				if (z != null) {
+					dev.lmg.client.feature.Visuals.onAttack(z);
+					mc.gameMode.attack(mc.player, z);
+				}
+			});
+			ctx.waitTicks(i < 2 ? 12 : 3);
+		}
+		ctx.takeScreenshot("effects-hit");
+		ctx.runOnClient(mc -> LmgConfig.get().worldFilter = dev.lmg.client.feature.PhotoMode.Filter.VIVID);
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("effects-vivid");
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().worldFilter = null;
+			LmgConfig.get().motionBlur = 3;
+		});
+		for (int i = 0; i < 10; i++) {
+			ctx.getInput().moveCursor(60, 0);
+			ctx.waitTicks(1);
+		}
+		ctx.takeScreenshot("effects-blur");
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().motionBlur = 0;
+			System.out.println("[effects] applied=" + mc.gameRenderer.getAppliedPostEffects());
+		});
+	}
+
+	/** The colour sliders in Cosmetics, with wings on. */
+	private void cosmetics(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().equipped.put("wings", "wings_butterfly");
+			LmgConfig.get().cosmeticColors.put("wings_butterfly", "#8A5BFF");
+		});
+		ctx.setScreen(() -> new dev.lmg.client.screen.CosmeticsScreen(null));
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> {
+			try {
+				var cs = mc.gui.screen();
+				var tab = cs.getClass().getDeclaredField("tab");
+				tab.setAccessible(true);
+				tab.set(cs, "wings");
+				var sel = cs.getClass().getDeclaredField("selected");
+				sel.setAccessible(true);
+				sel.set(cs, "wings_butterfly");
+				var rb = net.minecraft.client.gui.screens.Screen.class.getDeclaredMethod("rebuildWidgets");
+				rb.setAccessible(true);
+				rb.invoke(cs);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.waitTicks(30);
+		ctx.takeScreenshot("cosmetics-colour");
 		ctx.setScreen(() -> null);
 	}
 

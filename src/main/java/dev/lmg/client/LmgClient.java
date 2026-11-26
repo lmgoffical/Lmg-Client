@@ -56,6 +56,11 @@ public class LmgClient implements ClientModInitializer {
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, id("target_hud"), new TargetHud());
 		HudElementRegistry.attachElementAfter(VanillaHudElements.MOB_EFFECTS, id("potion_hud"), new PotionHud());
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("minimap"), new dev.lmg.client.hud.MinimapHud());
+		// your own crosshair (or the game's, if you keep "Vanilla")
+		HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, vanilla -> (graphics, delta) -> {
+			if (!dev.lmg.client.feature.Visuals.drawCrosshair(graphics)) vanilla.extractRenderState(graphics, delta);
+		});
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("damage_numbers"), dev.lmg.client.feature.Visuals::drawNumbers);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("death_compass"),
 				(graphics, delta) -> dev.lmg.client.map.DeathTrail.drawCompass(graphics, Minecraft.getInstance()));
 		// Save the map when you leave a world or close the game.
@@ -100,7 +105,10 @@ public class LmgClient implements ClientModInitializer {
 
 		// Hit / kill effects: remember what YOU hit (client side only, never cancels the attack).
 		AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) -> {
-			if (level.isClientSide() && player == Minecraft.getInstance().player) Combat.onAttack(entity);
+			if (level.isClientSide() && player == Minecraft.getInstance().player) {
+				Combat.onAttack(entity);
+				dev.lmg.client.feature.Visuals.onAttack(entity);
+			}
 			return InteractionResult.PASS;
 		});
 
@@ -118,6 +126,8 @@ public class LmgClient implements ClientModInitializer {
 			dev.lmg.client.emote.EmoteNet.tick(mc);
 			dev.lmg.client.world.Winter.tick(mc);
 			dev.lmg.client.map.DeathTrail.tick(mc);
+			dev.lmg.client.feature.Visuals.tick(mc);
+			dev.lmg.client.social.Uids.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});
 		LOGGER.info("{} loaded", CLIENT_NAME);

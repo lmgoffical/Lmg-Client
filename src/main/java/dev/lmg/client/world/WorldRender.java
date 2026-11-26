@@ -176,6 +176,7 @@ public final class WorldRender {
 	private static int auroraColor(LmgConfig cfg, double angle, float t) {
 		return switch (cfg.aurora) {
 			case ACCENT -> cfg.accentRgb();
+			case CUSTOM -> cfg.auroraRgb;
 			case RAINBOW -> java.awt.Color.HSBtoRGB((float) ((angle / (Math.PI * 2) + t * 0.03) % 1.0), 0.6f, 1f) & 0xFFFFFF;
 			default -> cfg.aurora.rgb;
 		};

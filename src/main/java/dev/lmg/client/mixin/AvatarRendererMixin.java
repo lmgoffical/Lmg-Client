@@ -33,6 +33,18 @@ public abstract class AvatarRendererMixin {
 				holder.lmg$setEmote(playing == null ? null : playing.emote(), playing == null ? 0f : playing.seconds());
 			}
 		}
+		// your own name tag in third person, if you want to see it
+		Minecraft mcx = Minecraft.getInstance();
+		if (entity == mcx.player && LmgConfig.get().ownNameTag && state.nameTag == null && !mcx.options.getCameraType().isFirstPerson()
+				&& !mcx.gui.hud.isHidden() && !dev.lmg.client.feature.PhotoMode.active()) {
+			state.nameTag = entity.getDisplayName();
+			state.nameTagAttachment = entity.getAttachments().getNullable(net.minecraft.world.entity.EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
+		}
+		// Lmg UIDs after names
+		if (state.nameTag != null && LmgConfig.get().uidOnNameTags) {
+			Integer uid = dev.lmg.client.social.Uids.of(entity.getUUID());
+			if (uid != null) state.nameTag = dev.lmg.client.social.Uids.withUid(state.nameTag, uid);
+		}
 		// a pink heart on your partner's name tag
 		if (state.nameTag != null && entity instanceof net.minecraft.world.entity.player.Player pl
 				&& LmgConfig.get().partnerHearts && dev.lmg.client.social.Partner.isPartner(pl)) {

@@ -44,6 +44,11 @@ public final class WorldVisuals {
 			}
 			case VOID -> new Palette(rgb(0.01f, 0.01f, 0.02f), rgb(0f, 0f, 0f),
 					rgb(0.04f, 0.04f, 0.05f), rgb(0.01f, 0.01f, 0.015f), rgb(0.6f, 0.6f, 0.7f), 0.3f, true);
+			case CUSTOM -> {
+				// your two colours: the sky, and the horizon (which also tints the fog and the sunset glow)
+				Vector3f sky = fromRgbInt(LmgConfig.get().skyRgb), horizon = fromRgbInt(LmgConfig.get().horizonRgb);
+				yield new Palette(sky, scale(sky, 0.14f), horizon, scale(horizon, 0.12f), horizon, 1.0f, false);
+			}
 		};
 	}
 

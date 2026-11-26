@@ -84,7 +84,8 @@ public final class LmgConfig {
 		MIDNIGHT("Midnight"),
 		COTTON_CANDY("Cotton candy"),
 		ACCENT("Match accent"),
-		VOID("Void");
+		VOID("Void"),
+		CUSTOM("Your colours");
 
 		public final String label;
 
@@ -162,7 +163,7 @@ public final class LmgConfig {
 	}
 
 	public enum Trail {
-		OFF("Off"), SPARKLE("Sparkle"), ACCENT_DUST("Accent dust"), HEARTS("Hearts"),
+		OFF("Off"), SPARKLE("Sparkle"), ACCENT_DUST("Coloured dust"), HEARTS("Hearts"),
 		NOTES("Notes"), SOUL_FLAMES("Soul flames"), SPARKS("Sparks");
 
 		public final String label;
@@ -194,7 +195,7 @@ public final class LmgConfig {
 	}
 
 	public enum HitEffect {
-		OFF("Off"), SPARKS("Sparks"), CRITS("Crits"), STARS("Stars"), HEARTS("Hearts"), ACCENT("Accent burst");
+		OFF("Off"), SPARKS("Sparks"), CRITS("Crits"), STARS("Stars"), HEARTS("Hearts"), ACCENT("Coloured burst");
 
 		public final String label;
 
@@ -216,7 +217,7 @@ public final class LmgConfig {
 
 	public enum Aurora {
 		OFF("Off", 0), GREEN("Green", 0x3CFFA0), PURPLE("Purple", 0xB45CFF), BLUE("Blue", 0x4FB8FF),
-		ACCENT("Accent", -1), RAINBOW("Rainbow", -2);
+		ACCENT("Accent", -1), RAINBOW("Rainbow", -2), CUSTOM("Your colour", -3);
 
 		public final String label;
 		public final int rgb;
@@ -259,6 +260,50 @@ public final class LmgConfig {
 	}
 	public boolean menuGreyWorld = true; // black-and-white world behind the Lmg menus
 	public boolean menuAvatar = true;    // you and your pet next to the Right Shift menu
+	// ---- colours you pick yourself (-1 = follow the accent / the default) ----
+	public int skyRgb = 0x7FA8FF;        // "Your colours" sky theme: the daytime sky
+	public int horizonRgb = 0xFFC7A0;    // ... and the horizon / fog
+	public int auroraRgb = 0x3CFFA0;
+	public int trailRgb = -1;
+	public int hitRgb = -1;
+	public int menuBgRgb = -1;           // -1 = use the "Menu background" preset
+	// ---- extra visuals ----
+	public Crosshair crosshair = Crosshair.VANILLA;
+	public int crosshairRgb = 0xFFFFFF;
+	public int crosshairSize = 1;        // index into CROSSHAIR_SIZES
+	public boolean crosshairTargetColor = true;  // turns your in-reach colour when you can hit what you aim at
+	public boolean damageNumbers = false;
+	public int damageRgb = 0xFF5A6E;
+	public int hurtRgb = 0xFF0000;       // the flash when something gets hurt
+	public int motionBlur = 0;           // index into MOTION_BLUR_LABELS
+	public dev.lmg.client.feature.PhotoMode.Filter worldFilter = null;   // a colour filter over the world, always on
+	public boolean ownNameTag = false;   // see your own name tag in third person
+	// ---- UID ----
+	public int myUid = 0;                // your Lmg number once you've claimed it (0 = not yet)
+	public boolean uidOnNameTags = true;
+	// ---- tour ----
+	public boolean tourDone = false;
+
+	public static final String[] MOTION_BLUR_LABELS = {"Off", "Light", "Medium", "Strong"};
+	public static final float[] CROSSHAIR_SIZES = {0.75f, 1f, 1.4f, 1.8f};
+	public static final String[] CROSSHAIR_SIZE_LABELS = {"Small", "Normal", "Big", "Huge"};
+
+	public enum Crosshair {
+		VANILLA("Vanilla"), DOT("Dot"), CROSS("Cross"), CROSS_DOT("Cross + dot"), CIRCLE("Circle"), CHEVRON("Chevron");
+		public final String label;
+
+		Crosshair(String label) {
+			this.label = label;
+		}
+	}
+
+	public int trailColor() {
+		return trailRgb < 0 ? accentRgb() : trailRgb;
+	}
+
+	public int hitColor() {
+		return hitRgb < 0 ? accentRgb() : hitRgb;
+	}
 	public dev.lmg.client.world.Winter.Mode winter = dev.lmg.client.world.Winter.Mode.SEASONAL; // snow in the world (only on your screen)
 	public boolean winterSettles = true; // the snow settles on the ground around you
 
@@ -504,6 +549,9 @@ public final class LmgConfig {
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
 		if (winter == null) winter = dev.lmg.client.world.Winter.Mode.SEASONAL;
+		if (crosshair == null) crosshair = Crosshair.VANILLA;
+		crosshairSize = clampIndex(crosshairSize, CROSSHAIR_SIZES.length, 1);
+		motionBlur = clampIndex(motionBlur, MOTION_BLUR_LABELS.length, 0);
 		if (menuWeather == null) {
 			// v0.25 had a snow amount: keep "off" and "blizzard", everything else follows the seasons
 			menuWeather = menuSnow == 0 ? dev.lmg.client.render.MenuSnow.Weather.OFF

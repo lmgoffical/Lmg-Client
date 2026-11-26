@@ -24,7 +24,7 @@ public final class ServerSafe {
 
 	/** Shown when someone presses a key that's blocked, so it's clear why nothing happened. */
 	public static String message(Feature feature) {
-		return feature.label + " is off on servers while server-safe mode is on (Tools tab).";
+		return feature.label + " is off on servers while server-safe mode is on (Game > Tools).";
 	}
 
 	public enum Feature {

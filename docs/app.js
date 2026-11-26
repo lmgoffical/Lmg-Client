@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.27", "<b>Easier to find your way.</b> The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."],
   ["0.26", "<b>Friends &amp; more.</b> Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."],
   ["0.25", "<b>Snow.</b> Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."],
   ["0.24", "<b>The app.</b> Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."],
@@ -144,8 +145,10 @@ const FAQ = [
   ["Will I get banned for using it?", "Nobody can promise that for any mod, so please read each server's rules. Lmg turns on server-safe mode by default: on multiplayer servers it keeps freecam and ore glow off. Ore edges is a texture pack, so switch it off on servers that don't allow it."],
   ["Is it free?", "Yes. It's free to download and use, it isn't for sale, and there are no ads. See the Licences page for the details."],
   ["Who makes it?", "A small independent team. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. Minecraft is a trademark of Mojang AB."],
-  ["Can other people see my wings, cape or pets?", "Other Lmg players can, if you switch on Share pets & cosmetics (in the Pets screen or the Tools tab). It's off until you turn it on. People without Lmg just see your normal skin."],
+  ["Can other people see my wings, cape or pets?", "Other Lmg players can, if you switch on Share pets & cosmetics (in the Pets screen, or Game &gt; Tools). It's off until you turn it on. People without Lmg just see your normal skin."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
+  ["What's a UID?", "Your Lmg number. Press Get mine in Social &gt; UID (or turn on Friends) and you get the next one, for good. The lower it is, the rarer: 1 to 10 are Founders, up to 100 OG, up to 1000 Early. Other Lmg players see it on your name tag."],
+  ["Where did a setting go?", "Settings are grouped now: Visuals, You, Combat, HUD, Social, Menu and Game, each with pages along the top. Menu &gt; Help &gt; Show me around runs the tour again."],
   ["What do my friends see?", "If you turn on Friends: that you're online, what you're doing, and the server you're on (unless you switch Show my server off). Nobody else sees any of it, and turning Friends off deletes it."],
 ];
 
@@ -190,6 +193,9 @@ async function pageHome() {
         <div><h3>Emotes</h3><p>Hold G for the wheel: wave, hug, sit, dance and more. Other Lmg players on your server see them too.</p></div>
         <div><h3>Photo mode</h3><p>F8 freezes the world. Fly the camera, add a filter and a Polaroid frame, and save the shot.</p></div>
         <div><h3>Winter</h3><p>Snow that falls and settles on the ground around you - only on your screen, so it's fine anywhere.</p></div>
+        <div><h3>Any colour you like</h3><p>Sky, aurora, trails, hits, crosshair, menu background, cosmetics: drag a slider to pick the exact shade.</p></div>
+        <div><h3>Crosshair &amp; effects</h3><p>Your own crosshair that lights up in reach, damage numbers, a hurt flash in any colour, motion blur and colour filters.</p></div>
+        <div><h3>UIDs</h3><p>Grab your Lmg number. The lower it is, the rarer: Founders get 1 to 10. It shows on your name tag for other Lmg players.</p></div>
       </div>
     </section>
 
@@ -205,6 +211,8 @@ async function pageHome() {
           ["menu", "Right Shift: the world goes black and white behind the menu", "The settings menu with snow settling on its top edge over a grey world"],
           ["death", "After dying: a trail and a beam back to the spot", "A trail of small red sparkles leading across a field at night to a red beam"],
           ["emotes", "Other Lmg players see your emotes too", "Two players dancing side by side"],
+          ["groups", "Seven groups, with pages along the top", "The settings menu on Visuals, Effects, listing crosshair, damage number and motion blur options"],
+          ["effects", "Your own crosshair turns red in reach, and damage numbers pop up", "A zombie in a cherry grove with a small damage number above its head and a red crosshair on it"],
         ].map(([img, cap, alt]) => `<figure><a href="img/shots/${img}.jpg" target="_blank" rel="noopener"><img src="img/shots/${img}.jpg" alt="${alt}" loading="lazy" width="1280" height="720"></a><figcaption>${cap}</figcaption></figure>`).join("")}
       </div>
     </section>
@@ -614,12 +622,13 @@ const LEGAL = {
       <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
       <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
       <li><b>The Lmg Client app</b> downloads from GitHub, Fabric and Modrinth only, and saves its few settings in your user folder. It never asks for or sees your Minecraft password; you sign in with Mojang's own launcher. To say hi, it reads only your player name and ID from the Minecraft Launcher's account file (nothing else in that file is used, kept or sent), and loads your skin's face from Mojang's servers.</li>
-      <li><b>Shaders.</b> If you pick a shader pack in the Cinematic tab, it's downloaded from Modrinth, which sees your IP address like any download.</li>
+      <li><b>Shaders.</b> If you pick a shader pack in Visuals &gt; Cinematic, it's downloaded from Modrinth, which sees your IP address like any download.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
       <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>
       <li><b>Friends (off unless you turn it on).</b> If you turn on Friends, the game proves your account with Mojang (same check as above) and we store: your Minecraft username and account ID, a session key (only a scrambled copy), the friends you add and the requests you send, your partner if you pick one, and whether you're online and what you're doing (menus, singleplayer, Realms, or a server). The server's address and name are shown only to your friends, and only while <i>Show my server</i> is on. <i>Appear offline</i> hides you from everyone. <b>Turning Friends off deletes all of this</b> from our database straight away.</li>
       <li><b>Emotes.</b> With Friends on, when you play an emote on a multiplayer server, our server signs it and passes it to other Lmg players on the same server. It goes to a channel named after a scrambled code of the server's address, not the address itself. An emote that lasts (sitting, dancing) is kept for up to 10 minutes so people who arrive later see it. In singleplayer nothing is sent.</li>
-      <li><b>Photo mode, winter, the way back after dying.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
+      <li><b>UIDs (only if you press <i>Get mine</i>, or turn on Friends).</b> The game proves your account with Mojang (same check as above), then we save your Minecraft account ID, the number you got and when. Your number is public: anyone can look up the number for an account, and other Lmg players see it on your name tag. Numbers are handed out in order and aren't reused.</li>
+      <li><b>Photo mode, winter, the way back after dying, crosshairs, damage numbers, filters and motion blur.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
     </ul>
     <h3>The website</h3>
     <ul>

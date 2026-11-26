@@ -8,6 +8,7 @@
 //         broadcasts it to everyone on the same server, signed with an Ed25519 key, so
 //         nobody can make your character do something you didn't.
 // pubkey: the public half of that key (it's built into the mod).
+// uid:    your Lmg number (the next free one the first time), after the same Mojang check.
 //
 // Deployed as "social" (verify_jwt: false: the session token / Mojang check is the auth).
 // Tables and the friends functions: migrations/0004_social.sql
@@ -66,11 +67,11 @@ async function loadKey() {
 
 // ---- actions ---------------------------------------------------------------------------------
 
-async function login(body: any) {
+/** Asks Mojang whether this player really just "joined" with this serverId. */
+async function mojang(body: any): Promise<{ uuid: string; name: string } | Response> {
   const username = String(body?.username ?? "");
   const serverId = String(body?.serverId ?? "");
   if (!USERNAME.test(username) || !/^-?[0-9a-f]{1,40}$/.test(serverId)) return reply(400, { error: "Bad request" });
-
   const check = await fetch(
     `https://sessionserver.mojang.com/session/minecraft/hasJoined?username=${encodeURIComponent(username)}&serverId=${encodeURIComponent(serverId)}`,
   );
@@ -79,7 +80,29 @@ async function login(body: any) {
   const id = String(profile?.id ?? "");
   if (!/^[0-9a-f]{32}$/.test(id)) return reply(403, { error: "Couldn't verify your Minecraft account" });
   const uuid = `${id.slice(0, 8)}-${id.slice(8, 12)}-${id.slice(12, 16)}-${id.slice(16, 20)}-${id.slice(20)}`;
-  const name = String(profile.name ?? username);
+  return { uuid, name: String(profile.name ?? username) };
+}
+
+/** Your UID: the one you have, or the next free number. */
+async function claimUid(uuid: string): Promise<number | null> {
+  await db.from("lmg_uids").upsert({ uuid }, { onConflict: "uuid", ignoreDuplicates: true });
+  const { data } = await db.from("lmg_uids").select("uid").eq("uuid", uuid).maybeSingle();
+  return data ? Number(data.uid) : null;
+}
+
+/** Just the UID, for people who don't use friends (nothing else is stored). */
+async function uidOnly(body: any) {
+  const who = await mojang(body);
+  if (who instanceof Response) return who;
+  const uid = await claimUid(who.uuid);
+  if (uid === null) return reply(500, { error: "Couldn't get your UID" });
+  return reply(200, { uuid: who.uuid, uid });
+}
+
+async function login(body: any) {
+  const who = await mojang(body);
+  if (who instanceof Response) return who;
+  const { uuid, name } = who;
 
   const { error: pe } = await db.from("lmg_players").upsert({ uuid, name, last_seen: new Date().toISOString() });
   if (pe) return reply(500, { error: "Couldn't sign you in" });
@@ -94,7 +117,8 @@ async function login(body: any) {
     .order("created_at", { ascending: false }).range(MAX_SESSIONS, 100);
   if (old?.length) await db.from("lmg_sessions").delete().in("token_hash", old.map((o) => o.token_hash));
 
-  return reply(200, { token, uuid, name, expires });
+  const uid = await claimUid(uuid);
+  return reply(200, { token, uuid, name, expires, uid });
 }
 
 async function emote(body: any) {
@@ -145,6 +169,8 @@ Deno.serve(async (req) => {
         return await login(body);
       case "emote":
         return await emote(body);
+      case "uid":
+        return await uidOnly(body);
       case "pubkey":
         await loadKey();
         return reply(200, { key: publicKey });

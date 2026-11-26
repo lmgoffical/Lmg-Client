@@ -136,6 +136,11 @@ public class SettingRow extends AbstractWidget {
 		return isHovered;
 	}
 
+	/** A button whose text can change ("Get mine" -> "#7 Founder"). */
+	public static SettingRow button(String label, Supplier<String> action, Runnable onPress) {
+		return new SettingRow(Kind.BUTTON, label, null, action, onPress, onPress, null);
+	}
+
 	public static SettingRow button(String label, String action, Runnable onPress) {
 		return new SettingRow(Kind.BUTTON, label, null, () -> action, onPress, onPress, null);
 	}
@@ -199,6 +204,9 @@ public class SettingRow extends AbstractWidget {
 		if (style == LmgConfig.MenuStyle.LMG && hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
 		g.text(font, getMessage(), labelX, textY, Draw.withAlpha(Draw.lerpRgb(labelRgb, 0xFFFFFF, hover), appear), false);
 		int sw1 = right + 2, sw0 = sw1 - 30, sy0 = y + 2, sy1 = y + height - 2;
+		// in narrow columns the swatch gets smaller rather than running into the name
+		int labelEnd = labelX + font.width(getMessage()) + 4;
+		if (sw0 < labelEnd) sw0 = Math.min(sw1 - 12, labelEnd);
 		boolean rainbow = waiting.getAsBoolean();
 		int border = Draw.lerpRgb(0x1C2943, MenuSkin.accent(), hover);
 		if (style == LmgConfig.MenuStyle.SKEET) g.fill(sw0 - 1, sy0 - 1, sw1 + 1, sy1 + 1, Draw.withAlpha(0x000000, appear));
@@ -214,7 +222,7 @@ public class SettingRow extends AbstractWidget {
 			Draw.roundRect(g, sw0, sy0, sw1, sy1, 2, Draw.withAlpha(swatch.getAsInt(), appear));
 		}
 		String edit = "edit";
-		g.text(font, edit, sw0 - 6 - font.width(edit), textY, Draw.withAlpha(DIM, appear * (0.4f + 0.6f * hover)), false);
+		if (sw0 - 6 - font.width(edit) > labelEnd) g.text(font, edit, sw0 - 6 - font.width(edit), textY, Draw.withAlpha(DIM, appear * (0.4f + 0.6f * hover)), false);
 	}
 
 	// ---- key binding rows (all styles) -----------------------------------------------------------

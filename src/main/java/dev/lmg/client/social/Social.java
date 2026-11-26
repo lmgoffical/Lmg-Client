@@ -315,6 +315,13 @@ public final class Social {
 					UUID id = UUID.fromString(o.get("uuid").getAsString());
 					String t = o.get("token").getAsString();
 					saveSession(id, t, o.get("expires").getAsString());
+					if (o.has("uid") && !o.get("uid").isJsonNull()) {
+						int uid = o.get("uid").getAsInt();
+						mc.execute(() -> {
+							LmgConfig.get().myUid = uid;
+							LmgConfig.save();
+						});
+					}
 					me = id;
 					token = t;
 					status = Status.ONLINE;

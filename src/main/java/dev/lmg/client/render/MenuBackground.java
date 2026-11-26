@@ -17,7 +17,13 @@ public final class MenuBackground {
 	public static void draw(GuiGraphicsExtractor g, int width, int height, boolean effects) {
 		LmgConfig cfg = LmgConfig.get();
 		LmgConfig.Backdrop backdrop = cfg.backdrop;
-		g.fillGradient(0, 0, width, height, 0xFF000000 | backdrop.top, 0xFF000000 | backdrop.bottom);
+		int top = backdrop.top, bottom = backdrop.bottom;
+		if (cfg.menuBgRgb >= 0) {
+			// your own colour: a little lighter at the top, much darker at the bottom
+			top = Draw.lerpRgb(cfg.menuBgRgb, 0x000000, 0.55f);
+			bottom = Draw.lerpRgb(cfg.menuBgRgb, 0x000000, 0.9f);
+		}
+		g.fillGradient(0, 0, width, height, 0xFF000000 | top, 0xFF000000 | bottom);
 		vignette(g, width, height);
 		if (!effects) return;
 		if (cfg.curtains) curtains(g, width, height);

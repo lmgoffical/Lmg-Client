@@ -44,7 +44,6 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		System.arraycopy(CosmeticRegistry.CATEGORIES, 0, TABS, 0, CosmeticRegistry.CATEGORIES.length);
 		TABS[TABS.length - 1] = SKINS;
 	}
-	private static final String[] PRESETS = {"#FFFFFF", "#24222B", "#FFD36A", "#FF5A6E", "#FF8FC8", "#B07CFF", "#4FB6FF", "#45E0B0"};
 	private static final int HEADER = 24, SIDEBAR = 92, PREVIEW_W = 124, MIN_CARD_W = 58, CARD_H = 68, GAP = 6;
 	private int CARD_W = MIN_CARD_W;
 
@@ -421,16 +420,15 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		}
 		if (m == null || !m.tintable) return;
 
-		// colour swatches: default, accent, rainbow, then presets
+		// colour: three quick picks, then two sliders (colour, and light to dark) that recolour you live;
+		// click the big swatch for the full picker with the box
 		ty = y0 + H - 40;
 		g.text(font, "Colour", px + 2, ty - 11, Draw.withAlpha(p.dim, a), false);
 		String cur = LmgConfig.get().cosmeticColors.get(m.id);
 		int sx = px + 2;
-		boolean custom = cur != null && cur.startsWith("#") && !java.util.Arrays.asList(PRESETS).contains(cur.toUpperCase(java.util.Locale.ROOT));
-		for (int i = 0; i < 3 + PRESETS.length; i++) {
-			int col = i < 3 ? 0 : 0xFF000000 | Integer.parseInt(PRESETS[i - 3].substring(1), 16);
+		for (int i = 0; i < 3; i++) {
+			int bx = sx + i * 18, by = ty;
 			String value = swatchValue(i);
-			int bx = sx + (i % 6) * 20, by = ty + (i / 6) * 16;
 			boolean on = value == null ? (cur == null) : value.equals(cur);
 			Draw.roundRect(g, bx - 1, by - 1, bx + 15, by + 13, 3, on ? Draw.withAlpha(p.accent, a) : Draw.fade(p.border, a));
 			switch (i) {
@@ -439,28 +437,70 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 					g.centeredText(font, "D", bx + 7, by + 2, Draw.withAlpha(0x000000, 0.6f * a));
 				}
 				case 1 -> Draw.roundRect(g, bx, by, bx + 14, by + 12, 2, Draw.withAlpha(Theme.accent() & 0xFFFFFF, a));
-				case 2 -> {
+				default -> {
 					for (int k = 0; k < 14; k++) {
 						int rgb = java.awt.Color.HSBtoRGB(k / 14f, 0.6f, 1f) & 0xFFFFFF;
 						g.fill(bx + k, by + 1, bx + k + 1, by + 11, Draw.withAlpha(rgb, a));
 					}
 				}
-				default -> Draw.roundRect(g, bx, by, bx + 14, by + 12, 2, Draw.fade(col, a));
 			}
 		}
-		// last swatch: pick any colour
-		int ci = 3 + PRESETS.length;
-		int cbx = sx + (ci % 6) * 20, cby = ty + (ci / 6) * 16;
-		Draw.roundRect(g, cbx - 1, cby - 1, cbx + 15, cby + 13, 3, custom ? Draw.withAlpha(p.accent, a) : Draw.fade(p.border, a));
-		if (custom) {
-			Draw.roundRect(g, cbx, cby, cbx + 14, cby + 12, 2, Draw.withAlpha(CosmeticRegistry.colorFor(m, cur, 0), a));
-		} else {
-			for (int k = 0; k < 14; k++) {
-				int rgb = java.awt.Color.HSBtoRGB(k / 14f, 1f, 1f) & 0xFFFFFF;
-				g.fill(cbx + k, cby + 1, cbx + k + 1, cby + 11, Draw.withAlpha(Draw.lerpRgb(rgb, 0x000000, 0.35f), a));
-			}
-			g.centeredText(font, "+", cbx + 7, cby + 2, Draw.white(a));
+		// the colour you have now (click for the full picker)
+		int nowRgb = CosmeticRegistry.colorFor(m, cur, 0) & 0xFFFFFF;
+		int swx0 = sx + 56, swx1 = px + PREVIEW_W - 6;
+		boolean custom = cur != null && cur.startsWith("#");
+		Draw.roundRect(g, swx0 - 1, ty - 1, swx1 + 1, ty + 13, 3, custom ? Draw.withAlpha(p.accent, a) : Draw.fade(p.border, a));
+		Draw.roundRect(g, swx0, ty, swx1, ty + 12, 2, Draw.withAlpha(nowRgb, a));
+		String hexText = String.format(java.util.Locale.ROOT, "#%06X", nowRgb);
+		g.centeredText(font, hexText, (swx0 + swx1) / 2, ty + 2, Draw.withAlpha(Theme.textOn(nowRgb), 0.85f * a));
+		// hue slider
+		int sl0 = sx, sl1 = px + PREVIEW_W - 6, hy = ty + 17;
+		for (int k = sl0; k < sl1; k++) {
+			int rgb = java.awt.Color.HSBtoRGB((k - sl0) / (float) (sl1 - sl0), 0.85f, 1f) & 0xFFFFFF;
+			g.fill(k, hy, k + 1, hy + 6, Draw.withAlpha(rgb, a));
 		}
+		float[] ht = hueTone(nowRgb);
+		knob(g, sl0 + Math.round(ht[0] * (sl1 - sl0)), hy, a);
+		// light -> colour -> dark slider, in this hue
+		int ly = ty + 27;
+		for (int k = sl0; k < sl1; k++) {
+			int rgb = fromHueTone(ht[0], (k - sl0) / (float) (sl1 - sl0));
+			g.fill(k, ly, k + 1, ly + 6, Draw.withAlpha(rgb, a));
+		}
+		knob(g, sl0 + Math.round(ht[1] * (sl1 - sl0)), ly, a);
+	}
+
+	private void knob(GuiGraphicsExtractor g, int x, int y, float a) {
+		Draw.roundRect(g, x - 2, y - 2, x + 3, y + 8, 2, Draw.withAlpha(0x000000, 0.7f * a));
+		Draw.roundRect(g, x - 1, y - 1, x + 2, y + 7, 1, Draw.white(a));
+	}
+
+	/** {hue, tone}: tone 0 = white, 0.5 = the full colour, 1 = black. */
+	static float[] hueTone(int rgb) {
+		float[] hsb = java.awt.Color.RGBtoHSB(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, null);
+		float tone = hsb[2] < 0.999f ? 0.5f + (1f - hsb[2]) * 0.5f : hsb[1] * 0.5f;
+		return new float[]{hsb[0], Math.max(0f, Math.min(1f, tone))};
+	}
+
+	static int fromHueTone(float hue, float tone) {
+		float sat = tone < 0.5f ? tone * 2f : 1f;
+		float bri = tone < 0.5f ? 1f : 1f - (tone - 0.5f) * 2f * 0.92f;
+		return java.awt.Color.HSBtoRGB(hue, sat, bri) & 0xFFFFFF;
+	}
+
+	/** 0 = nothing, 1 = dragging the colour slider, 2 = the light/dark slider. */
+	private int draggingColour;
+
+	private void setColourFrom(double mx, int which) {
+		CosmeticModel m = selected == null || tab.equals(SKINS) ? null : CosmeticRegistry.get(selected);
+		if (m == null || !m.tintable) return;
+		int px = x0 + W - PREVIEW_W - 6, sl0 = px + 2, sl1 = px + PREVIEW_W - 6;
+		float t = (float) Math.max(0, Math.min(1, (mx - sl0) / (double) (sl1 - sl0)));
+		float[] ht = hueTone(CosmeticRegistry.colorFor(m, LmgConfig.get().cosmeticColors.get(m.id), 0) & 0xFFFFFF);
+		// starting from white/black/grey: give the colour slider something to show
+		if (which == 1 && (ht[1] < 0.05f || ht[1] > 0.95f)) ht[1] = 0.5f;
+		int rgb = which == 1 ? fromHueTone(t, ht[1]) : fromHueTone(ht[0], t);
+		LmgConfig.get().cosmeticColors.put(m.id, String.format(java.util.Locale.ROOT, "#%06X", rgb));
 	}
 
 	/** Draws you, spun by {@code yaw} degrees, like the inventory does but with free rotation. */
@@ -487,7 +527,7 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 			case 0 -> null;
 			case 1 -> "accent";
 			case 2 -> "rainbow";
-			default -> PRESETS[i - 3];
+			default -> null;
 		};
 	}
 
@@ -556,10 +596,10 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		}
 		CosmeticModel m = selected == null || tab.equals(SKINS) ? null : CosmeticRegistry.get(selected);
 		if (m != null && m.tintable) {
-			int ty = y0 + H - 40;
-			for (int i = 0; i < 3 + PRESETS.length; i++) {
-				int bx = px + 2 + (i % 6) * 20, by = ty + (i / 6) * 16;
-				if (mx >= bx - 1 && mx < bx + 15 && my >= by - 1 && my < by + 13) {
+			int ty = y0 + H - 40, cx0 = px + 2;
+			for (int i = 0; i < 3; i++) {
+				int bx = cx0 + i * 18;
+				if (mx >= bx - 1 && mx < bx + 15 && my >= ty - 1 && my < ty + 13) {
 					String v = swatchValue(i);
 					if (v == null) LmgConfig.get().cosmeticColors.remove(m.id);
 					else LmgConfig.get().cosmeticColors.put(m.id, v);
@@ -567,13 +607,23 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 					return true;
 				}
 			}
-			int ci = 3 + PRESETS.length;
-			int cbx = px + 2 + (ci % 6) * 20, cby = ty + (ci / 6) * 16;
-			if (mx >= cbx - 1 && mx < cbx + 15 && my >= cby - 1 && my < cby + 13) {
+			int swx0 = cx0 + 56, swx1 = px + PREVIEW_W - 6;
+			if (mx >= swx0 && mx < swx1 && my >= ty - 1 && my < ty + 13) {
 				String id = m.id;
 				minecraft.gui.setScreen(new ColorPickerScreen(this, m.name + " colour", CosmeticRegistry.colorFor(m, 0),
 						v -> LmgConfig.get().cosmeticColors.put(id, String.format(java.util.Locale.ROOT, "#%06X", v & 0xFFFFFF)),
 						() -> LmgConfig.get().cosmeticColors.remove(id)));
+				return true;
+			}
+			int sl1 = px + PREVIEW_W - 6;
+			if (mx >= cx0 - 2 && mx < sl1 + 2 && my >= ty + 15 && my < ty + 25) {
+				draggingColour = 1;
+				setColourFrom(mx, 1);
+				return true;
+			}
+			if (mx >= cx0 - 2 && mx < sl1 + 2 && my >= ty + 25 && my < ty + 35) {
+				draggingColour = 2;
+				setColourFrom(mx, 2);
 				return true;
 			}
 		}
@@ -582,6 +632,10 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+		if (draggingColour != 0) {
+			setColourFrom(event.x(), draggingColour);
+			return true;
+		}
 		if (draggingModel) {
 			spin += (float) dx * 2.2f;
 			spinVel = (float) dx * 60f;
@@ -592,6 +646,8 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
+		if (draggingColour != 0) LmgConfig.save();
+		draggingColour = 0;
 		draggingModel = false;
 		return super.mouseReleased(event);
 	}

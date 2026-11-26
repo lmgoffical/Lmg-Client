@@ -15,8 +15,11 @@ public abstract class GameRendererMixin {
 	/** Photo mode filters, and the grey world behind the Lmg menus. */
 	@Inject(method = "update", at = @At("TAIL"))
 	private void lmg$filters(net.minecraft.client.DeltaTracker deltaTracker, CallbackInfo ci) {
+		var list = ((GameRenderer) (Object) this).getRequestedPostEffects();
+		net.minecraft.resources.Identifier blur = dev.lmg.client.render.WorldFilter.blur();
+		if (blur != null) list.add(blur);
 		net.minecraft.resources.Identifier extra = dev.lmg.client.render.WorldFilter.current();
-		if (extra != null) ((GameRenderer) (Object) this).getRequestedPostEffects().add(extra);
+		if (extra != null) list.add(extra);
 	}
 
 	@Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)

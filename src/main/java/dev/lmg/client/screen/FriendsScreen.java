@@ -291,7 +291,13 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 		int tx = lx0 + 28;
 		boolean partner = l.uuid.equals(Social.state().partner());
 		g.text(font, l.text, tx, y + 4, Draw.withAlpha(online ? p.text() : p.dim(), a), false);
-		if (partner) g.text(font, "❤", tx + font.width(l.text) + 4, y + 4, Draw.withAlpha(PINK, a), false);
+		int after = tx + font.width(l.text) + 4;
+		if (partner) {
+			g.text(font, "\u2764", after, y + 4, Draw.withAlpha(PINK, a), false);
+			after += font.width("\u2764") + 4;
+		}
+		Integer uid = dev.lmg.client.social.Uids.of(l.uuid);
+		if (uid != null) g.text(font, "#" + uid, after, y + 4, Draw.withAlpha(dev.lmg.client.social.Uids.color(uid), online ? a : 0.6f * a), false);
 
 		String sub = switch (l.kind) {
 			case REQUEST -> "wants to be friends";
