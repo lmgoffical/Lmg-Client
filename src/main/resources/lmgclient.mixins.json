@@ -5,6 +5,7 @@
 	"client": [
 		"AbstractButtonMixin",
 		"AvatarRendererMixin",
+		"AvatarRenderStateMixin",
 		"CameraMixin",
 		"ClientClockInstanceMixin",
 		"ClientClockManagerMixin",
@@ -17,6 +18,7 @@
 		"GuiMixin",
 		"GuiSetScreenMixin",
 		"HudMixin",
+		"HumanoidModelMixin",
 		"KeyboardInputMixin",
 		"LightmapMixin",
 		"MinecraftMixin",

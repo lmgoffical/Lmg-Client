@@ -56,8 +56,13 @@ public class LmgClient implements ClientModInitializer {
 		HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, id("target_hud"), new TargetHud());
 		HudElementRegistry.attachElementAfter(VanillaHudElements.MOB_EFFECTS, id("potion_hud"), new PotionHud());
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("minimap"), new dev.lmg.client.hud.MinimapHud());
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("death_compass"),
+				(graphics, delta) -> dev.lmg.client.map.DeathTrail.drawCompass(graphics, Minecraft.getInstance()));
 		// Save the map when you leave a world or close the game.
-		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> dev.lmg.client.map.MapData.saveAll());
+		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> {
+			dev.lmg.client.map.MapData.saveAll();
+			dev.lmg.client.social.Social.onGameClosing();
+		});
 		// Our potion list replaces the vanilla effect icons in the top-right while it's on.
 		HudElementRegistry.replaceElement(VanillaHudElements.MOB_EFFECTS, vanilla -> (graphics, delta) -> {
 			if (!LmgConfig.get().potionHud) vanilla.extractRenderState(graphics, delta);
@@ -89,6 +94,8 @@ public class LmgClient implements ClientModInitializer {
 			WorldRender.aurora(context);
 			WorldRender.targetReticle(context);
 			OreGlow.render(context);
+			dev.lmg.client.world.Winter.render(context);
+			dev.lmg.client.map.DeathTrail.render(context);
 		});
 
 		// Hit / kill effects: remember what YOU hit (client side only, never cancels the attack).
@@ -105,6 +112,12 @@ public class LmgClient implements ClientModInitializer {
 			dev.lmg.client.feature.LmgKeys.tick(mc);
 			dev.lmg.client.pet.Pets.tick(mc);
 			dev.lmg.client.sync.AvatarSync.tick(mc);
+			dev.lmg.client.social.Social.tick(mc);
+			dev.lmg.client.social.Partner.tick(mc);
+			dev.lmg.client.emote.Emotes.tick(mc);
+			dev.lmg.client.emote.EmoteNet.tick(mc);
+			dev.lmg.client.world.Winter.tick(mc);
+			dev.lmg.client.map.DeathTrail.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});
 		LOGGER.info("{} loaded", CLIENT_NAME);

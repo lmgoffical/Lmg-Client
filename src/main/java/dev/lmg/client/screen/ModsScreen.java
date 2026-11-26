@@ -26,7 +26,7 @@ import java.util.Locale;
  * Your mods folder, as a list: what's installed, what version, what it does, and a switch to
  * turn each one on or off (takes effect the next time you start the game).
  */
-public class ModsScreen extends Screen {
+public class ModsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final int HEADER = 24, ROW = 32, TOP = 52;
 
 	private final Screen parent;

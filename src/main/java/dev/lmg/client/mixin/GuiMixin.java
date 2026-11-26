@@ -19,7 +19,8 @@ public class GuiMixin {
 
 	@ModifyVariable(method = "setScreen", at = @At("HEAD"), argsOnly = true)
 	private Screen lmg$replaceTitleScreen(Screen screen) {
-		if (screen != null && screen.getClass() == TitleScreen.class) {
+		// (Fabric's automated in-game tests expect the vanilla title screen, so they keep it)
+		if (screen != null && screen.getClass() == TitleScreen.class && System.getProperty("fabric.client.gametest") == null) {
 			if (!lmg$splashShown && LmgConfig.get().showSplash) {
 				lmg$splashShown = true;
 				return new SplashScreen();

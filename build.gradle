@@ -29,3 +29,14 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_25
 	targetCompatibility = JavaVersion.VERSION_25
 }
+
+// Test-only: client game tests drive a real game (worlds, keys, screenshots). Not in the release jar.
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "lmgclient-gametest"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
+}

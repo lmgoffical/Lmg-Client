@@ -21,7 +21,7 @@ import java.util.List;
  *  - "Share" uploads a config and copies a short code like LMG-ABC234.
  *  - Type or paste a code (short or a long LMG1: code) and press Import.
  */
-public class ConfigsScreen extends Screen {
+public class ConfigsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final int W = 300, H = 244, HEADER = 24, ROW = 17, VISIBLE = 6;
 
 	private final Screen parent;

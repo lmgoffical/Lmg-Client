@@ -287,15 +287,21 @@ public final class Pets {
 		return create(cfg, level, Minecraft.getInstance().player);
 	}
 
+	/** Pets only exist on your screen, so they get ids the server never uses (negative ones). */
+	private static int nextPetId = -1_000_000;
+
 	private static Entity create(PetConfig cfg, ClientLevel level, Player owner) {
 		try {
 			PetType type = cfg.type();
 			if (type == PetType.MINI_PLAYER) {
 				String name = cfg.mine && owner != null ? owner.getGameProfile().name() : cfg.player;
-				return new RemotePlayer(level, new GameProfile(UUID.nameUUIDFromBytes(("lmg-pet:" + name).getBytes()), "Lmg pet"));
+				RemotePlayer mini = new RemotePlayer(level, new GameProfile(UUID.nameUUIDFromBytes(("lmg-pet:" + name).getBytes()), "Lmg pet"));
+				mini.setId(nextPetId--);
+				return mini;
 			}
 			Entity e = type.entity.create(level, EntitySpawnReason.LOAD);
 			if (e == null) return null;
+			e.setId(nextPetId--);
 			if (e instanceof AgeableMob m) m.setBaby(cfg.baby);
 			if (e instanceof TamableAnimal t) t.setTame(true, false);
 			applyVariant(e, type, cfg.variant, level);
@@ -406,6 +412,7 @@ public final class Pets {
 		try {
 			state = mc.getEntityRenderDispatcher().extractEntity(l.entity, partial);
 		} catch (Exception ex) {
+			LmgClient.LOGGER.debug("Couldn't draw pet {}", l.cfg.type, ex);
 			return null;
 		}
 		PetConfig cfg = l.cfg;

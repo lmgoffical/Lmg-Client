@@ -116,7 +116,8 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
-  ["0.25", "<b>Snow.</b> Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top. Theme tab \u2192 Snow to change it."],
+  ["0.26", "<b>Friends &amp; more.</b> Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."],
+  ["0.25", "<b>Snow.</b> Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."],
   ["0.24", "<b>The app.</b> Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."],
   ["0.23", "<b>Smoother.</b> A new FPS tab, and the trail, ore glow and minimap do a lot less work."],
   ["0.22", "<b>Cinematic.</b> Golden-hour shaders in one click, a film mode on F7, and a proper colour picker."],
@@ -145,6 +146,7 @@ const FAQ = [
   ["Who makes it?", "A small independent team. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. Minecraft is a trademark of Mojang AB."],
   ["Can other people see my wings, cape or pets?", "Other Lmg players can, if you switch on Share pets & cosmetics (in the Pets screen or the Tools tab). It's off until you turn it on. People without Lmg just see your normal skin."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
+  ["What do my friends see?", "If you turn on Friends: that you're online, what you're doing, and the server you're on (unless you switch Show my server off). Nobody else sees any of it, and turning Friends off deletes it."],
 ];
 
 async function pageHome() {
@@ -184,6 +186,26 @@ async function pageHome() {
         <div><h3>Cinematic</h3><p>Golden-hour shaders in one click and a film mode with black bars, for when you're recording.</p></div>
         <div><h3>The menu itself</h3><p>Keep the Lmg look or switch it to a Skeet or Neverlose style. Same settings, different look.</p></div>
         <div><h3>Sharing</h3><p>Save a setup and send it as <code>LMG-ABC234</code>. Your friend types it in and has your look.</p></div>
+        <div><h3>Friends</h3><p>See who's on and which server they're playing, and join them with one click. Pick a partner to match outfits.</p></div>
+        <div><h3>Emotes</h3><p>Hold G for the wheel: wave, hug, sit, dance and more. Other Lmg players on your server see them too.</p></div>
+        <div><h3>Photo mode</h3><p>F8 freezes the world. Fly the camera, add a filter and a Polaroid frame, and save the shot.</p></div>
+        <div><h3>Winter</h3><p>Snow that falls and settles on the ground around you - only on your screen, so it's fine anywhere.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Straight from the game</h2><span class="label">real screenshots, nothing touched up</span></div>
+      <div class="gallery">
+        ${[
+          ["photo", "Photo mode (F8): a warm filter and a Polaroid frame", "A Polaroid-framed photo of a player waving in a cherry grove by a pond"],
+          ["partner", "Partners match outfits, each in their own colour", "Two players from behind wearing the same butterfly wings, one pink and one blue, with a heart on one name tag"],
+          ["wheel", "Hold G for emotes. The middle shows you doing it", "The emote wheel: eight emotes around a preview of the player dancing"],
+          ["friends", "Friends, with a Join button when they're on a server", "The Friends screen listing a request, two friends online and some offline"],
+          ["winter", "Winter: snow falls and settles, only on your screen", "Snow falling on a field that is starting to turn white, with cherry trees behind"],
+          ["menu", "Right Shift: the world goes black and white behind the menu", "The settings menu with snow settling on its top edge over a grey world"],
+          ["death", "After dying: a trail and a beam back to the spot", "A trail of small red sparkles leading across a field at night to a red beam"],
+          ["emotes", "Other Lmg players see your emotes too", "Two players dancing side by side"],
+        ].map(([img, cap, alt]) => `<figure><a href="img/shots/${img}.jpg" target="_blank" rel="noopener"><img src="img/shots/${img}.jpg" alt="${alt}" loading="lazy" width="1280" height="720"></a><figcaption>${cap}</figcaption></figure>`).join("")}
       </div>
     </section>
 
@@ -230,7 +252,7 @@ async function pageDownload() {
         <p class="muted">A small app (under 1 MB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download the app</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the app isn't signed yet &mdash; click <i>More info &rarr; Run anyway</i>.</p>
-        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>dbb7c628bc52cd79f6dcdaa96815f53966cdc241cbc963ee21074597094de9b3</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
+        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>d00302022aaa8859d526c3cb1cf3b1479f90409056f90593e270e0a7ddf60173</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
         <img class="app-shot" src="img/app.png" alt="The Lmg Client app: a greeting with your skin, a Play button and the changelog" width="940" height="580">
       </div>
       <div class="card">
@@ -559,7 +581,7 @@ async function pageAdmin() {
 // legal pages (plain-English drafts - see README, "Before a public launch")
 // ---------------------------------------------------------------------------
 
-const LEGAL_UPDATED = "2026-11-25";
+const LEGAL_UPDATED = "2026-11-26";
 const REPORT_REPO = "https://github.com/lmgoffical/Lmg-Client/issues/new";
 
 const LEGAL = {
@@ -595,6 +617,9 @@ const LEGAL = {
       <li><b>Shaders.</b> If you pick a shader pack in the Cinematic tab, it's downloaded from Modrinth, which sees your IP address like any download.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
       <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>
+      <li><b>Friends (off unless you turn it on).</b> If you turn on Friends, the game proves your account with Mojang (same check as above) and we store: your Minecraft username and account ID, a session key (only a scrambled copy), the friends you add and the requests you send, your partner if you pick one, and whether you're online and what you're doing (menus, singleplayer, Realms, or a server). The server's address and name are shown only to your friends, and only while <i>Show my server</i> is on. <i>Appear offline</i> hides you from everyone. <b>Turning Friends off deletes all of this</b> from our database straight away.</li>
+      <li><b>Emotes.</b> With Friends on, when you play an emote on a multiplayer server, our server signs it and passes it to other Lmg players on the same server. It goes to a channel named after a scrambled code of the server's address, not the address itself. An emote that lasts (sitting, dancing) is kept for up to 10 minutes so people who arrive later see it. In singleplayer nothing is sent.</li>
+      <li><b>Photo mode, winter, the way back after dying.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
     </ul>
     <h3>The website</h3>
     <ul>

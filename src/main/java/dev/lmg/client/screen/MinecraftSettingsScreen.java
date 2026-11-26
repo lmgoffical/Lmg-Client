@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * top, then a card for each settings page. The pages themselves are vanilla (restyled).
  * "Classic options" opens the original screen (it has a few extras, like world difficulty).
  */
-public class MinecraftSettingsScreen extends Screen {
+public class MinecraftSettingsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	/** Set for a moment while opening the original Options screen, so it isn't swapped out. */
 	public static boolean classic;
 

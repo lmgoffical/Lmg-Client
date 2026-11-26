@@ -61,6 +61,20 @@ public final class AvatarSync {
 		return LmgConfig.get().showOthers ? REMOTE.get(uuid) : null;
 	}
 
+	/** What a player shared, even with "see others" off (for matching your partner's outfit). */
+	public static Shared getAlways(UUID uuid) {
+		return REMOTE.get(uuid);
+	}
+
+	/** Players to keep fresh even when they aren't near you (your partner). */
+	private static final java.util.Set<UUID> WATCHED = ConcurrentHashMap.newKeySet();
+
+	public static void watch(UUID uuid, boolean on) {
+		if (uuid == null) return;
+		if (on) WATCHED.add(uuid);
+		else WATCHED.remove(uuid);
+	}
+
 	/** A short line for the menus: shared / not shared / what went wrong. */
 	public static String status() {
 		if (!LmgConfig.get().shareAvatar) return "Only you can see your pets and cosmetics.";
@@ -70,7 +84,7 @@ public final class AvatarSync {
 	public static void tick(Minecraft mc) {
 		ticks++;
 		if (ticks % 40 == 0) publishIfChanged(mc);
-		if (ticks % 100 == 0 && mc.level != null && mc.player != null && LmgConfig.get().showOthers) fetchNearby(mc);
+		if (ticks % 100 == 0 && mc.level != null && mc.player != null && (LmgConfig.get().showOthers || !WATCHED.isEmpty())) fetchNearby(mc);
 	}
 
 	// ---- seeing other players --------------------------------------------------------------------
@@ -79,11 +93,15 @@ public final class AvatarSync {
 		if (fetching) return;
 		long now = System.currentTimeMillis();
 		List<UUID> want = new ArrayList<>();
-		for (Player p : mc.level.players()) {
+		for (UUID id : WATCHED) {
+			Long at = CHECKED.get(id);
+			if (at == null || now - at > 30_000) want.add(id);
+		}
+		if (LmgConfig.get().showOthers) for (Player p : mc.level.players()) {
 			if (p == mc.player || p.distanceTo(mc.player) > 64) continue;
 			UUID id = p.getUUID();
 			Long at = CHECKED.get(id);
-			if (at == null || now - at > 60_000) want.add(id);
+			if ((at == null || now - at > 60_000) && !want.contains(id)) want.add(id);
 			if (want.size() >= 40) break;
 		}
 		if (want.isEmpty()) return;

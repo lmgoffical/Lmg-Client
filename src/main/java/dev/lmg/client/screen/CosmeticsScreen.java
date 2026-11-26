@@ -36,7 +36,7 @@ import java.util.Map;
  * The cosmetics wardrobe: category tabs on the left, a grid of item cards with a "+" to wear them,
  * and a live preview of you on the right (drag it to spin). Follows the selected menu style.
  */
-public class CosmeticsScreen extends Screen {
+public class CosmeticsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final String SKINS = "skins";
 	private static final String[] TABS;
 	static {
@@ -85,6 +85,22 @@ public class CosmeticsScreen extends Screen {
 				() -> minecraft.gui.setScreen(new PetsScreen(this))));
 
 		int px = x0 + W - PREVIEW_W - 6;
+		java.util.UUID partner = dev.lmg.client.social.Social.partner();
+		if (partner != null && !tab.equals("custom") && !tab.equals(SKINS)) {
+			var f = dev.lmg.client.social.Social.state().friend(partner);
+			String who = f != null ? f.name() : "partner";
+			boolean on = LmgConfig.get().matchPartner;
+			String label = (on ? "Matching " : "Match ") + who + " \u2764";
+			int bw = font.width(label) + 14;
+			addRenderableWidget(new PillButton(x0 + W - bw - 6, y0 + 5, bw, 14, Component.literal(label), on, openedAt, () -> {
+				LmgConfig c = LmgConfig.get();
+				c.matchPartner = !c.matchPartner;
+				LmgConfig.save();
+				if (c.matchPartner) toast(dev.lmg.client.social.Partner.matchOutfit(true));
+				else toast("Your outfit is yours again. Your items stay on.");
+				rebuildWidgets();
+			}));
+		}
 		if (tab.equals("custom")) {
 			addRenderableWidget(new SkinButton(x0 + W - 150, y0 + 6, 70, 13, Component.literal("Open folder"), openedAt, () -> open(CustomModels.DIR)));
 			addRenderableWidget(new SkinButton(x0 + W - 76, y0 + 6, 70, 13, Component.literal("Reload"), openedAt, () -> {
@@ -203,7 +219,7 @@ public class CosmeticsScreen extends Screen {
 			case NEVERLOSE -> new Pal(MenuSkin.NL_SIDEBAR, MenuSkin.NL_CARD, 0xFF06182F, MenuSkin.NL_BORDER,
 					MenuSkin.NL_TEXT, 0x6F8091, MenuSkin.accent(), MenuSkin.NL_FIELD);
 			case SKEET -> new Pal(0xFF0C0C0C, 0xFF191919, 0xFF202020, 0xFF2B2B2B, MenuSkin.SK_TEXT, 0x7A7A7A, MenuSkin.accent(), 0xFF262626);
-			default -> new Pal(0xFF0A101D, 0xFF111A2E, 0xFF16213A, 0xFF1C2943, 0xE8EDF5, 0x7C8BA3, Theme.accent() & 0xFFFFFF, 0xFF1C2943);
+			default -> new Pal(0xFF0A101D, 0xFF111A2E, 0xFF16213A, 0xFF1C2943, 0xE8EDF5, 0x7C8BA3, Theme.primary(), 0xFF1C2943);
 		};
 	}
 

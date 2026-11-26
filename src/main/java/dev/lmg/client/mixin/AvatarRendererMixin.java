@@ -23,6 +23,26 @@ public abstract class AvatarRendererMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
 			at = @At("TAIL"))
 	private void lmg$cape(Avatar entity, AvatarRenderState state, float partialTick, CallbackInfo ci) {
+		// emotes: yours, other Lmg players', or the preview in the emote wheel
+		if (state instanceof dev.lmg.client.emote.EmoteHolder holder) {
+			dev.lmg.client.emote.Emote preview = dev.lmg.client.emote.Emotes.preview;
+			if (preview != null) {
+				holder.lmg$setEmote(preview, (net.minecraft.util.Util.getMillis() - dev.lmg.client.emote.Emotes.previewStart) / 1000f);
+			} else {
+				dev.lmg.client.emote.Emotes.Playing playing = dev.lmg.client.emote.Emotes.get(entity.getUUID());
+				holder.lmg$setEmote(playing == null ? null : playing.emote(), playing == null ? 0f : playing.seconds());
+			}
+		}
+		// a pink heart on your partner's name tag
+		if (state.nameTag != null && entity instanceof net.minecraft.world.entity.player.Player pl
+				&& LmgConfig.get().partnerHearts && dev.lmg.client.social.Partner.isPartner(pl)) {
+			state.nameTag = dev.lmg.client.social.Partner.withHeart(state.nameTag);
+		}
+		// photo mode: "hide me"
+		if (entity == Minecraft.getInstance().player && dev.lmg.client.feature.PhotoMode.active() && dev.lmg.client.feature.PhotoMode.hideMe) {
+			state.isInvisible = true;
+			state.nameTag = null;
+		}
 		if (state.skin == null) return;
 		if (entity != Minecraft.getInstance().player) {
 			// another Lmg player's shared cape

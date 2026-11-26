@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "lmgclient-gametest",
+  "version": "1.0.0",
+  "name": "Lmg Client game tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["dev.lmg.client.gametest.ShowcaseTest"]
+  },
+  "depends": { "lmgclient": "*" }
+}

@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  * A compact panel: header (back, title, HUD editor), category sidebar, settings on the right.
  * Drag the header to move the panel; its position is remembered.
  */
-public class LmgSettingsScreen extends Screen {
+public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final String[] TABS = {"Theme", "Configs", "World", "Cinematic", "Avatar", "Target", "PvP", "Items", "HUD", "Maps", "Keys", "Tools", "FPS"};
 	/** One plain line under each tab's name, so you know what you're looking at. */
 	private static final String[] SUBTITLES = {"how this menu looks", "save setups, share them with a code", "sky, fog, clouds and weather", "shaders and film mode, for videos",
@@ -51,6 +51,7 @@ public class LmgSettingsScreen extends Screen {
 
 	private final Screen parent;
 	private final long openedAt = Util.getMillis();
+	private final MenuAvatar avatar = new MenuAvatar();
 	private int panelX, panelY;
 	private boolean dragging;
 	private double dragStartX, dragStartY;
@@ -78,6 +79,11 @@ public class LmgSettingsScreen extends Screen {
 	private void computePanel() {
 		LmgConfig c = LmgConfig.get();
 		panelX = width / 2 - panelW() / 2 + c.menuOffsetX;
+		// with you standing next to it, centre the two together (unless you've moved the panel yourself)
+		int stage = Math.min(150, width - panelW() - 32);
+		if (c.menuAvatar && minecraft != null && minecraft.player != null && c.menuOffsetX == 0 && stage >= 86) {
+			panelX = (width - (panelW() + 8 + stage)) / 2;
+		}
 		panelY = height / 2 - panelH() / 2 + c.menuOffsetY;
 		panelX = Math.max(4, Math.min(panelX, width - panelW() - 4));
 		panelY = Math.max(4, Math.min(panelY, height - panelH() - 4));
@@ -96,6 +102,12 @@ public class LmgSettingsScreen extends Screen {
 		addRenderableWidget(new SkinButton(backX, panelY + 6, 44, 13, Component.literal("< Back"), openedAt, this::onClose));
 		addRenderableWidget(new SkinButton(panelX + panelW() - 62, panelY + 6, 56, 13, Component.literal("Edit HUD"), openedAt,
 				() -> minecraft.gui.setScreen(new HudEditorScreen(this))));
+		int online = dev.lmg.client.social.Social.enabled() ? dev.lmg.client.social.Social.onlineCount() : 0;
+		String friends = online > 0 ? "Friends (" + online + ")" : "Friends";
+		int fw = font.width(friends) + 14;
+		int friendsX = nl ? backX - fw - 4 : panelX + panelW() - 62 - fw - 4;
+		addRenderableWidget(new SkinButton(friendsX, panelY + 6, fw, 13, Component.literal(friends), openedAt,
+				() -> minecraft.gui.setScreen(new FriendsScreen(this))));
 
 		// Sidebar
 		int sy = panelY + HEADER_H + 6;
@@ -206,10 +218,11 @@ public class LmgSettingsScreen extends Screen {
 						() -> c.backdrop = cycle(LmgConfig.Backdrop.values(), c.backdrop, 1),
 						() -> c.backdrop = cycle(LmgConfig.Backdrop.values(), c.backdrop, -1), () -> c.backdrop.top)
 						.withHint("Behind the main menu."));
-				r.add(SettingRow.choice("Snow", () -> MenuSnow.LABELS[c.menuSnow],
-						() -> c.menuSnow = step(c.menuSnow, MenuSnow.LABELS.length, 1),
-						() -> c.menuSnow = step(c.menuSnow, MenuSnow.LABELS.length, -1))
-						.withHint("Falls in this menu and piles up on top."));
+				r.add(SettingRow.choice("Menu weather", () -> c.weather() == MenuSnow.Weather.AUTO
+								? "Seasonal (" + MenuSnow.Weather.AUTO.resolved().label.toLowerCase(java.util.Locale.ROOT) + ")" : c.weather().label,
+						() -> c.menuWeather = cycle(MenuSnow.Weather.values(), c.weather(), 1),
+						() -> c.menuWeather = cycle(MenuSnow.Weather.values(), c.weather(), -1))
+						.withHint("Snow, leaves, petals or fireflies in the menus."));
 				r.add(SettingRow.choice("Animation speed", () -> LmgConfig.ANIMATION_SPEED_LABELS[c.animationSpeed],
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, 1),
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, -1))
@@ -273,6 +286,15 @@ public class LmgSettingsScreen extends Screen {
 				}).withHint("Copy a friend's code, then press this."));
 			}
 			case "World" -> {
+				r.add(SettingRow.choice("Winter", () -> {
+							var m = c.winter == null ? dev.lmg.client.world.Winter.Mode.SEASONAL : c.winter;
+							return m == dev.lmg.client.world.Winter.Mode.SEASONAL ? "Seasonal" + (dev.lmg.client.world.Winter.snowing(minecraft) || minecraft.level == null ? "" : " (not yet)") : m.label;
+						},
+						() -> c.winter = cycle(dev.lmg.client.world.Winter.Mode.values(), c.winter == null ? dev.lmg.client.world.Winter.Mode.SEASONAL : c.winter, 1),
+						() -> c.winter = cycle(dev.lmg.client.world.Winter.Mode.values(), c.winter == null ? dev.lmg.client.world.Winter.Mode.SEASONAL : c.winter, -1))
+						.withHint("Snow falls everywhere - only on your screen."));
+				r.add(SettingRow.toggle("Snow settles", () -> c.winterSettles, v -> c.winterSettles = v)
+						.withHint("A layer of snow builds up around you."));
 				r.add(enumRow("Sky theme", LmgConfig.SkyTheme.values(), () -> c.skyTheme, v -> c.skyTheme = v, v -> v.label)
 						.withHint("Recolours the sky, just for you."));
 				r.add(enumRow("Time of day", LmgConfig.TimeOfDay.values(), () -> c.timeOfDay, v -> c.timeOfDay = v, v -> v.label)
@@ -318,6 +340,8 @@ public class LmgSettingsScreen extends Screen {
 						.withHint("Capes, wings, hats and your own skins."));
 				r.add(SettingRow.button("Pets", "Open", () -> minecraft.gui.setScreen(new PetsScreen(this)))
 						.withHint("Animals or a mini player that follow you."));
+				r.add(SettingRow.toggle("You next to this menu", () -> c.menuAvatar, v -> c.menuAvatar = v)
+						.withHint("You and your pet, beside the menu. Drag to spin."));
 				r.add(enumRow("Trail", LmgConfig.Trail.values(), () -> c.trail, v -> c.trail = v, v -> v.label)
 						.withHint("Particles behind you as you walk."));
 				r.add(enumRow("Ambient particles", LmgConfig.Ambient.values(), () -> c.ambient, v -> c.ambient = v, v -> v.label)
@@ -418,6 +442,8 @@ public class LmgSettingsScreen extends Screen {
 				r.add(SettingRow.toggle("Waypoints on minimap", () -> c.minimapWaypoints, v -> c.minimapWaypoints = v));
 				r.add(SettingRow.toggle("Mark where I die", () -> c.deathWaypoint, v -> c.deathWaypoint = v)
 						.withHint("Drops a \"Last death\" waypoint."));
+				r.add(SettingRow.toggle("Way back after dying", () -> c.deathTrail, v -> c.deathTrail = v)
+						.withHint("A trail, a beam and a compass to where you died."));
 			}
 			case "Keys" -> {
 				for (dev.lmg.client.feature.LmgKeys.Bind b : dev.lmg.client.feature.LmgKeys.ALL) {
@@ -603,6 +629,8 @@ public class LmgSettingsScreen extends Screen {
 				: (style == LmgConfig.MenuStyle.LMG ? 0xF2C14E : tc[0]);
 		g.text(font, hint, hx0, y1 - FOOTER_H + 6, Draw.withAlpha(hintColor, intro), false);
 
+		// you and your pet, next to the panel (if there's room)
+		if (avatar.layout(width, height, x0, y0, x1, y1)) avatar.draw(g, font, mouseX, mouseY, intro);
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 
 		MenuSnow.drawFront(g, 1f);
@@ -716,6 +744,7 @@ public class LmgSettingsScreen extends Screen {
 			return true;
 		}
 		if (super.mouseClicked(event, doubleClick)) return true;
+		if (event.button() == 0 && avatar.mouseClicked(event.x(), event.y(), () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))) return true;
 		if (event.button() == 0 && inHeader(event.x(), event.y())) {
 			if (doubleClick) { // double-click the header to put the panel back in the middle
 				LmgConfig.get().menuOffsetX = 0;
@@ -736,6 +765,7 @@ public class LmgSettingsScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+		if (avatar.mouseDragged(dx)) return true;
 		if (dragging) {
 			LmgConfig c = LmgConfig.get();
 			int oldX = panelX, oldY = panelY;
@@ -753,6 +783,7 @@ public class LmgSettingsScreen extends Screen {
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
+		if (avatar.mouseReleased()) return true;
 		if (dragging) {
 			dragging = false;
 			LmgConfig.save();

@@ -22,7 +22,7 @@ import java.util.function.IntConsumer;
  * Pick any colour: drag the dot in the box for how strong / bright it is, and the slider on the
  * right for the colour itself. Changes show up straight away.
  */
-public class ColorPickerScreen extends Screen {
+public class ColorPickerScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final int W = 250, H = 214, HEADER = 24, BOX_W = 150, BOX_H = 110, HUE_W = 12;
 	private static final int[] PRESETS = {0xFFFFFF, 0x9FD8FF, 0x3D9BFF, 0xB79CFF, 0xFF9CD6, 0xFF4D5E, 0xF2C14E, 0x4FD49A, 0xFF8A3D, 0x24222B};
 

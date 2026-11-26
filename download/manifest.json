@@ -1,9 +1,9 @@
 {
-  "version": "0.25.0",
+  "version": "0.26.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.25.0.jar",
-    "sha1": "f0d35348660c840b740651de7e098a2963dd91d6"
+    "file": "lmg-client-0.26.0.jar",
+    "sha1": "c461870fe1c651f492692bbdabdaa90a21811ae7"
   },
   "mods": [
     {
@@ -37,8 +37,12 @@
   ],
   "changelog": [
     {
+      "version": "0.26",
+      "text": "Friends & more. Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."
+    },
+    {
       "version": "0.25",
-      "text": "Snow. Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top. Theme tab \\u2192 Snow to change it."
+      "text": "Snow. Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top."
     },
     {
       "version": "0.24",
@@ -55,15 +59,11 @@
     {
       "version": "0.21",
       "text": "See each other's pets. Turn on sharing and other Lmg players can see your pets and cosmetics."
-    },
-    {
-      "version": "0.20",
-      "text": "Pets. 25 animals or a tiny version of anyone. Name them, put them on your shoulder."
     }
   ],
   "launcher": {
-    "version": "1.2.1",
+    "version": "1.3.0",
     "file": "Lmg-Client.exe",
-    "sha1": "614660c18783855496ee63517d10a592ea68e5b1"
+    "sha1": "fb64229d223c225cc34080237755a49ccea52f58"
   }
 }

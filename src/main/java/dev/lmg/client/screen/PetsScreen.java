@@ -27,7 +27,7 @@ import java.util.List;
  * Pets: up to three, each one a Minecraft animal or a mini player. Pick the kind, name it,
  * choose where it goes (follow you, left/right shoulder, on your head), and how big it is.
  */
-public class PetsScreen extends Screen {
+public class PetsScreen extends Screen implements dev.lmg.client.render.WorldFilter.GreyBehind {
 	private static final int HEADER = 24, LEFT_W = 112, PREVIEW_W = 124, ICON = 20;
 	private static int selected = 0;
 

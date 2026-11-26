@@ -12,6 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** "No hurt camera": stops the screen from tilting when you take damage. */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
+	/** Photo mode filters, and the grey world behind the Lmg menus. */
+	@Inject(method = "update", at = @At("TAIL"))
+	private void lmg$filters(net.minecraft.client.DeltaTracker deltaTracker, CallbackInfo ci) {
+		net.minecraft.resources.Identifier extra = dev.lmg.client.render.WorldFilter.current();
+		if (extra != null) ((GameRenderer) (Object) this).getRequestedPostEffects().add(extra);
+	}
+
 	@Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)
 	private void lmg$noHurtCam(CameraRenderState camera, PoseStack pose, CallbackInfo ci) {
 		if (LmgConfig.get().noHurtCam) ci.cancel();

@@ -10,5 +10,8 @@
 	"key.lmgclient.ore_glow": "Ore glow on/off",
 	"key.lmgclient.cosmetics": "Hide cosmetics",
 	"key.lmgclient.hud_bar": "HUD bar on/off",
-	"key.lmgclient.cinematic": "Cinematic mode"
+	"key.lmgclient.cinematic": "Cinematic mode",
+	"key.lmgclient.friends": "Friends",
+	"key.lmgclient.emote": "Emote wheel",
+	"key.lmgclient.photo": "Photo mode"
 }

@@ -251,7 +251,16 @@ public final class LmgConfig {
 	public boolean curtains = true;
 	public int sparkles = 2; // index into SPARKLE_AMOUNTS
 	public boolean skinSpin = true;
-	public int menuSnow = 2; // index into MenuSnow.AMOUNTS: off, light, snowy, blizzard
+	public int menuSnow = 2; // v0.25 only: off, light, snowy, blizzard (now menuWeather)
+	public dev.lmg.client.render.MenuSnow.Weather menuWeather = null; // snow / leaves / petals / fireflies, or by season
+
+	public dev.lmg.client.render.MenuSnow.Weather weather() {
+		return menuWeather == null ? dev.lmg.client.render.MenuSnow.Weather.AUTO : menuWeather;
+	}
+	public boolean menuGreyWorld = true; // black-and-white world behind the Lmg menus
+	public boolean menuAvatar = true;    // you and your pet next to the Right Shift menu
+	public dev.lmg.client.world.Winter.Mode winter = dev.lmg.client.world.Winter.Mode.SEASONAL; // snow in the world (only on your screen)
+	public boolean winterSettles = true; // the snow settles on the ground around you
 
 	// ---- world visuals (client-side only) ----
 	public SkyTheme skyTheme = SkyTheme.VANILLA;
@@ -381,6 +390,14 @@ public final class LmgConfig {
 	// ---- sharing pets and cosmetics with other Lmg players ----
 	/** Off until you turn it on. */
 	public boolean shareAvatar = false;
+	// ---- friends ----
+	public boolean friendsEnabled = false;      // nothing is shared until you switch friends on
+	public boolean friendsShowServer = true;    // friends can see (and join) the server you're on
+	public boolean friendsToasts = true;        // "x is online" pop-ups
+	public boolean friendsAppearOffline = false;
+	public boolean matchPartner = false;        // wear the same items as your partner (in your own colours)
+	public boolean partnerHearts = true;        // hearts between you and your partner when you're close
+	public boolean emoteCamera = true;          // switch to the front camera while you emote (from first person)
 	/** True while the database has your shared setup (so switching off removes it). */
 	public boolean avatarShared = false;
 	public boolean showOthers = true;
@@ -403,6 +420,7 @@ public final class LmgConfig {
 	public boolean minimapCoords = true;
 	public boolean minimapWaypoints = true;
 	public boolean deathWaypoint = true;
+	public boolean deathTrail = true;     // the way back to where you died: a trail, a beam and a compass
 	public float minimapX = -1, minimapY = -1;
 
 	public static LmgConfig get() {
@@ -485,7 +503,12 @@ public final class LmgConfig {
 		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
-		menuSnow = clampIndex(menuSnow, dev.lmg.client.render.MenuSnow.AMOUNTS.length, d.menuSnow);
+		if (winter == null) winter = dev.lmg.client.world.Winter.Mode.SEASONAL;
+		if (menuWeather == null) {
+			// v0.25 had a snow amount: keep "off" and "blizzard", everything else follows the seasons
+			menuWeather = menuSnow == 0 ? dev.lmg.client.render.MenuSnow.Weather.OFF
+					: menuSnow == 3 ? dev.lmg.client.render.MenuSnow.Weather.BLIZZARD : dev.lmg.client.render.MenuSnow.Weather.AUTO;
+		}
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);
 		hudOpacity = clampIndex(hudOpacity, HUD_OPACITIES.length, d.hudOpacity);
 		if (pets == null) pets = new java.util.ArrayList<>();

@@ -101,12 +101,26 @@ public class WorldMapScreen extends Screen {
 			pose.popMatrix();
 		}
 
+		// the way you walked before you died, as a dotted line
+		if (minecraft.player != null && dev.lmg.client.map.DeathTrail.active(minecraft)) {
+			var path = dev.lmg.client.map.DeathTrail.path();
+			for (int i = 0; i < path.size(); i += 2) {
+				var v = path.get(i);
+				int dx = Math.round(worldToScreenX(v.x)), dy = Math.round(worldToScreenY(v.z));
+				g.fill(dx - 1, dy - 1, dx + 1, dy + 1, 0xDDFF8C96);
+			}
+		}
+
 		// waypoints
 		Waypoints.Waypoint hovered = waypointAt(mouseX, mouseY);
 		for (Waypoints.Waypoint w : Waypoints.all()) {
 			int wx = Math.round(worldToScreenX(w.x() + 0.5)), wy = Math.round(worldToScreenY(w.z() + 0.5));
-			g.fill(wx - 3, wy - 3, wx + 4, wy + 4, 0xFF070B14);
-			g.fill(wx - 2, wy - 2, wx + 3, wy + 3, 0xFF000000 | w.color());
+			if (w.name().equals("Last death")) {
+				deathMark(g, wx, wy, 4);
+			} else {
+				g.fill(wx - 3, wy - 3, wx + 4, wy + 4, 0xFF070B14);
+				g.fill(wx - 2, wy - 2, wx + 3, wy + 3, 0xFF000000 | w.color());
+			}
 			if (w == hovered || zoom >= 1f) {
 				int tw = font.width(w.name());
 				g.fill(wx - tw / 2 - 3, wy - 16, wx + tw / 2 + 3, wy - 5, 0xCC070B14);
@@ -254,5 +268,17 @@ public class WorldMapScreen extends Screen {
 	@Override
 	public void onClose() {
 		minecraft.gui.setScreen(parent);
+	}
+
+	/** A red X where you died (on the minimap too). */
+	public static void deathMark(GuiGraphicsExtractor g, int x, int y, int r) {
+		for (int i = -r; i <= r; i++) {
+			g.fill(x + i - 1, y + i - 1, x + i + 2, y + i + 2, 0xFF070B14);
+			g.fill(x + i - 1, y - i - 1, x + i + 2, y - i + 2, 0xFF070B14);
+		}
+		for (int i = -r; i <= r; i++) {
+			g.fill(x + i, y + i, x + i + 1, y + i + 1, 0xFFFF6B78);
+			g.fill(x + i, y - i, x + i + 1, y - i + 1, 0xFFFF6B78);
+		}
 	}
 }

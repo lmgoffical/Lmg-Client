@@ -269,7 +269,7 @@ public class SettingRow extends AbstractWidget {
 				animateKnob(dt);
 				int tw = 18, th = 10;
 				int tx = right - tw, ty = y + (height - th) / 2;
-				int track = Draw.lerpRgb(0x3A3A46, MenuSkin.accent(), knob);
+				int track = Draw.lerpRgb(0x3A3A46, Theme.primary(), knob);
 				Draw.roundRect(g, tx, ty, tx + tw, ty + th, 5, Draw.withAlpha(track, appear * (0.75f + 0.25f * knob)));
 				int kx = tx + 1 + Math.round(knob * (tw - th));
 				Draw.roundRect(g, kx, ty + 1, kx + th - 2, ty + th - 1, 4, Draw.withAlpha(0xFFFFFF, appear));

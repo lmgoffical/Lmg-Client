@@ -19,7 +19,7 @@ namespace LmgLauncher
     class MainForm : Form
     {
         const int W = 940, H = 580, TITLE = 50;
-        enum Tab { Home, Mods, Settings }
+        enum Tab { Home, Mods, Photos, Settings }
 
         readonly Installer installer = new Installer();
         readonly AppSettings settings = AppSettings.Load();
@@ -38,8 +38,10 @@ namespace LmgLauncher
         float stickerIn;
         List<KeyValuePair<string, string>> news = new List<KeyValuePair<string, string>>();
 
-        readonly List<Control> homeControls = new List<Control>(), modsControls = new List<Control>(), settingsControls = new List<Control>();
-        readonly Btn navHome, navMods, navSettings, play, switchLink;
+        readonly List<Control> homeControls = new List<Control>(), modsControls = new List<Control>(), settingsControls = new List<Control>(),
+            photosControls = new List<Control>();
+        readonly Btn navHome, navMods, navPhotos, navSettings, play, switchLink;
+        readonly PhotosView photosView;
         RectangleF crashOpenRect, crashHideRect, changelogRect;   // links drawn onto the window
         int hotLink;
         readonly ModsView modsView;
@@ -75,7 +77,8 @@ namespace LmgLauncher
             // title bar: name, three plain links, window buttons
             navHome = Add(null, new Btn("Home", fNav, Btn.Kind.Nav), 214, 10, 64, 34, () => ShowTab(Tab.Home));
             navMods = Add(null, new Btn("Mods", fNav, Btn.Kind.Nav), 282, 10, 60, 34, () => ShowTab(Tab.Mods));
-            navSettings = Add(null, new Btn("Settings", fNav, Btn.Kind.Nav), 346, 10, 80, 34, () => ShowTab(Tab.Settings));
+            navPhotos = Add(null, new Btn("Photos", fNav, Btn.Kind.Nav), 346, 10, 70, 34, () => ShowTab(Tab.Photos));
+            navSettings = Add(null, new Btn("Settings", fNav, Btn.Kind.Nav), 420, 10, 80, 34, () => ShowTab(Tab.Settings));
             Add(null, new Btn("—", fNav, Btn.Kind.Window), W - 86, 10, 36, 30, () => WindowState = FormWindowState.Minimized);
             Add(null, new Btn("✕", fNav, Btn.Kind.Window), W - 46, 10, 36, 30, Close);
 
@@ -98,6 +101,12 @@ namespace LmgLauncher
             findMore.Left = Dpi.D(892) - findMore.Width;
             var openFolder = Link(modsControls, "Open the folder", 0, 80, () => OpenFolder(Paths.Mods));
             openFolder.Left = findMore.Left - openFolder.Width - Dpi.D(20);
+
+            // photos: your screenshots, newest first
+            photosView = Add(photosControls, new PhotosView(Fonts.Bold(10.5f), fSmall, fPixelSmall), 48, 128, 844, 394, null);
+            photosView.Message += m => SetStatus(m, C.Faint);
+            var openShots = Link(photosControls, "Open the folder", 0, 80, () => OpenFolder(PhotosView.Folder));
+            openShots.Left = Dpi.D(892) - openShots.Width;
 
             // settings: one plain list, control on the right of each row
             int total = Installer.TotalRamGb();
@@ -129,7 +138,7 @@ namespace LmgLauncher
                 sx += (int)(l.Width / Dpi.Scale) + 22;
             }
 
-            ShowTab(startTab == "mods" ? Tab.Mods : startTab == "settings" ? Tab.Settings : Tab.Home);
+            ShowTab(startTab == "mods" ? Tab.Mods : startTab == "settings" ? Tab.Settings : startTab == "photos" ? Tab.Photos : Tab.Home);
             gameWatch.Tick += async (s, e) => await WatchGame();
             anim.Tick += (s, e) =>
             {
@@ -175,10 +184,13 @@ namespace LmgLauncher
             tab = t;
             navHome.Selected = t == Tab.Home;
             navMods.Selected = t == Tab.Mods;
+            navPhotos.Selected = t == Tab.Photos;
             navSettings.Selected = t == Tab.Settings;
             foreach (var c in homeControls) c.Visible = t == Tab.Home;
             foreach (var c in modsControls) c.Visible = t == Tab.Mods;
             foreach (var c in settingsControls) c.Visible = t == Tab.Settings;
+            foreach (var c in photosControls) c.Visible = t == Tab.Photos;
+            if (t == Tab.Photos) photosView.Reload();
             if (t == Tab.Mods) modsView.Reload(playing);
             if (t == Tab.Settings)
             {
@@ -379,11 +391,13 @@ namespace LmgLauncher
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (tab == Tab.Photos && photosView.HandleKey(e.KeyData)) { e.Handled = true; return; }
             if (e.KeyCode == Keys.Enter && tab == Tab.Home) { Play(); e.Handled = true; }
             else if (e.KeyCode == Keys.Escape && tab != Tab.Home) { ShowTab(Tab.Home); e.Handled = true; }
             else if (e.Control && e.KeyCode == Keys.D1) ShowTab(Tab.Home);
             else if (e.Control && e.KeyCode == Keys.D2) ShowTab(Tab.Mods);
-            else if (e.Control && e.KeyCode == Keys.D3) ShowTab(Tab.Settings);
+            else if (e.Control && e.KeyCode == Keys.D3) ShowTab(Tab.Photos);
+            else if (e.Control && e.KeyCode == Keys.D4) ShowTab(Tab.Settings);
             base.OnKeyDown(e);
         }
 
@@ -418,6 +432,7 @@ namespace LmgLauncher
             {
                 case Tab.Home: DrawHome(g); break;
                 case Tab.Mods: DrawMods(g); break;
+                case Tab.Photos: DrawPhotos(g); break;
                 default: DrawSettings(g); break;
             }
             Gfx.Text(g, "made by lmg. not affiliated with Mojang or Microsoft. you sign in with the normal Minecraft Launcher; this app never sees your password.",
@@ -556,6 +571,15 @@ namespace LmgLauncher
             Gfx.Text(g, count, fSmall, C.Faint, 48, 100);
             if (playing) Gfx.Text(g, "Minecraft's running, so switching is paused until you close it.", fSmall, C.Gold, 48, 512);
             else Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(48, 510, 844, 20));
+        }
+
+        void DrawPhotos(Graphics g)
+        {
+            Gfx.Text(g, "Photos", fH2, C.Text, 46, 70);
+            string count = photosView.Count == 0 ? "Screenshots and photo mode shots from the game."
+                : photosView.Count + (photosView.Count == 1 ? " photo" : " photos") + ". Click one to see it big, copy it or share it.";
+            Gfx.Text(g, count, fSmall, C.Faint, 48, 100);
+            Gfx.TextIn(g, status, fSmall, statusColor, new RectangleF(48, 528, 844, 20));
         }
 
         void DrawSettings(Graphics g)

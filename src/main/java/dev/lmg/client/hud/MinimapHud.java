@@ -90,6 +90,24 @@ public class MinimapHud implements HudElement {
 
 		// waypoints (clamped to the edge when they're further away)
 		float half = size / 2f, scale = size / (float) TEX * zoom;
+		// the way back to where you died, as a dotted line
+		if (dev.lmg.client.map.DeathTrail.active(mc)) {
+			var path = dev.lmg.client.map.DeathTrail.path();
+			for (int i = 0; i < path.size(); i += 2) {
+				var v = path.get(i);
+				double dx = (v.x - px) * scale, dz = (v.z - pz) * scale;
+				if (rotate) {
+					double r = Math.toRadians(-yaw + 180);
+					double rx = dx * Math.cos(r) - dz * Math.sin(r), rz = dx * Math.sin(r) + dz * Math.cos(r);
+					dx = rx;
+					dz = rz;
+				}
+				double len = round ? Math.sqrt(dx * dx + dz * dz) : Math.max(Math.abs(dx), Math.abs(dz));
+				if (len > half - 3) continue;
+				int ddx = Math.round(x + half + (float) dx), ddz = Math.round(y + half + (float) dz);
+				g.fill(ddx, ddz, ddx + 1, ddz + 1, 0xEEFF8C96);
+			}
+		}
 		if (c.minimapWaypoints) {
 			for (Waypoints.Waypoint w : Waypoints.all()) {
 				double dx = (w.x() + 0.5 - px) * scale, dz = (w.z() + 0.5 - pz) * scale;
@@ -107,6 +125,10 @@ public class MinimapHud implements HudElement {
 					dz *= limit / len;
 				}
 				int wx = Math.round(x + half + (float) dx), wz = Math.round(y + half + (float) dz);
+				if (w.name().equals("Last death")) {
+					dev.lmg.client.screen.WorldMapScreen.deathMark(g, wx, wz, 2);
+					continue;
+				}
 				g.fill(wx - 2, wz - 2, wx + 3, wz + 3, 0xFF0B0F18);
 				g.fill(wx - 1, wz - 1, wx + 2, wz + 2, 0xFF000000 | w.color());
 			}

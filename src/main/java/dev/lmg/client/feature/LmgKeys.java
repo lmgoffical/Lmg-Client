@@ -31,6 +31,9 @@ public final class LmgKeys {
 	public static final KeyMapping COSMETICS = key("cosmetics", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping HUD_BAR = key("hud_bar", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping CINEMATIC = key("cinematic", InputConstants.KEY_F7);
+	public static final KeyMapping FRIENDS = key("friends", InputConstants.KEY_O);
+	public static final KeyMapping EMOTE = key("emote", InputConstants.KEY_G);
+	public static final KeyMapping PHOTO = key("photo", InputConstants.KEY_F8);
 
 	public static final List<Bind> ALL = List.of(
 			new Bind(OPEN_MENU, "Open this menu", "Works anywhere in game."),
@@ -43,7 +46,10 @@ public final class LmgKeys {
 			new Bind(ORE_GLOW, "Ore glow on/off", "Outlines nearby ores you can already see."),
 			new Bind(COSMETICS, "Hide cosmetics", "Quick way to see your plain skin."),
 			new Bind(HUD_BAR, "HUD bar on/off", "The info bar at the top."),
-			new Bind(CINEMATIC, "Cinematic mode", "Film bars, no HUD, smooth camera."));
+			new Bind(CINEMATIC, "Cinematic mode", "Film bars, no HUD, smooth camera."),
+			new Bind(FRIENDS, "Friends", "Who's online, and join them."),
+			new Bind(EMOTE, "Emote wheel (hold)", "Hold, point, let go."),
+			new Bind(PHOTO, "Photo mode", "Freeze, frame it, save it."));
 
 	private LmgKeys() {}
 
@@ -98,6 +104,15 @@ public final class LmgKeys {
 		while (HUD_BAR.consumeClick()) {
 			c.hudEnabled = !c.hudEnabled;
 			LmgConfig.save();
+		}
+		while (FRIENDS.consumeClick()) {
+			if (mc.gui.screen() == null) mc.gui.setScreen(new dev.lmg.client.screen.FriendsScreen(null));
+		}
+		while (EMOTE.consumeClick()) {
+			if (mc.gui.screen() == null && mc.player != null) mc.gui.setScreen(new dev.lmg.client.screen.EmoteWheelScreen());
+		}
+		while (PHOTO.consumeClick()) {
+			if (mc.gui.screen() == null && mc.player != null) mc.gui.setScreen(new dev.lmg.client.screen.PhotoModeScreen());
 		}
 		while (CINEMATIC.consumeClick()) {
 			if (mc.player != null) Cinematic.toggle();
