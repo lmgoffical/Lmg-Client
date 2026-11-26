@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *  - button: runs an action
  */
 public class SettingRow extends AbstractWidget {
-	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN, KEY, COLOR }
+	private enum Kind { TOGGLE, CHOICE, BUTTON, DROPDOWN, KEY, COLOR, SLIDER }
 
 	// same text colours as the website: muted labels, bright values, faint arrows
 	private static final int LABEL = 0xA3B0C4;
@@ -34,8 +34,8 @@ public class SettingRow extends AbstractWidget {
 	private final Kind kind;
 	private final Supplier<Boolean> isOn;
 	private final Supplier<String> value;
-	private final Runnable next;
-	private final Runnable previous;
+	private Runnable next;
+	private Runnable previous;
 	private final IntSupplier swatch;
 	private long appearAt;
 	private float hover;
@@ -52,6 +52,22 @@ public class SettingRow extends AbstractWidget {
 	private int boxX0, boxY0, boxX1, boxY1;
 	private String hint = "";
 	private java.util.function.BooleanSupplier waiting = () -> false;
+
+	// "more options" (the little gear after the name), FPS cost, and where it lives (for search)
+	private Runnable more;
+	private int moreX0 = Integer.MIN_VALUE, moreX1 = Integer.MIN_VALUE, moreY0, moreY1;
+	private int cost;
+	private String where = "";
+	private String keywords = "";
+	private int mouseX, mouseY;
+
+	// slider rows
+	private java.util.function.DoubleSupplier sGet;
+	private java.util.function.DoubleConsumer sSet;
+	private double sMin, sMax, sStep;
+	private java.util.function.DoubleFunction<String> sFormat;
+	private int trackX0, trackX1;
+	private boolean sliding;
 
 	private SettingRow(Kind kind, String label, Supplier<Boolean> isOn, Supplier<String> value,
 					   Runnable next, Runnable previous, IntSupplier swatch) {
@@ -122,6 +138,142 @@ public class SettingRow extends AbstractWidget {
 		return row;
 	}
 
+	/**
+	 * A slider for a number between {@code min} and {@code max}, snapping to {@code step}.
+	 * Click or drag along it; scroll over it (or right-click for one step back) for fine changes.
+	 */
+	public static SettingRow slider(String label, java.util.function.DoubleSupplier get, java.util.function.DoubleConsumer set,
+									double min, double max, double step, java.util.function.DoubleFunction<String> format) {
+		SettingRow row = new SettingRow(Kind.SLIDER, label, null, () -> format.apply(get.getAsDouble()), () -> {}, () -> {}, null);
+		row.sGet = get;
+		row.sSet = set;
+		row.sMin = min;
+		row.sMax = max;
+		row.sStep = step;
+		row.sFormat = format;
+		row.next = () -> row.nudge(1);
+		row.previous = () -> row.nudge(-1);
+		return row;
+	}
+
+	private void nudge(int dir) {
+		sSet.accept(clampStep(sGet.getAsDouble() + dir * sStep));
+	}
+
+	private double clampStep(double v) {
+		v = Math.max(sMin, Math.min(sMax, v));
+		if (sStep > 0) v = sMin + Math.round((v - sMin) / sStep) * sStep;
+		return Math.max(sMin, Math.min(sMax, v));
+	}
+
+	private void slideTo(double mouseX) {
+		if (trackX1 <= trackX0) return;
+		double t = Math.max(0, Math.min(1, (mouseX - trackX0) / (double) (trackX1 - trackX0)));
+		sSet.accept(clampStep(sMin + t * (sMax - sMin)));
+	}
+
+	/** Adds the little gear after the name; clicking it opens more options for this setting. */
+	public SettingRow withMore(Runnable openMore) {
+		this.more = openMore;
+		return this;
+	}
+
+	public boolean hasMore() {
+		return more != null;
+	}
+
+	/** True while the mouse is over the gear (the footer says "More options"). */
+	public boolean overMore() {
+		return more != null && isHovered && mouseX >= moreX0 && mouseX < moreX1 && mouseY >= moreY0 && mouseY < moreY1;
+	}
+
+	/** How much this costs in FPS: 1 a little, 2 some, 3 a lot. Shown as little bars after the name. */
+	public SettingRow withCost(int level) {
+		this.cost = Math.max(0, Math.min(3, level));
+		return this;
+	}
+
+	public int cost() {
+		return cost;
+	}
+
+	/** "Visuals > Effects": shown in search results so you know where it lives. */
+	public SettingRow where(String where) {
+		this.where = where == null ? "" : where;
+		return this;
+	}
+
+	public String whereLabel() {
+		return where;
+	}
+
+	/** Extra words search should find this by ("fov" for zoom...). */
+	public SettingRow keywords(String words) {
+		this.keywords = words == null ? "" : words;
+		return this;
+	}
+
+	/** Matches text that isn't a row (a page's name), the same way rows are matched. */
+	public record Probe(String text) {
+		public boolean matches(String query) {
+			String hay = text.toLowerCase(java.util.Locale.ROOT).replace("colour", "color").replace("grey", "gray");
+			for (String word : query.toLowerCase(java.util.Locale.ROOT).replace("colour", "color").replace("grey", "gray").split("\\s+")) {
+				if (!word.isEmpty() && !hay.contains(word)) return false;
+			}
+			return true;
+		}
+	}
+
+	/** Does this row match a search (name, hint or keywords)? */
+	public boolean matches(String query) {
+		String hay = (getMessage().getString() + " " + hint + " " + keywords + " " + where).toLowerCase(java.util.Locale.ROOT)
+				.replace("colour", "color").replace("grey", "gray");
+		for (String word : query.toLowerCase(java.util.Locale.ROOT).replace("colour", "color").replace("grey", "gray").split("\\s+")) {
+			if (!word.isEmpty() && !hay.contains(word)) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * The gear and cost bars, right after the name. {@code labelX}/{@code labelY} are where the
+	 * name was drawn.
+	 */
+	private void drawExtras(GuiGraphicsExtractor g, Font font, int labelX, int labelY, float appear) {
+		int x = labelX + font.width(getMessage()) + 5;
+		if (more != null) {
+			boolean over = isHovered && mouseX >= x - 2 && mouseX < x + 9 && mouseY >= getY() && mouseY < getY() + height;
+			int col = Draw.withAlpha(over ? MenuSkin.accent() : DIM, appear * (0.55f + 0.45f * Math.max(hover, over ? 1f : 0f)));
+			gear(g, x, labelY - 1, col);
+			moreX0 = x - 2;
+			moreX1 = x + 9;
+			moreY0 = getY();
+			moreY1 = getY() + height;
+			x += 11;
+		} else {
+			moreX0 = moreX1 = Integer.MIN_VALUE;
+		}
+		if (cost > 0) {
+			// three little bars, like phone signal: the more that light up, the heavier it is
+			int[] cols = {0x6BD58A, 0xF2C14E, 0xFF6B6B};
+			int lit = cols[cost - 1];
+			for (int i = 0; i < 3; i++) {
+				int bh = 2 + i * 2;
+				int bx = x + i * 3;
+				g.fill(bx, labelY + 7 - bh, bx + 2, labelY + 7, Draw.withAlpha(i < cost ? lit : 0x3A4358, appear * 0.9f));
+			}
+		}
+	}
+
+	/** A 7x7 gear. */
+	private static void gear(GuiGraphicsExtractor g, int x, int y, int col) {
+		String[] rows = {"..X.X..", ".XXXXX.", "XX...XX", ".X...X.", "XX...XX", ".XXXXX.", "..X.X.."};
+		for (int r = 0; r < rows.length; r++) {
+			for (int c = 0; c < rows[r].length(); c++) {
+				if (rows[r].charAt(c) == 'X') g.fill(x + c, y + r, x + c + 1, y + r + 1, col);
+			}
+		}
+	}
+
 	/** A short, plain-English explanation shown at the bottom of the menu while you hover the row. */
 	public SettingRow withHint(String hint) {
 		this.hint = hint == null ? "" : hint;
@@ -155,6 +307,8 @@ public class SettingRow extends AbstractWidget {
 
 	@Override
 	protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+		this.mouseX = mouseX;
+		this.mouseY = mouseY;
 		long now = Util.getMillis();
 		float dt = lastFrame < 0 ? 0 : (now - lastFrame) / 1000f;
 		lastFrame = now;
@@ -170,6 +324,10 @@ public class SettingRow extends AbstractWidget {
 		}
 		if (kind == Kind.COLOR) {
 			drawColor(g, font, x, y, appear);
+			return;
+		}
+		if (kind == Kind.SLIDER) {
+			drawSlider(g, font, x, y, appear);
 			return;
 		}
 		switch (MenuSkin.style()) {
@@ -203,9 +361,10 @@ public class SettingRow extends AbstractWidget {
 		};
 		if (style == LmgConfig.MenuStyle.LMG && hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
 		g.text(font, getMessage(), labelX, textY, Draw.withAlpha(Draw.lerpRgb(labelRgb, 0xFFFFFF, hover), appear), false);
+		drawExtras(g, font, labelX, textY, appear);
 		int sw1 = right + 2, sw0 = sw1 - 30, sy0 = y + 2, sy1 = y + height - 2;
 		// in narrow columns the swatch gets smaller rather than running into the name
-		int labelEnd = labelX + font.width(getMessage()) + 4;
+		int labelEnd = labelX + font.width(getMessage()) + 4 + (more != null ? 11 : 0) + (cost > 0 ? 10 : 0);
 		if (sw0 < labelEnd) sw0 = Math.min(sw1 - 12, labelEnd);
 		boolean rainbow = waiting.getAsBoolean();
 		int border = Draw.lerpRgb(0x1C2943, MenuSkin.accent(), hover);
@@ -223,6 +382,69 @@ public class SettingRow extends AbstractWidget {
 		}
 		String edit = "edit";
 		if (sw0 - 6 - font.width(edit) > labelEnd) g.text(font, edit, sw0 - 6 - font.width(edit), textY, Draw.withAlpha(DIM, appear * (0.4f + 0.6f * hover)), false);
+	}
+
+	// ---- slider rows (all styles) ----------------------------------------------------------------
+
+	private void drawSlider(GuiGraphicsExtractor g, Font font, int x, int y, float appear) {
+		LmgConfig.MenuStyle style = MenuSkin.style();
+		int textY = y + (height - font.lineHeight) / 2 + 1;
+		int right = x + width - 6;
+		int labelX = style == LmgConfig.MenuStyle.SKEET ? x + 18 : x + 6;
+		int labelRgb = switch (style) {
+			case SKEET -> MenuSkin.SK_TEXT;
+			case NEVERLOSE -> MenuSkin.NL_TEXT;
+			default -> LABEL;
+		};
+		if (style != LmgConfig.MenuStyle.SKEET && hover > 0.01f) {
+			int bg = style == LmgConfig.MenuStyle.NEVERLOSE ? Draw.withAlpha(MenuSkin.NL_HOVER, hover * appear) : Draw.white(0.045f * hover * appear);
+			Draw.roundRect(g, x, y, x + width, y + height, 4, bg);
+		}
+		g.text(font, getMessage(), labelX, textY, Draw.withAlpha(Draw.lerpRgb(labelRgb, 0xFFFFFF, hover), appear), false);
+		drawExtras(g, font, labelX, textY, appear);
+		String v = value.get();
+		int trackW = Math.max(40, Math.min(78, width / 3));
+		trackX1 = right;
+		trackX0 = right - trackW;
+		int vx = trackX0 - 6 - font.width(v);
+		g.text(font, v, vx, textY, Draw.withAlpha(VALUE, appear), false);
+		int ty = y + height / 2 - 1;
+		double t = (sGet.getAsDouble() - sMin) / Math.max(1e-9, sMax - sMin);
+		t = Math.max(0, Math.min(1, t));
+		int kx = trackX0 + (int) Math.round(t * (trackX1 - trackX0));
+		int acc = style == LmgConfig.MenuStyle.LMG ? Theme.primary() : MenuSkin.accent();
+		if (style == LmgConfig.MenuStyle.SKEET) {
+			g.fill(trackX0 - 1, ty - 2, trackX1 + 1, ty + 4, Draw.withAlpha(0x000000, appear));
+			g.fill(trackX0, ty - 1, trackX1, ty + 3, Draw.withAlpha(0x2A2A2A, appear));
+			g.fillGradient(trackX0, ty - 1, kx, ty + 3, Draw.withAlpha(acc, appear), Draw.withAlpha(Draw.lerpRgb(0x000000, acc, 0.6f), appear));
+		} else {
+			Draw.roundRect(g, trackX0, ty, trackX1, ty + 3, 1, Draw.withAlpha(0x2A3550, appear));
+			Draw.roundRect(g, trackX0, ty, Math.max(trackX0 + 2, kx), ty + 3, 1, Draw.withAlpha(acc, appear));
+			Draw.roundRect(g, kx - 3, ty - 2, kx + 3, ty + 5, 2, Draw.withAlpha(0xFFFFFF, appear));
+		}
+	}
+
+	/** Sliders also follow the mouse while you drag. */
+	@Override
+	protected void onDrag(MouseButtonEvent event, double dx, double dy) {
+		if (kind == Kind.SLIDER && sliding) slideTo(event.x());
+	}
+
+	@Override
+	public void onRelease(MouseButtonEvent event) {
+		if (kind == Kind.SLIDER && sliding) {
+			sliding = false;
+			LmgConfig.save();
+		}
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		if (kind == Kind.SLIDER && isHovered && scrollY != 0) {
+			nudge(scrollY > 0 ? 1 : -1);
+			return true;
+		}
+		return false;
 	}
 
 	// ---- key binding rows (all styles) -----------------------------------------------------------
@@ -272,6 +494,7 @@ public class SettingRow extends AbstractWidget {
 		int right = x + width - 6;
 		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.white(0.045f * hover * appear));
 		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(LABEL, 0xFFFFFF, hover), appear), false);
+		drawExtras(g, font, x + 6, textY, appear);
 		switch (kind) {
 			case TOGGLE -> {
 				animateKnob(dt);
@@ -338,6 +561,7 @@ public class SettingRow extends AbstractWidget {
 				int bottom = Draw.lerpRgb(0x333333, Draw.lerpRgb(0x000000, acc, 0.7f), knob);
 				g.fillGradient(bx + 1, by + 1, bx + 6, by + 6, Draw.withAlpha(top, appear), Draw.withAlpha(bottom, appear));
 				g.text(font, getMessage(), labelX, textY, labelColor, false);
+				drawExtras(g, font, labelX, textY, appear);
 			}
 			case BUTTON -> {
 				// full-width button with the label in the middle
@@ -350,6 +574,7 @@ public class SettingRow extends AbstractWidget {
 			case CHOICE, DROPDOWN -> {
 				// label on its own line, value box underneath (like gamesense dropdowns)
 				g.text(font, getMessage(), labelX, y + 1, labelColor, false);
+				drawExtras(g, font, labelX, y + 1, appear);
 				int bx0 = labelX, by0 = y + 11, by1 = y + height - 1;
 				g.fill(bx0, by0, right, by1, Draw.withAlpha(0x000000, appear));
 				int top = Draw.lerpRgb(0x232323, 0x2C2C2C, hover), bottom = Draw.lerpRgb(0x1D1D1D, 0x242424, hover);
@@ -392,6 +617,7 @@ public class SettingRow extends AbstractWidget {
 		int acc = MenuSkin.accent();
 		if (hover > 0.01f) Draw.roundRect(g, x, y, x + width, y + height, 4, Draw.withAlpha(MenuSkin.NL_HOVER, hover * appear));
 		g.text(font, getMessage(), x + 6, textY, Draw.withAlpha(Draw.lerpRgb(MenuSkin.NL_TEXT, 0xFFFFFF, hover), appear), false);
+		drawExtras(g, font, x + 6, textY, appear);
 		switch (kind) {
 			case TOGGLE -> {
 				animateKnob(dt);
@@ -456,6 +682,23 @@ public class SettingRow extends AbstractWidget {
 
 	@Override
 	public void onClick(MouseButtonEvent event, boolean doubleClick) {
+		if (more != null && event.x() >= moreX0 && event.x() < moreX1) {
+			more.run();
+			return;
+		}
+		if (kind == Kind.SLIDER) {
+			if (event.button() == 1) {
+				nudge(-1);
+				LmgConfig.save();
+			} else if (event.x() >= trackX0 - 4) {
+				sliding = true;
+				slideTo(event.x());
+			} else {
+				nudge(1);
+				LmgConfig.save();
+			}
+			return;
+		}
 		if (kind == Kind.DROPDOWN) {
 			if (opener != null) opener.accept(this);
 			return;

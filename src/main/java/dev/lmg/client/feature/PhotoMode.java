@@ -47,7 +47,70 @@ public final class PhotoMode {
 		}
 	}
 
+	/** Depth of field: keeps what's in the middle sharp, softens the rest. */
+	public enum Focus {
+		OFF("Off", null), SOFT("Soft", "dof_soft"), STRONG("Strong", "dof_strong"), MINIATURE("Miniature", "tilt_shift");
+
+		public final String label;
+		public final Identifier effect;
+
+		Focus(String label, String effect) {
+			this.label = label;
+			this.effect = effect == null ? null : LmgClient.id(effect);
+		}
+	}
+
+	/** Ready-made looks: a filter, frame, vignette, grain and focus that go together. */
+	public enum Look {
+		GOLDEN("Golden hour", Filter.WARM, Frame.POLAROID, 0.45f, false, Focus.SOFT),
+		NOIR("Noir", Filter.NOIR, Frame.CINEMA, 0.6f, true, Focus.OFF),
+		DREAMY("Dreamy", Filter.DREAM, Frame.NONE, 0.3f, false, Focus.SOFT),
+		FILM("Old film", Filter.VINTAGE, Frame.FILM, 0.5f, true, Focus.OFF),
+		MINIATURE("Miniature", Filter.VIVID, Frame.NONE, 0.2f, false, Focus.MINIATURE),
+		CLEAN("Clean", Filter.NATURAL, Frame.NONE, 0f, false, Focus.OFF);
+
+		public final String label;
+		final Filter f;
+		final Frame fr;
+		final float v;
+		final boolean g;
+		final Focus fo;
+
+		Look(String label, Filter f, Frame fr, float v, boolean g, Focus fo) {
+			this.label = label;
+			this.f = f;
+			this.fr = fr;
+			this.v = v;
+			this.g = g;
+			this.fo = fo;
+		}
+
+		public void apply() {
+			filter = f;
+			frame = fr;
+			vignette = v;
+			grain = g;
+			focus = fo;
+		}
+
+		boolean matches() {
+			return filter == f && frame == fr && Math.abs(vignette - v) < 0.01f && grain == g && focus == fo;
+		}
+	}
+
+	/** The look you're on, or null if you've mixed your own. */
+	public static Look look() {
+		for (Look l : Look.values()) if (l.matches()) return l;
+		return null;
+	}
+
+	public static final int[] TIMERS = {0, 3, 10};
+
 	private static boolean active, orbit;
+	public static Focus focus = Focus.OFF;
+	public static int timer = 0;            // index into TIMERS
+	public static boolean grid = false;
+	public static dev.lmg.client.emote.Emote pose = null;
 	public static Filter filter = Filter.NATURAL;
 	public static Frame frame = Frame.NONE;
 	public static float fov = 70f, roll = 0f, vignette = 0.35f;

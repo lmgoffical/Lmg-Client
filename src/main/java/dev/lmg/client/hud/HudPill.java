@@ -18,7 +18,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * The rounded HUD bar: star | name | server | FPS | ping | clock | coords.
+ * The rounded HUD bar: star | name | server | FPS | ping | clock | coords | friends online.
  * Everything in it is animated: the bar slides in, sections grow and fade
  * when turned on/off, the width glides, and the numbers count smoothly.
  */
@@ -31,7 +31,7 @@ public class HudPill implements HudElement {
 	private static final int DIVIDER = 0x30FFFFFF;
 	private static final int TEXT = 0xC9C9D3;
 
-	private static final int NAME = 0, SERVER = 1, FPS = 2, PING = 3, CLOCK_SEG = 4, COORDS = 5, COUNT = 6;
+	private static final int NAME = 0, SERVER = 1, FPS = 2, PING = 3, CLOCK_SEG = 4, COORDS = 5, FRIENDS = 6, COUNT = 7;
 
 	private final float[] visible = new float[COUNT];
 	private final float[] widths = new float[COUNT];
@@ -161,6 +161,9 @@ public class HudPill implements HudElement {
 		texts[COORDS] = cfg.hudShowCoords
 				? player.getBlockX() + " " + player.getBlockY() + " " + player.getBlockZ()
 				: null;
+		// friends online (only when Friends is on and someone is)
+		int online = cfg.hudShowFriends && dev.lmg.client.social.Social.enabled() ? dev.lmg.client.social.Social.onlineCount() : 0;
+		texts[FRIENDS] = online > 0 ? online + (online == 1 ? " friend on" : " friends on") : null;
 	}
 
 	private static String serverLabel(Minecraft mc) {

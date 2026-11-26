@@ -77,6 +77,10 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("items")) items(ctx, world);
 			if (want("xhair")) xhair(ctx, world);
 			if (want("tourskip")) tourSkip(ctx);
+			if (want("v29menu")) v29menu(ctx, world);
+			if (want("v29hud")) v29hud(ctx, world);
+			if (want("v29world")) v29world(ctx, world);
+			if (want("v29photo")) v29photo(ctx, world);
 			if (want("cosmetics")) cosmetics(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
@@ -126,6 +130,9 @@ public class ShowcaseTest implements FabricClientGameTest {
 			var p = LmgSettingsScreen.class.getDeclaredField("lastPage");
 			p.setAccessible(true);
 			((int[]) p.get(null))[cat] = page;
+			var q = LmgSettingsScreen.class.getDeclaredField("search");
+			q.setAccessible(true);
+			q.set(null, null);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -415,8 +422,8 @@ public class ShowcaseTest implements FabricClientGameTest {
 		page(0, 0);
 		ctx.setScreen(() -> new LmgSettingsScreen(null));
 		ctx.waitTicks(20);
-		for (int step = 1; step <= 10; step++) {
-			if (step == 1 || step == 3 || step == 4 || step == 5 || step == 6 || step == 7 || step == 9) ctx.takeScreenshot("tour-" + step);
+		for (int step = 1; step <= 12; step++) {
+			if (step == 1 || step == 2 || step == 5 || step == 6 || step == 7 || step == 10) ctx.takeScreenshot("tour-" + step);
 			ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
 			ctx.waitTicks(12);
 		}
@@ -494,6 +501,247 @@ public class ShowcaseTest implements FabricClientGameTest {
 			c.crosshairSpin = 0;
 			c.crosshairSize = 1;
 		});
+	}
+
+	/** Opens the "more options" card of a row on the open menu (what clicking its gear does). */
+	private static void openMore(net.minecraft.client.Minecraft mc, String label) {
+		try {
+			var screen = mc.gui.screen();
+			var f = LmgSettingsScreen.class.getDeclaredField("rows");
+			f.setAccessible(true);
+			for (Object o : (java.util.List<?>) f.get(screen)) {
+				var row = (dev.lmg.client.screen.SettingRow) o;
+				if (row.getMessage().getString().equals(label)) {
+					var m = dev.lmg.client.screen.SettingRow.class.getDeclaredField("more");
+					m.setAccessible(true);
+					((Runnable) m.get(row)).run();
+					return;
+				}
+			}
+			throw new IllegalStateException("no row " + label);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/** v0.29 menu: search, the new pages, a gear card, low-end mode. */
+	private void v29menu(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		ctx.runOnClient(mc -> LmgConfig.get().myUid = 7);
+		page(2, 1);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(25);
+		ctx.takeScreenshot("v29-crosshair-page");
+		ctx.runOnClient(mc -> openMore(mc, "Crosshair"));
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-crosshair-more");
+		ctx.setScreen(() -> null);
+		page(2, 2);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-hits-page");
+		ctx.runOnClient(mc -> openMore(mc, "Damage numbers"));
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-damage-more");
+		ctx.setScreen(() -> null);
+		page(3, 1);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-panels-page");
+		page(6, 2);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-fps-page");
+		page(0, 2);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(15);
+		ctx.getInput().typeChars("colour");
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-search");
+		ctx.runOnClient(mc -> System.out.println("[v29] search rows=" + rowsOf(mc)));
+		ctx.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);
+		ctx.waitTicks(5);
+		ctx.runOnClient(mc -> System.out.println("[v29] after esc screen=" + mc.gui.screen()));
+		ctx.runOnClient(mc -> LmgConfig.get().menuStyle = LmgConfig.MenuStyle.SKEET);
+		page(2, 1);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-skeet-crosshair");
+		ctx.runOnClient(mc -> LmgConfig.get().menuStyle = LmgConfig.MenuStyle.NEVERLOSE);
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-nl-crosshair");
+		ctx.runOnClient(mc -> openMore(mc, "Crosshair"));
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-nl-more");
+		ctx.runOnClient(mc -> LmgConfig.get().menuStyle = LmgConfig.MenuStyle.LMG);
+		// low-end mode on and back off puts things back
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.aurora = LmgConfig.Aurora.PURPLE;
+			c.ambient = LmgConfig.Ambient.PETALS;
+			dev.lmg.client.feature.Looks.setLowEnd(true);
+			String during = c.aurora + "/" + c.ambient;
+			dev.lmg.client.feature.Looks.setLowEnd(false);
+			System.out.println("[v29] lowend during=" + during + " after=" + c.aurora + "/" + c.ambient);
+		});
+		ctx.setScreen(() -> null);
+	}
+
+	private static String rowsOf(net.minecraft.client.Minecraft mc) {
+		try {
+			var f = LmgSettingsScreen.class.getDeclaredField("rows");
+			f.setAccessible(true);
+			StringBuilder b = new StringBuilder();
+			for (Object o : (java.util.List<?>) f.get(mc.gui.screen())) b.append(((dev.lmg.client.screen.SettingRow) o).getMessage().getString()).append(", ");
+			return b.toString();
+		} catch (Exception e) {
+			return e.toString();
+		}
+	}
+
+	/** v0.29 HUD: PvP stats, armour, hotbar style, name tags, hit sound, inventory colour. */
+	private void v29hud(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("time set 1000");
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		world.getServer().runCommand("item replace entity @a armor.head with minecraft:diamond_helmet[damage=300]");
+		world.getServer().runCommand("item replace entity @a armor.chest with minecraft:diamond_chestplate");
+		world.getServer().runCommand("item replace entity @a armor.legs with minecraft:iron_leggings[damage=200]");
+		world.getServer().runCommand("item replace entity @a armor.feet with minecraft:diamond_boots[damage=420]");
+		world.getServer().runCommand("item replace entity @a weapon.mainhand with minecraft:diamond_sword");
+		world.getServer().runCommand("item replace entity @a hotbar.1 with minecraft:golden_apple 12");
+		world.getServer().runCommand("item replace entity @a hotbar.2 with minecraft:ender_pearl 16");
+		world.getServer().runCommand("summon minecraft:zombie 0.5 -60 3.0 {NoAI:1b,Rotation:[180f,0f],Health:200f,CustomName:'Training dummy',CustomNameVisible:1b,Attributes:[{id:\"minecraft:max_health\",base:200}]}");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.pvpHud = true;
+			c.armourHud = true;
+			c.armourNumbers = true;
+			c.hotbarStyle = LmgConfig.HotbarStyle.LMG;
+			c.nameTagBg = LmgConfig.NameTagBg.ACCENT;
+			c.crosshair = LmgConfig.Crosshair.CROSS_DOT;
+			c.crosshairGap = 3;
+			c.crosshairLength = 5;
+			c.damageNumbers = true;
+			c.damageStyle = LmgConfig.DamageStyle.BUBBLE;
+			c.hitSound = LmgConfig.HitSound.DING;
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		});
+		ctx.waitTicks(30);
+		world.getConnection().waitForChunksRender();
+		ctx.getInput().lookAt(new net.minecraft.core.BlockPos(0, -59, 3));
+		ctx.waitTicks(10);
+		for (int i = 0; i < 2; i++) {
+			ctx.runOnClient(mc -> {
+				dev.lmg.client.feature.Visuals.onClick(0);
+				var z = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, mc.player.getBoundingBox().inflate(6)).stream().findFirst().orElse(null);
+				if (z != null) {
+					dev.lmg.client.feature.Visuals.onAttack(z);
+					mc.gameMode.attack(mc.player, z);
+				}
+			});
+			ctx.waitTicks(12);
+		}
+		ctx.runOnClient(mc -> System.out.println("[v29] combo=" + dev.lmg.client.feature.Visuals.combo() + " reach=" + dev.lmg.client.feature.Visuals.lastReach()));
+		ctx.runOnClient(mc -> mc.gui.toastManager().clear());
+		ctx.waitTicks(3);
+		ctx.takeScreenshot("v29-hud");
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().hotbarStyle = LmgConfig.HotbarStyle.OUTLINE;
+			LmgConfig.get().inventoryTint = 0xB45CFF;
+			LmgConfig.get().inventoryTintStrength = 0.3f;
+		});
+		ctx.setScreen(() -> new net.minecraft.client.gui.screens.inventory.InventoryScreen(net.minecraft.client.Minecraft.getInstance().player));
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-inventory");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.pvpHud = false;
+			c.armourHud = false;
+			c.hotbarStyle = LmgConfig.HotbarStyle.VANILLA;
+			c.nameTagBg = LmgConfig.NameTagBg.VANILLA;
+			c.inventoryTint = -1;
+			c.crosshair = LmgConfig.Crosshair.VANILLA;
+			c.damageNumbers = false;
+			c.hitSound = LmgConfig.HitSound.OFF;
+		});
+		world.getServer().runCommand("kill @e[type=minecraft:zombie]");
+	}
+
+	/** v0.29 world: new skies, mist, leaves and the lens effects. */
+	private void v29world(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 30 -4");
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		String[][] shots = {{"OCEAN", "1000", "OFF"}, {"GOLDEN", "12000", "LEAVES"}, {"LAVENDER", "23000", "MIST"}};
+		for (String[] sh : shots) {
+			world.getServer().runCommand("time set " + sh[1]);
+			ctx.runOnClient(mc -> {
+				LmgConfig c = LmgConfig.get();
+				c.skyTheme = LmgConfig.SkyTheme.valueOf(sh[0]);
+				c.ambient = LmgConfig.Ambient.valueOf(sh[2]);
+				c.ambientAmount = 2;
+			});
+			ctx.waitTicks(sh[2].equals("OFF") ? 20 : 140);
+			ctx.takeScreenshot("v29-sky-" + sh[0].toLowerCase());
+		}
+		world.getServer().runCommand("time set 1000");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.skyTheme = LmgConfig.SkyTheme.VANILLA;
+			c.ambient = LmgConfig.Ambient.OFF;
+			c.lensVignette = 2;
+			c.lensGrain = 2;
+			c.lensChroma = true;
+		});
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-lens");
+		ctx.runOnClient(mc -> {
+			LmgConfig c = LmgConfig.get();
+			c.lensVignette = 0;
+			c.lensGrain = 0;
+			c.lensChroma = false;
+			System.out.println("[v29] applied=" + mc.gameRenderer.getAppliedPostEffects());
+		});
+	}
+
+	/** v0.29 photo mode: tabs, looks, focus, grid. */
+	private void v29photo(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("time set 1000");
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 30 -4");
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		ctx.waitTicks(20);
+		ctx.runOnClient(mc -> dev.lmg.client.feature.PhotoMode.Look.GOLDEN.apply());
+		ctx.setScreen(dev.lmg.client.screen.PhotoModeScreen::new);
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> {
+			var p = mc.player;
+			// stand back a little, looking at you with the trees behind
+			dev.lmg.client.feature.PhotoMode.place(p.getX() - 2.2, p.getY() + 1.6, p.getZ() + 3.2, -153f, 9f);
+		});
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("v29-photo-look");
+		ctx.runOnClient(mc -> {
+			dev.lmg.client.feature.PhotoMode.grid = true;
+			dev.lmg.client.feature.PhotoMode.Look.MINIATURE.apply();
+		});
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-photo-miniature");
+		ctx.runOnClient(mc -> {
+			dev.lmg.client.feature.PhotoMode.grid = false;
+			dev.lmg.client.feature.PhotoMode.Look.CLEAN.apply();
+			dev.lmg.client.feature.PhotoMode.focus = dev.lmg.client.feature.PhotoMode.Focus.STRONG;
+			System.out.println("[v29] photo applied=" + mc.gameRenderer.getAppliedPostEffects());
+		});
+		ctx.waitTicks(15);
+		ctx.takeScreenshot("v29-photo-focus");
+		ctx.runOnClient(mc -> System.out.println("[v29] photo applied2=" + mc.gameRenderer.getAppliedPostEffects()));
+		ctx.runOnClient(mc -> dev.lmg.client.feature.PhotoMode.focus = dev.lmg.client.feature.PhotoMode.Focus.OFF);
+		ctx.setScreen(() -> null);
 	}
 
 	/** The first tour card, with its "No thanks" button. */

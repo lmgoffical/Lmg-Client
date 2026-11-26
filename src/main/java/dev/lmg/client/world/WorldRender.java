@@ -136,7 +136,7 @@ public final class WorldRender {
 			int bands = 3;
 			for (int b = 0; b < bands; b++) {
 				float radius = 62f + b * 9f;
-				float baseY = 34f + b * 5f;
+				float baseY = 34f + b * 5f + cfg.auroraHeight;
 				double from = Math.toRadians(195 + b * 25);
 				double to = from + Math.toRadians(150);
 				int steps = 60;
@@ -153,7 +153,7 @@ public final class WorldRender {
 					float edge0 = edgeFade(i, steps), edge1 = edgeFade(i + 1, steps);
 					float shimmer = 0.75f + 0.25f * (float) Math.sin(a0 * 11 + t * 1.3 + b * 2);
 					int rgb0 = auroraColor(cfg, a0, t), rgb1 = auroraColor(cfg, a1, t);
-					float alpha = 0.32f * night * shimmer;
+					float alpha = Math.min(1f, 0.32f * night * shimmer * cfg.auroraBrightness);
 					// bottom is bright, top fades to nothing
 					Quads.vertex(vc, p, x0, baseY + h0, z0, 0, 0, argb(0, rgb0), Quads.FULL_BRIGHT, 0, 1, 0);
 					Quads.vertex(vc, p, x1, baseY + h1, z1, 1, 0, argb(0, rgb1), Quads.FULL_BRIGHT, 0, 1, 0);

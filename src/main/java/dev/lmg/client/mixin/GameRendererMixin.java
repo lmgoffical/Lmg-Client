@@ -16,10 +16,14 @@ public abstract class GameRendererMixin {
 	@Inject(method = "update", at = @At("TAIL"))
 	private void lmg$filters(net.minecraft.client.DeltaTracker deltaTracker, CallbackInfo ci) {
 		var list = ((GameRenderer) (Object) this).getRequestedPostEffects();
+		net.minecraft.resources.Identifier focus = dev.lmg.client.render.WorldFilter.focus();
+		if (focus != null) list.add(focus);
 		net.minecraft.resources.Identifier blur = dev.lmg.client.render.WorldFilter.blur();
 		if (blur != null) list.add(blur);
 		net.minecraft.resources.Identifier extra = dev.lmg.client.render.WorldFilter.current();
 		if (extra != null) list.add(extra);
+		net.minecraft.resources.Identifier lens = dev.lmg.client.render.WorldFilter.lens();
+		if (lens != null) list.add(lens);
 	}
 
 	@Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)

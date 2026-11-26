@@ -35,10 +35,10 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 
 	/** The sidebar: a few groups, each with its own pages along the top. */
 	private static final Category[] CATS = {
-			new Category("Visuals", new Page("Sky", "sky, time, fog and clouds"), new Page("Weather", "rain, snow and winter"), new Page("Effects", "crosshair, damage, blur, colours"), new Page("Cinematic", "shaders, film mode and photos")),
+			new Category("Visuals", new Page("Sky", "sky, time, fog and clouds"), new Page("Weather", "rain, snow and winter"), new Page("Effects", "filters, lens and name tags"), new Page("Cinematic", "shaders, film mode and photos")),
 			new Category("You", new Page("Outfit", "cosmetics, pets and you"), new Page("Trails", "particles around you"), new Page("Items", "what's in your hand"), new Page("Sharing", "what other Lmg players see")),
-			new Category("Combat", new Page("Target", "whatever you're aiming at"), new Page("Hits", "when you land a hit"), new Page("Clarity", "seeing clearly in a fight")),
-			new Category("HUD", new Page("Bar", "the bar at the top"), new Page("Maps", "minimap, map and waypoints")),
+			new Category("Combat", new Page("Target", "whatever you're aiming at"), new Page("Crosshair", "shape, colour and size"), new Page("Hits", "effects, numbers and sounds"), new Page("Clarity", "seeing clearly in a fight")),
+			new Category("HUD", new Page("Bar", "the bar at the top"), new Page("Panels", "PvP stats, armour, hotbar"), new Page("Maps", "minimap, map and waypoints")),
 			new Category("Social", new Page("Friends", "who's online and joining them"), new Page("Emotes", "the emote wheel"), new Page("UID", "your Lmg number")),
 			new Category("Menu", new Page("Look", "how this menu looks"), new Page("Main menu", "the title screen"), new Page("Help", "the tour, safety and mods")),
 			new Category("Game", new Page("Keys", "click a key, then press the new one"), new Page("Tools", "zoom, freecam and server-safe"), new Page("FPS", "make the game run smoother"), new Page("Configs", "save setups, share them with a code"))
@@ -59,6 +59,10 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 	private static int lastCat = 0;                              // Visuals
 	private static final int[] lastPage = new int[CATS.length];  // the page you were on in each group
 	private static int rowScroll;                                // for pages with more rows than fit
+	/** What you're searching for, or null when not searching. */
+	private static String search;
+	private net.minecraft.client.gui.components.EditBox searchBox;
+	private static final int SEARCH_GAP = 20;                    // the Search entry above the groups
 	private static long pageShownAt;
 	private static final int TAB_GAP = 16;
 
@@ -130,28 +134,54 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			tourStep = 0;
 		}
 
-		// Sidebar: the groups
+		// Sidebar: Search, then the groups
 		int sy = panelY + HEADER_H + 6;
+		addRenderableWidget(new SideTab(panelX + 6, sy, SIDEBAR_W - 10, 13, "Search",
+				() -> search != null, () -> openSearch("")));
+		searchTabRect = new int[]{panelX + 6, sy, panelX + SIDEBAR_W - 4, sy + 13};
+		int gy = sy + SEARCH_GAP;
 		for (int i = 0; i < CATS.length; i++) {
 			final int index = i;
-			addRenderableWidget(new SideTab(panelX + 6, sy + i * TAB_GAP, SIDEBAR_W - 10, 13, CATS[i].name(),
-					() -> lastCat == index, () -> showPage(index, lastPage[index])));
+			addRenderableWidget(new SideTab(panelX + 6, gy + i * TAB_GAP, SIDEBAR_W - 10, 13, CATS[i].name(),
+					() -> search == null && lastCat == index, () -> { search = null; showPage(index, lastPage[index]); rebuildWidgets(); }));
 		}
 
-		// the group's pages, along the top of the content
-		Category cat = CATS[lastCat];
 		int px = pagesX(), py = panelY + HEADER_H + (MenuSkin.style() == LmgConfig.MenuStyle.NEVERLOSE ? 5 : 6);
-		for (int i = 0; i < cat.pages().length; i++) {
-			final int index = i;
-			String name = cat.pages()[i].name();
-			int w = font.width(name) + 12;
-			addRenderableWidget(new PageTab(px, py, w, 12, name, () -> lastPage[lastCat] == index, () -> showPage(lastCat, index)));
-			px += w + 3;
+		if (search != null) {
+			// searching: a box where the page tabs go
+			int boxW = panelX + panelW() - 10 - px;
+			searchBox = new net.minecraft.client.gui.components.EditBox(font, px + 14, py + 2, boxW - 18, 10, Component.literal("Search"));
+			searchBox.setBordered(false);
+			searchBox.setMaxLength(40);
+			searchBox.setTextColor(0xFFFFFFFF);
+			searchBox.setHint(Component.literal("Type a setting... (colour, zoom, fps)").withStyle(s2 -> s2.withColor(0x56637A)));
+			searchBox.setValue(search);
+			searchBox.setResponder(text -> {
+				if (!text.equals(search)) {
+					search = text;
+					rowScroll = 0;
+					refreshRows();
+				}
+			});
+			addRenderableWidget(searchBox);
+			setInitialFocus(searchBox);
+			searchRect = new int[]{px, py, px + boxW, py + 12};
+		} else {
+			searchBox = null;
+			// the group's pages, along the top of the content
+			Category cat = CATS[lastCat];
+			for (int i = 0; i < cat.pages().length; i++) {
+				final int index = i;
+				String name = cat.pages()[i].name();
+				int w = font.width(name) + 12;
+				addRenderableWidget(new PageTab(px, py, w, 12, name, () -> lastPage[lastCat] == index, () -> showPage(lastCat, index)));
+				px += w + 3;
+			}
 		}
 
-		// Settings for the selected page
+		// Settings for the selected page (or what you searched for)
 		rows.clear();
-		rows.addAll(rowsFor(page().name(), c));
+		rows.addAll(search != null ? searchRows(search, c) : rowsFor(page().name(), c));
 		rowScroll = Math.max(0, Math.min(rowScroll, rows.size() - MAX_ROWS));
 		if (MenuSkin.style() == LmgConfig.MenuStyle.SKEET) {
 			layoutSkeet(rows, t);
@@ -177,6 +207,56 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		addRenderableWidget(reset[0]);
 	}
 
+	// ---- search ----------------------------------------------------------------------------------
+
+	private int[] searchTabRect = new int[4], searchRect = new int[4];
+
+	/** Opens search (optionally with the first letter you typed already in). */
+	void openSearch(String start) {
+		search = start == null ? "" : start;
+		rowScroll = 0;
+		dropdown = null;
+		rebuildWidgets();
+		if (searchBox != null) {
+			searchBox.moveCursorToEnd(false);
+			setFocused(searchBox);
+		}
+	}
+
+	private void closeSearch() {
+		search = null;
+		rowScroll = 0;
+		rebuildWidgets();
+	}
+
+	/** Every setting, on every page, that matches what you typed. */
+	private List<SettingRow> searchRows(String query, LmgConfig c) {
+		List<SettingRow> out = new ArrayList<>();
+		String q = query.trim();
+		if (q.isEmpty()) return out;
+		for (Category cat : CATS) {
+			for (Page p : cat.pages()) {
+				boolean pageHit = new SettingRow.Probe(cat.name() + " " + p.name()).matches(q);
+				for (SettingRow r : rowsFor(p.name(), c)) {
+					r.where(cat.name() + " > " + p.name());
+					if (pageHit || r.matches(q)) out.add(r);
+				}
+			}
+		}
+		return out;
+	}
+
+	/** Swaps the rows for new ones (search typing) without rebuilding the search box. */
+	private void refreshRows() {
+		for (SettingRow r : rows) removeWidget(r);
+		rows.clear();
+		LmgConfig c = LmgConfig.get();
+		rows.addAll(search != null ? searchRows(search, c) : rowsFor(page().name(), c));
+		long t = Util.getMillis();
+		if (MenuSkin.style() == LmgConfig.MenuStyle.SKEET) layoutSkeet(rows, t);
+		else layoutSingle(rows, panelY + HEADER_H + 6, t);
+	}
+
 	// ---- the tour --------------------------------------------------------------------------------
 
 	private record Step(String title, String text, Runnable before, java.util.function.Supplier<int[]> target) {}
@@ -199,14 +279,18 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		List<Step> s = new ArrayList<>();
 		s.add(new Step("Welcome to Lmg", "This is the Lmg menu. Right Shift opens and closes it, anywhere in game. Want a quick look at where everything is? It takes half a minute, and you can stop any time with Esc.",
 				() -> showPage(0, 0), null));
+		s.add(new Step(LOOK_STEP, "Want a head start? Pick a look and lots of settings change at once. You can change anything after, or keep yours.",
+				null, null));
 		s.add(new Step("Groups", "Everything is grouped on the left: Visuals, You, Combat, HUD, Social, Menu and Game.",
-				null, () -> new int[]{panelX + 2, panelY + HEADER_H + 2, panelX + SIDEBAR_W - 2, panelY + HEADER_H + 8 + CATS.length * TAB_GAP}));
+				null, () -> new int[]{panelX + 2, panelY + HEADER_H + 2 + SEARCH_GAP, panelX + SIDEBAR_W - 2, panelY + HEADER_H + 8 + SEARCH_GAP + CATS.length * TAB_GAP}));
 		s.add(new Step("Pages", "Each group has pages along the top. Visuals has Sky, Weather, Effects and Cinematic.",
 				null, () -> new int[]{cx0 + 2, panelY + HEADER_H + 3, cx1 - 4, panelY + HEADER_H + 20}));
 		s.add(new Step("Settings", "Click a setting to change it. Point at one and the line at the bottom says what it does. Colours open a picker: drag the dot and the slider.",
 				null, () -> new int[]{cx0 + 2, rowsTop, cx1 - 4, rowsTop + 4 * ROW_GAP + 4}));
-		s.add(new Step("New visuals", "Your own crosshair, damage numbers, motion blur and colour filters are in Visuals > Effects.",
-				() -> showPage(0, 2), () -> new int[]{cx0 + 2, rowsTop, cx1 - 4, rowsTop + 5 * ROW_GAP + 4}));
+		s.add(new Step("More options", "Crosshairs live in Combat > Crosshair. A little gear next to a setting means it has more options - click it.",
+				() -> showPage(2, 1), () -> new int[]{cx0 + 2, rowsTop, cx1 - 4, rowsTop + 4 * ROW_GAP + 4}));
+		s.add(new Step("Search", "Can't find something? Click Search, or just start typing anywhere in this menu.",
+				null, () -> searchTabRect));
 		s.add(new Step("Friends", "See who's online, where they're playing, and join them. Key: O.",
 				null, () -> friendsRect));
 		s.add(new Step("Your UID", "Your Lmg number. The lower it is, the rarer: 1 to 10 are Founders. Grab yours here.",
@@ -219,6 +303,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				() -> showPage(0, 0), null));
 		return s;
 	}
+
+	private static final String LOOK_STEP = "Pick a starting look";
 
 	private void tourNext(boolean skip) {
 		List<Step> all = steps();
@@ -266,7 +352,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		int cw = r != null && Math.max(roomRight, roomLeft) >= 104 ? Math.min(170, Math.max(roomRight, roomLeft)) : 170;
 		if (tourStep == 0) cw = 196;   // room for both "No thanks" and "Show me around"
 		List<net.minecraft.util.FormattedCharSequence> lines = font.split(Component.literal(st.text()), cw - 16);
-		int ch = 30 + lines.size() * 10 + 22;
+		boolean lookStep = LOOK_STEP.equals(st.title());
+		int ch = 30 + lines.size() * 10 + 22 + (lookStep ? 36 : 0);
 		int cx, cy;
 		if (r == null) {
 			cx = width / 2 - cw / 2;
@@ -298,8 +385,19 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			g.text(font, line, cx + 8, ty, Draw.withAlpha(0xC9D3E3, a), false);
 			ty += 10;
 		}
+		if (lookStep) {
+			// four looks as buttons, two by two
+			var looks = dev.lmg.client.feature.Looks.Start.values();
+			int bw = (cw - 20) / 2, lx = cx + 8, ly = ty + 2;
+			for (int i = 0; i < looks.length; i++) {
+				int bx0 = lx + (i % 2) * (bw + 4), by0 = ly + (i / 2) * 17;
+				boolean over = mouseX >= bx0 && mouseX < bx0 + bw && mouseY >= by0 && mouseY < by0 + 14;
+				PillButton.draw(g, font, bx0, by0, bw, 14, looks[i].label, false, over ? 1f : 0f, a);
+				tourHits.add(new int[]{bx0, by0, bx0 + bw, by0 + 14, 10 + i});
+			}
+		}
 		boolean first = tourStep == 0, last = tourStep == all.size() - 1;
-		String next = first ? "Show me around" : last ? "Done" : "Next";
+		String next = first ? "Show me around" : last ? "Done" : lookStep ? "Keep mine" : "Next";
 		int bw = font.width(next) + 16, bx = cx + cw - 8 - bw, by = cy + ch - 20;
 		boolean overNext = mouseX >= bx && mouseX < bx + bw && mouseY >= by && mouseY < by + 14;
 		PillButton.draw(g, font, bx, by, bw, 14, next, true, overNext ? 1f : 0f, a);
@@ -321,6 +419,15 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 
 	/** Goes to a group and page (and remembers it for next time). */
 	void showPage(int cat, int pageIndex) {
+		if (search != null) {
+			search = null;
+			lastCat = cat;
+			lastPage[cat] = pageIndex;
+			rowScroll = 0;
+			pageShownAt = Util.getMillis();
+			rebuildWidgets();
+			return;
+		}
 		if (cat == lastCat && pageIndex == lastPage[lastCat]) return;
 		lastCat = cat;
 		lastPage[cat] = pageIndex;
@@ -382,7 +489,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		if (!twoColumns) split = rows.size();
 		int col1X1 = twoColumns ? areaX0 + colW : areaX1;
 		List<MenuSkin.Group> groups = new ArrayList<>();
-		groups.add(new MenuSkin.Group(areaX0, boxTop, col1X1, boxBottom, page().name()));
+		groups.add(new MenuSkin.Group(areaX0, boxTop, col1X1, boxBottom, search != null ? "Results" : page().name()));
 		if (twoColumns) groups.add(new MenuSkin.Group(areaX1 - colW, boxTop, areaX1, boxBottom, "More"));
 		MenuSkin.setGroups(groups);
 
@@ -414,10 +521,16 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("Less fog = you see further."));
 				r.add(enumRow("Clouds", LmgConfig.CloudMode.values(), () -> c.clouds, v -> c.clouds = v, v -> v.label));
 				r.add(enumRow("Aurora", LmgConfig.Aurora.values(), () -> c.aurora, v -> c.aurora = v, v -> v.label)
-						.withHint("Northern lights at night."));
-				r.add(SettingRow.color("Aurora colour", () -> c.auroraRgb, null, () -> picker("Aurora colour", c.auroraRgb,
-						v -> { c.auroraRgb = v; c.aurora = LmgConfig.Aurora.CUSTOM; }, () -> c.auroraRgb = 0x3CFFA0, null, null))
-						.withHint("Picking one switches the aurora to Your colour."));
+						.withHint("Northern lights at night.").withCost(1)
+						.withMore(() -> more("Aurora", "Northern lights at night", () -> List.of(
+								SettingRow.color("Colour", () -> c.auroraRgb, null, () -> picker("Aurora colour", c.auroraRgb,
+										v -> { c.auroraRgb = v; c.aurora = LmgConfig.Aurora.CUSTOM; }, () -> c.auroraRgb = 0x3CFFA0, null, null))
+										.withHint("Picking one switches the aurora to Your colour."),
+								SettingRow.slider("Brightness", () -> c.auroraBrightness, v -> c.auroraBrightness = (float) v, 0.3, 2, 0.1,
+										v -> Math.round(v * 100) + "%").withHint("How bright the curtains glow."),
+								SettingRow.slider("Height", () -> c.auroraHeight, v -> c.auroraHeight = (float) v, -20, 40, 2,
+										v -> (v > 0 ? "+" : "") + Math.round(v)).withHint("Lower = closer to the horizon.")),
+								() -> { c.auroraBrightness = 1f; c.auroraHeight = 0f; })));
 				r.add(SettingRow.toggle("Always show stars", () -> c.alwaysStars, v -> c.alwaysStars = v)
 						.withHint("Stars stay out during the day too."));
 			}
@@ -430,42 +543,48 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						},
 						() -> c.winter = cycle(dev.lmg.client.world.Winter.Mode.values(), c.winter == null ? dev.lmg.client.world.Winter.Mode.SEASONAL : c.winter, 1),
 						() -> c.winter = cycle(dev.lmg.client.world.Winter.Mode.values(), c.winter == null ? dev.lmg.client.world.Winter.Mode.SEASONAL : c.winter, -1))
-						.withHint("Snow falls everywhere - only on your screen."));
+						.withHint("Snow falls everywhere - only on your screen.")
+						.withMore(() -> more("Winter", "Snow that builds up around you", () -> List.of(
+								SettingRow.toggle("Snow settles", () -> c.winterSettles, v -> c.winterSettles = v)
+										.withHint("A layer of snow builds up around you.").withCost(2),
+								SettingRow.choice("How fast", () -> LmgConfig.WINTER_SPEED_LABELS[c.winterSpeed],
+										() -> c.winterSpeed = step(c.winterSpeed, LmgConfig.WINTER_SPEEDS.length, 1),
+										() -> c.winterSpeed = step(c.winterSpeed, LmgConfig.WINTER_SPEEDS.length, -1))
+										.withHint("How quickly the snow piles up (and melts)."),
+								SettingRow.choice("How deep", () -> LmgConfig.WINTER_DEPTH_LABELS[c.winterDepth],
+										() -> c.winterDepth = step(c.winterDepth, LmgConfig.WINTER_DEPTHS.length, 1),
+										() -> c.winterDepth = step(c.winterDepth, LmgConfig.WINTER_DEPTHS.length, -1))
+										.withHint("A light dusting, or a proper blanket.")),
+								() -> { c.winterSpeed = 1; c.winterDepth = 1; })));
 				r.add(SettingRow.toggle("Snow settles", () -> c.winterSettles, v -> c.winterSettles = v)
-						.withHint("A layer of snow builds up around you."));
+						.withHint("A layer of snow builds up around you.").withCost(2));
 			}
 			case "Effects" -> {
-				r.add(enumRow("Crosshair", LmgConfig.Crosshair.values(), () -> c.crosshair, v -> c.crosshair = v, v -> v.label)
-						.withHint("Your own crosshair shape."));
-				r.add(SettingRow.color("Crosshair colour", () -> c.crosshairRgb, null, () -> picker("Crosshair colour", c.crosshairRgb,
-						v -> { c.crosshairRgb = v; if (c.crosshair == LmgConfig.Crosshair.VANILLA) c.crosshair = LmgConfig.Crosshair.CROSS_DOT; },
-						() -> c.crosshairRgb = 0xFFFFFF, null, null)).withHint("Any colour. Vanilla's can't be recoloured."));
-				r.add(SettingRow.button("Draw your crosshair", "Draw", () -> minecraft.gui.setScreen(new CrosshairEditorScreen(this)))
-						.withHint("Paint it pixel by pixel. Picks \"Your drawing\" for you."));
-				r.add(SettingRow.choice("Crosshair spin", () -> LmgConfig.SPIN_LABELS[c.crosshairSpin],
-						() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, 1),
-						() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, -1))
-						.withHint("Makes your crosshair turn round and round."));
-				r.add(SettingRow.choice("Crosshair size", () -> LmgConfig.CROSSHAIR_SIZE_LABELS[c.crosshairSize],
-						() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, 1),
-						() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, -1)));
-				r.add(SettingRow.toggle("Crosshair shows reach", () -> c.crosshairTargetColor, v -> c.crosshairTargetColor = v)
-						.withHint("Turns your in-reach colour when you can hit."));
-				r.add(SettingRow.toggle("Damage numbers", () -> c.damageNumbers, v -> c.damageNumbers = v)
-						.withHint("How much each of your hits did, floating up."));
-				r.add(SettingRow.color("Damage colour", () -> c.damageRgb, null, () -> picker("Damage colour", c.damageRgb,
-						v -> c.damageRgb = v, () -> c.damageRgb = 0xFF5A6E, null, null)));
-				r.add(SettingRow.color("Hurt flash colour", () -> c.hurtRgb, null, () -> picker("Hurt flash colour", c.hurtRgb,
-						v -> { c.hurtRgb = v; dev.lmg.client.feature.Visuals.applyHurtColor(); },
-						() -> { c.hurtRgb = 0xFF0000; dev.lmg.client.feature.Visuals.applyHurtColor(); }, null, null))
-						.withHint("The flash when anything gets hit (red normally)."));
+				r.add(SettingRow.choice("Colour filter", () -> c.worldFilter == null ? "Off" : c.worldFilter.label, () -> nextFilter(1), () -> nextFilter(-1),
+						() -> c.worldFilter == null ? 0x3A3A44 : c.worldFilter.swatch)
+						.withHint("A colour grade over the whole world.").withCost(1));
 				r.add(SettingRow.choice("Motion blur", () -> LmgConfig.MOTION_BLUR_LABELS[c.motionBlur],
 						() -> c.motionBlur = step(c.motionBlur, LmgConfig.MOTION_BLUR_LABELS.length, 1),
 						() -> c.motionBlur = step(c.motionBlur, LmgConfig.MOTION_BLUR_LABELS.length, -1))
-						.withHint("Smears fast movement. Feels smoother."));
-				r.add(SettingRow.choice("Colour filter", () -> c.worldFilter == null ? "Off" : c.worldFilter.label, () -> nextFilter(1), () -> nextFilter(-1),
-						() -> c.worldFilter == null ? 0x3A3A44 : c.worldFilter.swatch)
-						.withHint("A colour grade over the whole world."));
+						.withHint("Smears fast movement. Feels smoother.").withCost(2));
+				r.add(SettingRow.choice("Vignette", () -> LmgConfig.LENS_LABELS[c.lensVignette],
+						() -> c.lensVignette = step(c.lensVignette, LmgConfig.LENS_LABELS.length, 1),
+						() -> c.lensVignette = step(c.lensVignette, LmgConfig.LENS_LABELS.length, -1))
+						.withHint("Darker corners, like looking through a lens.").keywords("lens corners"));
+				r.add(SettingRow.choice("Film grain", () -> LmgConfig.LENS_LABELS[c.lensGrain],
+						() -> c.lensGrain = step(c.lensGrain, LmgConfig.LENS_LABELS.length, 1),
+						() -> c.lensGrain = step(c.lensGrain, LmgConfig.LENS_LABELS.length, -1))
+						.withHint("A fine moving noise, like old film.").withCost(1).keywords("lens noise"));
+				r.add(SettingRow.toggle("Colour fringes", () -> c.lensChroma, v -> c.lensChroma = v)
+						.withHint("Red and blue edges at the sides, like a cheap camera.").withCost(1).keywords("lens chromatic aberration"));
+				r.add(enumRow("Name tags", LmgConfig.NameTagBg.values(), () -> c.nameTagBg, v -> c.nameTagBg = v, v -> v.label)
+						.withHint("The box behind names over heads.").keywords("nameplate")
+						.withMore(() -> more("Name tags", "Names over people's heads", () -> List.of(
+								SettingRow.toggle("Show their health", () -> c.nameTagHealth, v -> c.nameTagHealth = v)
+										.withHint("Their health in hearts, after the name."),
+								SettingRow.toggle("My name tag (F5)", () -> c.ownNameTag, v -> c.ownNameTag = v)
+										.withHint("See your own name over your head.")),
+								() -> { c.nameTagHealth = false; c.ownNameTag = false; })));
 				r.add(SettingRow.toggle("My name tag (F5)", () -> c.ownNameTag, v -> c.ownNameTag = v)
 						.withHint("See your own name over your head (F5)."));
 			}
@@ -478,8 +597,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				r.add(SettingRow.choice("Bar size", () -> LmgConfig.BAR_SIZE_LABELS[c.barSize],
 						() -> c.barSize = step(c.barSize, LmgConfig.BAR_SIZES.length, 1),
 						() -> c.barSize = step(c.barSize, LmgConfig.BAR_SIZES.length, -1)));
-				r.add(SettingRow.toggle("Vignette", () -> c.cinematicVignette, v -> c.cinematicVignette = v)
-						.withHint("Darker corners, like a camera lens."));
+				r.add(SettingRow.toggle("Film-mode vignette", () -> c.cinematicVignette, v -> c.cinematicVignette = v)
+						.withHint("Darker corners while cinematic mode is on."));
 				r.add(SettingRow.toggle("Smooth camera", () -> c.cinematicSmoothCam, v -> c.cinematicSmoothCam = v)
 						.withHint("Slow, floaty mouse look while filming."));
 				r.add(SettingRow.toggle("Smooth freecam", () -> c.smoothFreecam, v -> c.smoothFreecam = v)
@@ -497,7 +616,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				r.add(SettingRow.button("Photo mode", "Open", () -> {
 					if (minecraft.player != null) minecraft.gui.setScreen(new PhotoModeScreen());
 					else toast("Join a world first", "Then press F8.");
-				}).withHint("Freeze, frame it, save it. Key: F8"));
+				}).withHint("Freeze, frame, focus, timer and poses. Key: F8"));
 			}
 			case "Outfit" -> {
 				r.add(SettingRow.button("Cosmetics & skins", "Open", () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))
@@ -511,12 +630,22 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			}
 			case "Trails" -> {
 				r.add(enumRow("Trail", LmgConfig.Trail.values(), () -> c.trail, v -> c.trail = v, v -> v.label)
-						.withHint("Particles behind you as you walk."));
-				r.add(SettingRow.color("Trail colour", c::trailColor, null, () -> picker("Trail colour", c.trailColor(),
-						v -> { c.trailRgb = v; if (c.trail == LmgConfig.Trail.OFF) c.trail = LmgConfig.Trail.ACCENT_DUST; }, () -> c.trailRgb = -1, null, null))
-						.withHint("For the Coloured dust trail. Default: accent."));
+						.withHint("Particles behind you as you walk.").withCost(1)
+						.withMore(() -> more("Trail", "Particles behind you", () -> List.of(
+								SettingRow.color("Colour", c::trailColor, null, () -> picker("Trail colour", c.trailColor(),
+										v -> { c.trailRgb = v; if (c.trail == LmgConfig.Trail.OFF) c.trail = LmgConfig.Trail.ACCENT_DUST; }, () -> c.trailRgb = -1, null, null))
+										.withHint("For the Coloured dust trail. Default: accent."),
+								SettingRow.choice("Amount", () -> LmgConfig.TRAIL_AMOUNT_LABELS[c.trailAmount],
+										() -> c.trailAmount = step(c.trailAmount, LmgConfig.TRAIL_AMOUNT_LABELS.length, 1),
+										() -> c.trailAmount = step(c.trailAmount, LmgConfig.TRAIL_AMOUNT_LABELS.length, -1))
+										.withHint("How many particles you leave behind."),
+								SettingRow.slider("Size", () -> c.trailSize, v -> c.trailSize = (float) v, 0.5, 2, 0.1,
+										v -> Math.round(v * 100) + "%").withHint("For the Coloured dust trail."),
+								SettingRow.toggle("In first person too", () -> c.trailFirstPerson, v -> c.trailFirstPerson = v)
+										.withHint("Off: only when you can see yourself.")),
+								() -> { c.trailRgb = -1; c.trailAmount = 1; c.trailSize = 1f; })));
 				r.add(enumRow("Ambient particles", LmgConfig.Ambient.values(), () -> c.ambient, v -> c.ambient = v, v -> v.label)
-						.withHint("Things floating around you."));
+						.withHint("Fireflies, petals, leaves, mist... around you.").withCost(1));
 				r.add(SettingRow.choice("Ambient amount", () -> LmgConfig.AMOUNT_LABELS[c.ambientAmount],
 						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, 1),
 						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, -1)));
@@ -529,7 +658,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("Drag sliders and watch your hand change."));
 				r.add(SettingRow.toggle("Lmg totem", () -> OreOutlines.isEnabled(OreOutlines.TOTEM),
 						v -> { c.lmgTotem = v; OreOutlines.setEnabled(OreOutlines.TOTEM, v); })
-						.withHint("Totems become a Star of David."));
+						.withHint("Off unless you turn it on. Totems show the Lmg star."));
 			}
 			case "Sharing" -> {
 				r.add(SettingRow.toggle("Share pets & cosmetics", () -> c.shareAvatar, v -> c.shareAvatar = v)
@@ -547,23 +676,54 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			}
 			case "Target" -> {
 				r.add(SettingRow.toggle("Glowing outline", () -> c.targetOutline, v -> c.targetOutline = v)
-						.withHint("Outlines whoever you aim at."));
+						.withHint("Outlines whoever you aim at.").withCost(1));
 				r.add(SettingRow.choice("Highlight distance", () -> LmgConfig.TARGET_RANGES[c.targetRange] + " blocks",
 						() -> c.targetRange = step(c.targetRange, LmgConfig.TARGET_RANGES.length, 1),
 						() -> c.targetRange = step(c.targetRange, LmgConfig.TARGET_RANGES.length, -1))
 						.withHint("Nothing further away than this lights up."));
-				r.add(SettingRow.color("Highlight color", c::targetRgb, null, () -> picker("Highlight color", c.targetRgb(),
+				r.add(SettingRow.color("Highlight colour", c::targetRgb, null, () -> picker("Highlight colour", c.targetRgb(),
 						v -> c.targetColor = v, () -> c.targetColor = -1, null, null))
 						.withHint("Default follows your accent colour."));
-				r.add(SettingRow.toggle("New color in reach", () -> c.reachColorOn, v -> c.reachColorOn = v)
+				r.add(SettingRow.toggle("New colour in reach", () -> c.reachColorOn, v -> c.reachColorOn = v)
 						.withHint("Changes colour when you can hit them."));
-				r.add(SettingRow.color("In-reach color", () -> c.reachColor, null, () -> picker("In-reach color", c.reachColor,
+				r.add(SettingRow.color("In-reach colour", () -> c.reachColor, null, () -> picker("In-reach colour", c.reachColor,
 						v -> c.reachColor = v, () -> c.reachColor = 0xFF4D5E, null, null))
 						.withHint("Shown once they're close enough to hit."));
 				r.add(SettingRow.toggle("Target info panel", () -> c.targetHud, v -> c.targetHud = v)
 						.withHint("Their health, armour and effects."));
 				r.add(SettingRow.toggle("Target reticle", () -> c.targetReticle, v -> c.targetReticle = v)
 						.withHint("A ring under whoever you aim at."));
+			}
+			case "Crosshair" -> {
+				r.add(enumRow("Crosshair", LmgConfig.Crosshair.values(), () -> c.crosshair, v -> c.crosshair = v, v -> v.label)
+						.withHint("Your own crosshair shape. The gear has size, spin and gaps.")
+						.withMore(() -> more("Crosshair", "Size, spin and shape", () -> List.of(
+								SettingRow.choice("Size", () -> LmgConfig.CROSSHAIR_SIZE_LABELS[c.crosshairSize],
+										() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, 1),
+										() -> c.crosshairSize = step(c.crosshairSize, LmgConfig.CROSSHAIR_SIZES.length, -1)),
+								SettingRow.choice("Spin", () -> LmgConfig.SPIN_LABELS[c.crosshairSpin],
+										() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, 1),
+										() -> c.crosshairSpin = step(c.crosshairSpin, LmgConfig.SPIN_SPEEDS.length, -1))
+										.withHint("Makes it turn round and round."),
+								SettingRow.slider("Gap", () -> c.crosshairGap, v -> c.crosshairGap = (int) Math.round(v), 0, 8, 1,
+										v -> String.valueOf(Math.round(v))).withHint("Space in the middle (Cross styles)."),
+								SettingRow.slider("Line length", () -> c.crosshairLength, v -> c.crosshairLength = (int) Math.round(v), 1, 10, 1,
+										v -> String.valueOf(Math.round(v))).withHint("How long each arm is (Cross styles)."),
+								SettingRow.slider("Thickness", () -> c.crosshairThickness, v -> c.crosshairThickness = (int) Math.round(v), 1, 3, 1,
+										v -> String.valueOf(Math.round(v))),
+								SettingRow.slider("Centre dot", () -> c.crosshairDot, v -> c.crosshairDot = (int) Math.round(v), 0, 3, 1,
+										v -> Math.round(v) == 0 ? "None" : String.valueOf(Math.round(v))).withHint("Size of the dot (Dot and Cross + dot)."),
+								SettingRow.toggle("Dark edge", () -> c.crosshairOutline, v -> c.crosshairOutline = v)
+										.withHint("Keeps it visible on bright skies.")),
+								() -> { c.crosshairSize = 1; c.crosshairSpin = 0; c.crosshairGap = 2; c.crosshairLength = 4;
+									c.crosshairThickness = 1; c.crosshairDot = 1; c.crosshairOutline = true; })));
+				r.add(SettingRow.color("Crosshair colour", () -> c.crosshairRgb, null, () -> picker("Crosshair colour", c.crosshairRgb,
+						v -> { c.crosshairRgb = v; if (c.crosshair == LmgConfig.Crosshair.VANILLA) c.crosshair = LmgConfig.Crosshair.CROSS_DOT; },
+						() -> c.crosshairRgb = 0xFFFFFF, null, null)).withHint("Any colour. Vanilla's can't be recoloured."));
+				r.add(SettingRow.button("Draw your crosshair", "Draw", () -> minecraft.gui.setScreen(new CrosshairEditorScreen(this)))
+						.withHint("Paint it pixel by pixel. Picks \"Your drawing\" for you."));
+				r.add(SettingRow.toggle("Crosshair shows reach", () -> c.crosshairTargetColor, v -> c.crosshairTargetColor = v)
+						.withHint("Turns your in-reach colour when you can hit."));
 			}
 			case "Hits" -> {
 				r.add(enumRow("Hit effect", LmgConfig.HitEffect.values(), () -> c.hitEffect, v -> c.hitEffect = v, v -> v.label)
@@ -572,23 +732,53 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						v -> c.hitRgb = v, () -> c.hitRgb = -1, null, null))
 						.withHint("For the Coloured burst. Default: accent."));
 				r.add(enumRow("Kill effect", LmgConfig.KillEffect.values(), () -> c.killEffect, v -> c.killEffect = v, v -> v.label));
+				r.add(SettingRow.toggle("Damage numbers", () -> c.damageNumbers, v -> c.damageNumbers = v)
+						.withHint("How much each of your hits did, floating up.")
+						.withMore(() -> more("Damage numbers", "The numbers that pop up when you hit", () -> List.of(
+								enumRow("Style", LmgConfig.DamageStyle.values(), () -> c.damageStyle, v -> c.damageStyle = v, v -> v.label),
+								SettingRow.color("Colour", () -> c.damageRgb, null, () -> picker("Damage colour", c.damageRgb,
+										v -> c.damageRgb = v, () -> c.damageRgb = 0xFF5A6E, null, null)),
+								SettingRow.slider("Size", () -> c.damageSize, v -> c.damageSize = (float) v, 0.6, 2, 0.1,
+										v -> Math.round(v * 100) + "%"),
+								SettingRow.slider("How long", () -> c.damageTime, v -> c.damageTime = (float) v, 0.5, 3, 0.1,
+										v -> String.format(java.util.Locale.ROOT, "%.1f s", v)).withHint("Seconds each number stays."),
+								SettingRow.toggle("Big hits stand out", () -> c.damageCritBig, v -> c.damageCritBig = v)
+										.withHint("Hits of 3 hearts or more are bigger and golden.")),
+								() -> { c.damageStyle = LmgConfig.DamageStyle.SHADOW; c.damageRgb = 0xFF5A6E; c.damageSize = 1f;
+									c.damageTime = 1.1f; c.damageCritBig = true; })));
+				r.add(SettingRow.choice("Hit sound", () -> c.hitSound.label,
+						() -> { c.hitSound = cycle(LmgConfig.HitSound.values(), c.hitSound, 1); dev.lmg.client.feature.Visuals.playHitSound(c.hitSound, c.hitSoundVolume, c.hitSoundPitch); },
+						() -> { c.hitSound = cycle(LmgConfig.HitSound.values(), c.hitSound, -1); dev.lmg.client.feature.Visuals.playHitSound(c.hitSound, c.hitSoundVolume, c.hitSoundPitch); })
+						.withHint("A little sound when your hit really lands.").keywords("audio ding")
+						.withMore(() -> more("Hit sound", "Only plays for hits the server counted", () -> List.of(
+								SettingRow.slider("Volume", () -> c.hitSoundVolume, v -> c.hitSoundVolume = (float) v, 0.1, 1, 0.05,
+										v -> Math.round(v * 100) + "%"),
+								SettingRow.slider("Pitch", () -> c.hitSoundPitch, v -> c.hitSoundPitch = (float) v, 0.5, 2, 0.05,
+										v -> Math.round(v * 100) + "%").withHint("Higher or lower."),
+								SettingRow.toggle("Only on players", () -> c.hitSoundPlayersOnly, v -> c.hitSoundPlayersOnly = v)
+										.withHint("Quiet when you hit mobs."),
+								SettingRow.button("Hear it", "Play", () -> dev.lmg.client.feature.Visuals.playHitSound(
+										c.hitSound == LmgConfig.HitSound.OFF ? LmgConfig.HitSound.DING : c.hitSound, c.hitSoundVolume, c.hitSoundPitch))),
+								() -> { c.hitSoundVolume = 0.7f; c.hitSoundPitch = 1f; c.hitSoundPlayersOnly = false; })));
+				r.add(SettingRow.color("Hurt flash colour", () -> c.hurtRgb, null, () -> picker("Hurt flash colour", c.hurtRgb,
+						v -> { c.hurtRgb = v; dev.lmg.client.feature.Visuals.applyHurtColor(); },
+						() -> { c.hurtRgb = 0xFF0000; dev.lmg.client.feature.Visuals.applyHurtColor(); }, null, null))
+						.withHint("The flash when anything gets hit (red normally)."));
 			}
 			case "Clarity" -> {
 				r.add(enumRow("Block overlay", LmgConfig.BlockOverlay.values(), () -> c.blockOverlay, v -> c.blockOverlay = v, v -> v.label)
 						.withHint("The box around the block you look at."));
-				r.add(SettingRow.color("Overlay color", () -> c.overlayRgb(Util.getMillis() / 50f), () -> c.overlayRainbow,
-						() -> picker("Overlay color", c.overlayRgb(0), v -> c.overlayRgb = v,
+				r.add(SettingRow.color("Overlay colour", () -> c.overlayRgb(Util.getMillis() / 50f), () -> c.overlayRainbow,
+						() -> picker("Overlay colour", c.overlayRgb(0), v -> c.overlayRgb = v,
 								() -> { c.overlayRgb = -1; c.overlayColor = LmgConfig.CosmeticColor.ACCENT; },
 								() -> c.overlayRainbow, v -> c.overlayRainbow = v))
 						.withHint("The box around the block you look at."));
 				r.add(SettingRow.toggle("Fullbright", () -> c.fullbright, v -> c.fullbright = v)
 						.withHint("See in caves without torches. Key: B"));
-				r.add(SettingRow.toggle("Ore edges", OreOutlines::isEnabled, OreOutlines::setEnabled)
-						.withHint("A texture pack. Off on strict servers."));
+				r.add(SettingRow.toggle("Outlined ores", OreOutlines::isEnabled, OreOutlines::setEnabled)
+						.withHint("Ore blocks get a dark edge. Some servers don't allow it.").keywords("ore edges texture pack"));
 				r.add(SettingRow.toggle("Ore glow in the dark", () -> c.oreGlow, v -> c.oreGlow = v)
-						.withHint("Outlines ores you can already see."));
-				r.add(SettingRow.toggle("Potion effects HUD", () -> c.potionHud, v -> c.potionHud = v)
-						.withHint("A tidy list of your effects."));
+						.withHint("Ores you can already see glow a little.").withCost(1));
 				r.add(SettingRow.toggle("Low fire", () -> c.lowFire, v -> c.lowFire = v)
 						.withHint("Smaller fire when you're burning."));
 				r.add(SettingRow.toggle("No hurt camera shake", () -> c.noHurtCam, v -> c.noHurtCam = v)
@@ -609,6 +799,47 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				r.add(SettingRow.toggle("Show ping", () -> c.hudShowPing, v -> c.hudShowPing = v));
 				r.add(SettingRow.toggle("Show clock", () -> c.hudShowClock, v -> c.hudShowClock = v));
 				r.add(SettingRow.toggle("Show coordinates", () -> c.hudShowCoords, v -> c.hudShowCoords = v));
+				r.add(SettingRow.toggle("Show friends online", () -> c.hudShowFriends, v -> c.hudShowFriends = v)
+						.withHint("\"2 friends on\" in the bar (with Friends on)."));
+			}
+			case "Panels" -> {
+				r.add(SettingRow.toggle("PvP stats", () -> c.pvpHud, v -> c.pvpHud = v)
+						.withHint("Clicks per second, combo and reach. Drag it in Edit HUD.").keywords("cps combo reach")
+						.withMore(() -> more("PvP stats", "A small panel; only counts real hits", () -> List.of(
+								SettingRow.toggle("Clicks per second", () -> c.pvpCps, v -> c.pvpCps = v)
+										.withHint("Left | right clicks in the last second."),
+								SettingRow.toggle("Combo", () -> c.pvpCombo, v -> c.pvpCombo = v)
+										.withHint("Hits in a row without getting hit back."),
+								SettingRow.toggle("Reach", () -> c.pvpReach, v -> c.pvpReach = v)
+										.withHint("How far away your last hit landed.")),
+								() -> { c.pvpCps = true; c.pvpCombo = true; c.pvpReach = true; })));
+				r.add(SettingRow.toggle("Armour", () -> c.armourHud, v -> c.armourHud = v)
+						.withHint("Your armour with how worn it is. Blinks before it breaks.").keywords("durability")
+						.withMore(() -> more("Armour", "Durability at a glance", () -> List.of(
+								SettingRow.toggle("Held item too", () -> c.armourHeld, v -> c.armourHeld = v)
+										.withHint("Your sword or tool, if it can wear out."),
+								SettingRow.toggle("Numbers", () -> c.armourNumbers, v -> c.armourNumbers = v)
+										.withHint("Uses left, next to each bar.")),
+								() -> { c.armourHeld = true; c.armourNumbers = false; })));
+				r.add(SettingRow.toggle("Potion effects", () -> c.potionHud, v -> c.potionHud = v)
+						.withHint("A tidy list of your effects."));
+				r.add(enumRow("Hotbar", LmgConfig.HotbarStyle.values(), () -> c.hotbarStyle, v -> c.hotbarStyle = v, v -> v.label)
+						.withHint("The look of the bar with your items.")
+						.withMore(() -> more("Hotbar", "The bar with your items", () -> List.of(
+								SettingRow.color("Colour", () -> c.hotbarRgb < 0 ? c.accentRgb() : c.hotbarRgb, null, () -> picker("Hotbar colour",
+										c.hotbarRgb < 0 ? c.accentRgb() : c.hotbarRgb, v -> c.hotbarRgb = v, () -> c.hotbarRgb = -1, null, null))
+										.withHint("The selected slot. Default: your accent."),
+								SettingRow.slider("Background", () -> c.hotbarOpacity, v -> c.hotbarOpacity = (float) v, 0.1, 1, 0.05,
+										v -> Math.round(v * 100) + "%").withHint("How solid the bar is.")),
+								() -> { c.hotbarRgb = -1; c.hotbarOpacity = 0.7f; })));
+				r.add(SettingRow.color("Inventory colour", () -> c.inventoryTint < 0 ? 0x2A2F3A : c.inventoryTint, null,
+						() -> picker("Inventory colour", c.inventoryTint < 0 ? 0x6FB6FF : c.inventoryTint, v -> c.inventoryTint = v, () -> c.inventoryTint = -1, null, null))
+						.withHint("Tints chests and your inventory. Default (in the picker) = off.")
+						.withMore(() -> more("Inventory colour", "A wash of colour over chests", () -> List.of(
+								SettingRow.slider("Strength", () -> c.inventoryTintStrength, v -> c.inventoryTintStrength = (float) v, 0.05, 0.8, 0.05,
+										v -> Math.round(v * 100) + "%"),
+								SettingRow.button("Turn it off", "Off", () -> c.inventoryTint = -1)),
+								() -> c.inventoryTintStrength = 0.3f)));
 			}
 			case "Maps" -> {
 				r.add(SettingRow.button("World map", "Open", () -> {
@@ -616,7 +847,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 					else toast("Join a world first", "The map fills in as you explore.");
 				}).withHint("Everywhere you've been. Key: M"));
 				r.add(SettingRow.toggle("Minimap", () -> c.minimap, v -> c.minimap = v)
-						.withHint("Drag it anywhere in Edit HUD."));
+						.withHint("Drag it anywhere in Edit HUD.").withCost(1));
 				r.add(SettingRow.choice("Minimap size", () -> LmgConfig.MINIMAP_SIZE_LABELS[c.minimapSize],
 						() -> c.minimapSize = step(c.minimapSize, LmgConfig.MINIMAP_SIZES.length, 1),
 						() -> c.minimapSize = step(c.minimapSize, LmgConfig.MINIMAP_SIZES.length, -1)));
@@ -671,7 +902,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						() -> c.menuStyle.ordinal(),
 						i -> { c.menuStyle = LmgConfig.MenuStyle.values()[i]; rebuildWidgets(); })
 						.withHint("Three looks, same settings."));
-				r.add(SettingRow.color("Accent color", c::accentRgb, null, () -> picker("Accent color", c.accentRgb(),
+				r.add(SettingRow.color("Accent colour", c::accentRgb, null, () -> picker("Accent colour", c.accentRgb(),
 						v -> c.accentRgb = v, () -> c.accentRgb = -1, null, null))
 						.withHint("Switches, HUD and minimap use it."));
 				r.add(SettingRow.toggle("Accent on Skeet/Neverlose", () -> c.menuUseAccent, v -> c.menuUseAccent = v)
@@ -698,8 +929,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("The logo while the game loads."));
 				r.add(SettingRow.toggle("Themed vanilla menus", () -> c.themedMenus, v -> c.themedMenus = v)
 						.withHint("Our background on vanilla menus."));
-				r.add(SettingRow.toggle("Light curtains", () -> c.curtains, v -> c.curtains = v)
-						.withHint("Soft light beams on the main menu."));
+				r.add(SettingRow.toggle("Light beams", () -> c.curtains, v -> c.curtains = v)
+						.withHint("Soft beams of light on the main menu.").keywords("curtains"));
 				r.add(SettingRow.choice("Sparkles", () -> LmgConfig.SPARKLE_AMOUNT_LABELS[c.sparkles],
 						() -> c.sparkles = step(c.sparkles, LmgConfig.SPARKLE_AMOUNTS.length, 1),
 						() -> c.sparkles = step(c.sparkles, LmgConfig.SPARKLE_AMOUNTS.length, -1))
@@ -710,6 +941,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			case "Help" -> {
 				r.add(SettingRow.button("Show me around", "Start", () -> startTour())
 						.withHint("The quick tour of this menu again."));
+				r.add(SettingRow.button("Starting looks", "Pick", this::openLooks)
+						.withHint("Clean, Showcase, PvP or Cosy: lots of settings in one click.").keywords("preset theme"));
 				r.add(SettingRow.toggle("Offer the tour", () -> !c.tourDone, v -> c.tourDone = !v)
 						.withHint("Off: the tour never pops up by itself."));
 				r.add(SettingRow.button("About & safety", "Open", () -> minecraft.gui.setScreen(new WelcomeScreen(this, false)))
@@ -736,36 +969,30 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						() -> c.freecamSpeed = step(c.freecamSpeed, LmgConfig.FREECAM_SPEEDS.length, -1))
 						.withHint("Hold sprint to go faster."));
 				r.add(SettingRow.toggle("Server-safe mode", () -> c.serverSafe, v -> c.serverSafe = v)
-						.withHint("Keeps freecam and ore glow off on servers."));
+						.withHint("On servers, freecam and ore glow stay off so you don't break rules.").keywords("ban rules"));
 			}
 			case "FPS" -> {
+				r.add(SettingRow.toggle("Low-end mode", () -> c.lowEnd, v -> { dev.lmg.client.feature.Looks.setLowEnd(v); toast(v ? "Low-end mode on" : "Low-end mode off",
+								v ? "Heavy effects turned down. Turn it off to get them back." : "Everything is back how you had it."); })
+						.withHint("One click: turns the heavy stuff down. Off puts it all back.").keywords("performance lag laptop"));
 				r.add(SettingRow.toggle("FPS boost", () -> c.fpsBoost, dev.lmg.client.feature.FpsBoost::set)
 						.withHint("Turns down Minecraft's heaviest settings. Off undoes it."));
 				r.add(SettingRow.toggle("Trail in first person", () -> c.trailFirstPerson, v -> c.trailFirstPerson = v)
 						.withHint("Off: the trail only spawns when you can see it."));
-				r.add(SettingRow.toggle("Follow particle setting", () -> c.followParticleSetting, v -> c.followParticleSetting = v)
-						.withHint("Minecraft's Particles setting limits ours too."));
+				r.add(SettingRow.toggle("Obey particle setting", () -> c.followParticleSetting, v -> c.followParticleSetting = v)
+						.withHint("Minecraft's own Particles setting limits ours too."));
 				r.add(SettingRow.choice("Minimap refresh", () -> LmgConfig.REFRESH_LABELS[c.minimapRefresh],
 						() -> c.minimapRefresh = step(c.minimapRefresh, LmgConfig.MINIMAP_REFRESH_MS.length, 1),
 						() -> c.minimapRefresh = step(c.minimapRefresh, LmgConfig.MINIMAP_REFRESH_MS.length, -1))
-						.withHint("Only redraws when you move. Saver = fewer redraws."));
-				r.add(SettingRow.choice("Map scanning", () -> LmgConfig.SCAN_LABELS[c.mapScan],
+						.withHint("How often the minimap redraws. Saver = smoother game."));
+				r.add(SettingRow.choice("Map fill-in speed", () -> LmgConfig.SCAN_LABELS[c.mapScan],
 						() -> c.mapScan = step(c.mapScan, LmgConfig.SCAN_SWEEP.length, 1),
 						() -> c.mapScan = step(c.mapScan, LmgConfig.SCAN_SWEEP.length, -1))
-						.withHint("How fast the map fills in. Slow = lighter."));
-				r.add(SettingRow.toggle("Ore glow", () -> c.oreGlow, v -> c.oreGlow = v)
-						.withHint("Light now, but off is lighter still."));
-				r.add(SettingRow.toggle("Aurora", () -> c.aurora != LmgConfig.Aurora.OFF,
-						v -> c.aurora = v ? LmgConfig.Aurora.values()[Math.min(1, LmgConfig.Aurora.values().length - 1)] : LmgConfig.Aurora.OFF)
-						.withHint("Northern lights at night."));
-				r.add(SettingRow.choice("Ambient particles", () -> LmgConfig.AMOUNT_LABELS[c.ambientAmount],
-						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, 1),
-						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, -1))
-						.withHint("Fewer floating particles = smoother."));
-				r.add(SettingRow.choice("Shaders", this::shaderLabel, () -> pickShader(1), () -> pickShader(-1))
-						.withHint("Shaders cost the most FPS by far."));
+						.withHint("How quickly the world map draws new places. Slow = smoother game.").keywords("scanning"));
 			}
 			case "Configs" -> {
+				r.add(SettingRow.choice("Profile", () -> c.activeProfile, () -> switchProfile(1), () -> switchProfile(-1))
+						.withHint("Everyday, PvP, Screenshots: each remembers its own setup.").keywords("preset"));
 				r.add(SettingRow.button("Saved configs", "Open", () -> minecraft.gui.setScreen(new ConfigsScreen(this)))
 						.withHint("Save, load and delete your setups."));
 				r.add(SettingRow.button("Browse configs online", "Website", () ->
@@ -816,6 +1043,33 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		return r;
 	}
 
+	/** Opens the "more options" card for a setting. */
+	private void more(String title, String about, java.util.function.Supplier<List<SettingRow>> rows, Runnable reset) {
+		minecraft.gui.setScreen(new MoreOptionsScreen(this, title, about, rows, reset));
+	}
+
+	private void switchProfile(int dir) {
+		String[] all = LmgConfig.PROFILES;
+		int i = 0;
+		for (int k = 0; k < all.length; k++) if (all[k].equals(LmgConfig.get().activeProfile)) i = k;
+		dev.lmg.client.feature.Looks.switchTo(all[Math.floorMod(i + dir, all.length)], msg -> toast("Profiles", msg));
+		rebuildWidgets();
+	}
+
+	/** The four starting looks, one button each. */
+	private void openLooks() {
+		more("Starting looks", "Lots of settings at once. Change any after.", () -> {
+			List<SettingRow> out = new ArrayList<>();
+			for (dev.lmg.client.feature.Looks.Start s : dev.lmg.client.feature.Looks.Start.values()) {
+				out.add(SettingRow.button(s.label, "Use", () -> {
+					dev.lmg.client.feature.Looks.apply(s);
+					toast(s.label + " look on", "Change anything you like - it's all still yours.");
+				}).withHint(s.about));
+			}
+			return out;
+		}, null);
+	}
+
 	private String shaderLabel() {
 		if (dev.lmg.client.feature.Shaders.busy()) return "Loading...";
 		if (!dev.lmg.client.feature.Shaders.irisInstalled()) return "Needs Iris";
@@ -838,7 +1092,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 	/** Opens the colour picker; this menu comes back when it closes. */
 	private void picker(String title, int rgb, java.util.function.IntConsumer set, Runnable reset,
 						java.util.function.BooleanSupplier rainbowGet, Consumer<Boolean> rainbowSet) {
-		minecraft.gui.setScreen(new ColorPickerScreen(this, title, rgb, set, reset, rainbowGet, rainbowSet));
+		Screen from = minecraft.gui.screen() != null ? minecraft.gui.screen() : this;
+		minecraft.gui.setScreen(new ColorPickerScreen(from, title, rgb, set, reset, rainbowGet, rainbowSet));
 	}
 
 	/** The key a binding is set to, as short as possible ("none" if it isn't set). */
@@ -920,16 +1175,46 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		// footer: what the setting under the mouse does, or a small tip
 		String hint = null;
 		if (waitingKey != null) hint = "Press the new key. Esc clears it.";
-		else for (SettingRow r : rows) if (r.hovered() && !r.hint().isEmpty()) hint = r.hint();
+		else for (SettingRow r : rows) {
+			if (!r.hovered()) continue;
+			if (r.overMore()) hint = "More options for " + r.getMessage().getString().toLowerCase(java.util.Locale.ROOT);
+			else if (!r.hint().isEmpty()) hint = r.hint();
+			if (hint != null && search != null && !r.whereLabel().isEmpty()) hint = r.whereLabel() + ": " + hint;
+			if (hint != null && r.cost() > 0 && !r.overMore()) hint += "  (FPS cost: " + new String[]{"", "low", "some", "high"}[r.cost()] + ")";
+		}
 		boolean isTip = hint == null;
 		// just after switching page: what the page is for; then little tips
-		if (isTip) hint = Util.getMillis() - pageShownAt < 5000 ? page().name() + ": " + page().about()
+		if (isTip && search != null) hint = search.isBlank() ? "Search: find any setting by name" : rows.size() + (rows.size() == 1 ? " setting" : " settings") + " found";
+		else if (isTip) hint = Util.getMillis() - pageShownAt < 5000 ? page().name() + ": " + page().about()
 				: "tip: " + TIPS[(int) ((Util.getMillis() / 7000) % TIPS.length)];
 		int hx0 = x0 + SIDEBAR_W + 6, hx1 = x1 - 10;
 		if (font.width(hint) > hx1 - hx0) hint = font.plainSubstrByWidth(hint, hx1 - hx0 - 8) + "..";
 		int hintColor = isTip ? (style == LmgConfig.MenuStyle.LMG ? 0x55637A : (style == LmgConfig.MenuStyle.SKEET ? 0x4A4A4A : 0x3E4766))
 				: (style == LmgConfig.MenuStyle.LMG ? 0xF2C14E : tc[0]);
 		g.text(font, hint, hx0, y1 - FOOTER_H + 6, Draw.withAlpha(hintColor, intro), false);
+
+		// the search box and what it found
+		if (search != null) {
+			int[] b = searchRect;
+			int acc = MenuSkin.accent();
+			if (style == LmgConfig.MenuStyle.SKEET) {
+				g.fill(b[0], b[1], b[2], b[3], Draw.withAlpha(0x000000, intro));
+				g.fill(b[0] + 1, b[1] + 1, b[2] - 1, b[3] - 1, Draw.withAlpha(0x1D1D1D, intro));
+			} else {
+				Draw.roundRect(g, b[0] - 1, b[1] - 1, b[2] + 1, b[3] + 1, 4, Draw.withAlpha(acc, 0.7f * intro));
+				Draw.roundRect(g, b[0], b[1], b[2], b[3], 3, Draw.withAlpha(style == LmgConfig.MenuStyle.NEVERLOSE ? 0x001C38 : 0x0F1828, intro));
+			}
+			magnifier(g, b[0] + 4, b[1] + 2, Draw.withAlpha(0x9DAAC0, intro));
+			if (rows.isEmpty()) {
+				int mx = (x0 + SIDEBAR_W + x1) / 2, my = y0 + HEADER_H + 60;
+				String line1 = search.isBlank() ? "Type what you're looking for" : "Nothing called \"" + search.trim() + "\"";
+				String line2 = search.isBlank() ? "like \"crosshair\", \"sky\", \"fps\" or \"friends\"" : "Try a shorter word, or another name for it";
+				g.centeredText(font, line1, mx, my, Draw.withAlpha(0xE8EDF5, intro));
+				g.centeredText(font, line2, mx, my + 12, Draw.withAlpha(faint, intro));
+			}
+		}
+		// a little magnifier on the Search tab
+		magnifier(g, searchTabRect[2] - 12, searchTabRect[1] + 3, Draw.withAlpha(search != null ? MenuSkin.accent() : faint, intro));
 
 		// you and your pet, next to the panel (if there's room)
 		if (avatar.layout(width, height, x0, y0, x1, y1)) avatar.draw(g, font, mouseX, mouseY, intro);
@@ -945,6 +1230,14 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 					Draw.withAlpha(dev.lmg.client.social.Uids.color(myUid), intro), false);
 		}
 		if (tourStep >= 0) drawTour(g, mouseX, mouseY);
+	}
+
+	/** A 7x7 magnifying glass. */
+	private static void magnifier(GuiGraphicsExtractor g, int x, int y, int col) {
+		String[] rows = {".XXX...", "X...X..", "X...X..", "X...X..", ".XXXX..", ".....X.", "......X"};
+		for (int r = 0; r < rows.length; r++) {
+			for (int c = 0; c < rows[r].length(); c++) if (rows[r].charAt(c) == 'X') g.fill(x + c, y + r, x + c + 1, y + r + 1, col);
+		}
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -1033,7 +1326,17 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		if (tourStep >= 0) {
 			for (int[] h : List.copyOf(tourHits)) {
-				if (event.x() >= h[0] && event.x() < h[2] && event.y() >= h[1] && event.y() < h[3]) tourNext(h[4] == 1);
+				if (event.x() >= h[0] && event.x() < h[2] && event.y() >= h[1] && event.y() < h[3]) {
+					if (h[4] >= 10) {
+						var look = dev.lmg.client.feature.Looks.Start.values()[h[4] - 10];
+						dev.lmg.client.feature.Looks.apply(look);
+						toast(look.label + " look on", "Change anything you like later.");
+						tourNext(false);
+					} else {
+						tourNext(h[4] == 1);
+					}
+					break;
+				}
 			}
 			return true;   // the menu waits while the tour is up
 		}
@@ -1099,6 +1402,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		for (SettingRow r : rows) if (r.isMouseOver(mouseX, mouseY) && r.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
 		// long pages (Keys) scroll
 		if (rows.size() > MAX_ROWS && mouseX > panelX + SIDEBAR_W && mouseX < panelX + panelW() && mouseY > panelY && mouseY < panelY + panelH()) {
 			int next = Math.max(0, Math.min(rows.size() - MAX_ROWS, rowScroll - (int) Math.signum(scrollY)));
@@ -1141,11 +1445,31 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			dropdown = null;
 			return true;
 		}
+		if (search != null && event.isEscape()) {
+			closeSearch();
+			return true;
+		}
+		if (search == null && (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_F && event.hasControlDownWithQuirk()
+				|| event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_SLASH)) {
+			openSearch("");
+			return true;
+		}
 		if (LmgClient.OPEN_MENU_KEY.matches(event)) {
 			onClose();
 			return true;
 		}
 		return super.keyPressed(event);
+	}
+
+	/** Just start typing to search. */
+	@Override
+	public boolean charTyped(net.minecraft.client.input.CharacterEvent event) {
+		if (search == null && tourStep < 0 && waitingKey == null && dropdown == null
+				&& Character.isLetterOrDigit(event.codepoint())) {
+			openSearch(event.codepointAsString());
+			return true;
+		}
+		return super.charTyped(event);
 	}
 
 	@Override

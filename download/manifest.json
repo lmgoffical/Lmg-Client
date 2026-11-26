@@ -1,9 +1,9 @@
 {
-  "version": "0.28.0",
+  "version": "0.29.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.28.0.jar",
-    "sha1": "f8a87e197dd43f210d117c7b77005e25d295580c"
+    "file": "lmg-client-0.29.0.jar",
+    "sha1": "d2e8ffb46aac41c8fdc55a250d81425cd9cb425d"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.29",
+      "text": "Easier, and more of everything. Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."
+    },
+    {
       "version": "0.28",
       "text": "Your sword, your crosshair. Move, turn and resize what you hold and watch it change as you drag (try Big & low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.24",
       "text": "The app. Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."
-    },
-    {
-      "version": "0.23",
-      "text": "Smoother. A new FPS tab, and the trail, ore glow and minimap do a lot less work."
     }
   ],
   "launcher": {

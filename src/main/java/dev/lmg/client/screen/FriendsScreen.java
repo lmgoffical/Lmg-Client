@@ -45,7 +45,7 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 	/** One line in the list. */
 	private record Line(Kind kind, String text, UUID uuid, Social.Friend friend) {}
 
-	private enum Kind { SECTION, REQUEST, FRIEND, SENT }
+	private enum Kind { SECTION, REQUEST, FRIEND, SENT, INVITE }
 
 	/** A clickable spot drawn this frame. */
 	private record Hit(int x0, int y0, int x1, int y1, Runnable action) {}
@@ -107,6 +107,14 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 	private List<Line> lines() {
 		Social.State s = Social.state();
 		List<Line> out = new ArrayList<>();
+		if (!s.invites().isEmpty()) {
+			out.add(new Line(Kind.SECTION, "Invites  " + s.invites().size(), null, null));
+			for (Social.Invite i : s.invites()) {
+				// shown like a friend who's on that server, so Join works the same way
+				Social.Friend as = new Social.Friend(i.uuid(), i.name(), true, "server", i.server(), i.serverName(), null);
+				out.add(new Line(Kind.INVITE, Social.nameOf(i.uuid(), i.name()), i.uuid(), as));
+			}
+		}
 		if (!s.incoming().isEmpty()) {
 			out.add(new Line(Kind.SECTION, "Requests  " + s.incoming().size(), null, null));
 			for (Social.Person p : s.incoming()) out.add(new Line(Kind.REQUEST, p.name(), p.uuid(), null));
@@ -114,11 +122,11 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 		int online = Social.onlineCount();
 		if (online > 0) {
 			out.add(new Line(Kind.SECTION, "Online  " + online, null, null));
-			for (Social.Friend f : s.friends()) if (f.online()) out.add(new Line(Kind.FRIEND, f.name(), f.uuid(), f));
+			for (Social.Friend f : s.friends()) if (f.online()) out.add(new Line(Kind.FRIEND, Social.nameOf(f.uuid(), f.name()), f.uuid(), f));
 		}
 		if (s.friends().size() > online) {
 			out.add(new Line(Kind.SECTION, "Offline  " + (s.friends().size() - online), null, null));
-			for (Social.Friend f : s.friends()) if (!f.online()) out.add(new Line(Kind.FRIEND, f.name(), f.uuid(), f));
+			for (Social.Friend f : s.friends()) if (!f.online()) out.add(new Line(Kind.FRIEND, Social.nameOf(f.uuid(), f.name()), f.uuid(), f));
 		}
 		if (!s.outgoing().isEmpty()) {
 			out.add(new Line(Kind.SECTION, "Sent  " + s.outgoing().size(), null, null));
@@ -274,6 +282,17 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 						  int mouseX, int mouseY, int clipY0, int clipY1, float a) {
 		if (l.kind == Kind.SECTION) {
 			g.text(font, l.text.toUpperCase(), lx0 + 2, y + 5, Draw.withAlpha(p.dim(), 0.9f * a), false);
+			if (l.text.startsWith("Online") && canInvite()) {
+				String all = "Invite all here";
+				int ax1 = lx1 - 4, ax0 = ax1 - font.width(all);
+				boolean overAll = mouseX >= ax0 && mouseX < ax1 && mouseY >= y + 2 && mouseY < y + 14 && mouseY >= clipY0 && mouseY < clipY1;
+				g.text(font, all, ax0, y + 5, Draw.withAlpha(overAll ? 0xFFFFFF : p.accent(), a), false);
+				hits.add(new Hit(ax0, y + 2, ax1, y + 14, () -> {
+					List<UUID> ids = new ArrayList<>();
+					for (Social.Friend f : Social.state().friends()) if (f.online() && !onMyServer(f)) ids.add(f.uuid());
+					Social.invite(ids, err -> say(err != null ? err : "Invited " + ids.size() + (ids.size() == 1 ? " friend." : " friends."), err != null));
+				}));
+			}
 			return;
 		}
 		boolean over = mouseX >= lx0 && mouseX < lx1 && mouseY >= y && mouseY < y + ROW - 2 && mouseY >= clipY0 && mouseY < clipY1;
@@ -300,6 +319,7 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 		if (uid != null) g.text(font, "#" + uid, after, y + 4, Draw.withAlpha(dev.lmg.client.social.Uids.color(uid), online ? a : 0.6f * a), false);
 
 		String sub = switch (l.kind) {
+			case INVITE -> "invites you to " + (f.serverName() != null && !f.serverName().isBlank() ? f.serverName() : f.server());
 			case REQUEST -> "wants to be friends";
 			case SENT -> "waiting for them to say yes";
 			default -> f.status();
@@ -316,6 +336,12 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 				pill(g, p, bx, y, "Accept", true, mouseX, mouseY, a, () -> Social.accept(l.uuid, err -> say(err != null ? err : "You and " + l.text + " are friends now!", err != null)));
 			}
 			case SENT -> pill(g, p, bx, y, "Cancel", false, mouseX, mouseY, a, () -> Social.remove(l.uuid, err -> say(err != null ? err : "Request cancelled.", err != null)));
+			case INVITE -> {
+				bx = pill(g, p, bx, y, "x", false, mouseX, mouseY, a, () -> {
+					for (Social.Invite i : Social.state().invites()) if (i.uuid().equals(l.uuid)) Social.dismiss(i);
+				});
+				pill(g, p, bx, y, "Join", true, mouseX, mouseY, a, () -> confirmJoin(f));
+			}
 			case FRIEND -> {
 				boolean sure = l.uuid.equals(confirmRemove) && Util.getMillis() - confirmRemoveAt < 4000;
 				if (over || sure) {
@@ -334,6 +360,11 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 						else if (partner) say("You're not partners any more.", false);
 						else say(l.uuid.equals(Social.state().partner()) ? "You and " + l.text + " are partners now ❤" : "Asked " + l.text + " to be partners.", false);
 					}));
+					bx = pill(g, p, bx, y, "Nickname", false, mouseX, mouseY, a, () -> minecraft.gui.setScreen(new NicknameScreen(this, l.uuid, f.name())));
+					if (f.online() && canInvite() && !onMyServer(f)) {
+						bx = pill(g, p, bx, y, "Invite", false, mouseX, mouseY, a, () -> Social.invite(List.of(l.uuid),
+								err -> say(err != null ? err : "Invited " + l.text + ".", err != null)));
+					}
 				}
 				if (f.joinable()) pill(g, p, bx, y, "Join", true, mouseX, mouseY, a, () -> confirmJoin(f));
 			}
@@ -357,6 +388,18 @@ public class FriendsScreen extends Screen implements dev.lmg.client.render.World
 		var skin = net.minecraft.client.Minecraft.getInstance().playerSkinRenderCache()
 				.getOrDefault(ResolvableProfile.createUnresolved(uuid)).playerSkin();
 		PlayerFaceExtractor.extractRenderState(g, skin, x, y, size, color);
+	}
+
+	/** You can invite people while you're on a server (not singleplayer) and sharing where you are. */
+	private boolean canInvite() {
+		return minecraft.level != null && !minecraft.isLocalServer() && minecraft.getCurrentServer() != null
+				&& LmgConfig.get().friendsShowServer && !LmgConfig.get().friendsAppearOffline;
+	}
+
+	private boolean onMyServer(Social.Friend f) {
+		var cur = minecraft.getCurrentServer();
+		String mine = cur == null ? null : Social.normalizeServer(cur.ip);
+		return mine != null && f.joinable() && mine.equals(Social.normalizeServer(f.server()));
 	}
 
 	// ---- joining ---------------------------------------------------------------------------------

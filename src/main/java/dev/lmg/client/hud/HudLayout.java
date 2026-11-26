@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public final class HudLayout {
 	public enum Element {
-		HUD_BAR("HUD bar"), TARGET("Target info"), POTIONS("Potion effects"), MINIMAP("Minimap");
+		HUD_BAR("HUD bar"), TARGET("Target info"), POTIONS("Potion effects"), MINIMAP("Minimap"), PVP("PvP stats"), ARMOUR("Armour");
 
 		public final String label;
 
@@ -68,6 +68,8 @@ public final class HudLayout {
 			case TARGET -> c.targetX;
 			case POTIONS -> c.potionsX;
 			case MINIMAP -> c.minimapX;
+			case PVP -> c.pvpX;
+			case ARMOUR -> c.armourX;
 		};
 	}
 
@@ -78,6 +80,8 @@ public final class HudLayout {
 			case TARGET -> c.targetY;
 			case POTIONS -> c.potionsY;
 			case MINIMAP -> c.minimapY;
+			case PVP -> c.pvpY;
+			case ARMOUR -> c.armourY;
 		};
 	}
 
@@ -88,6 +92,8 @@ public final class HudLayout {
 			case TARGET -> { c.targetX = x; c.targetY = y; }
 			case POTIONS -> { c.potionsX = x; c.potionsY = y; }
 			case MINIMAP -> { c.minimapX = x; c.minimapY = y; }
+			case PVP -> { c.pvpX = x; c.pvpY = y; }
+			case ARMOUR -> { c.armourX = x; c.armourY = y; }
 		}
 	}
 }

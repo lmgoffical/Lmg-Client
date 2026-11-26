@@ -30,6 +30,7 @@ public final class LmgKeys {
 	public static final KeyMapping ORE_GLOW = key("ore_glow", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping COSMETICS = key("cosmetics", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping HUD_BAR = key("hud_bar", InputConstants.UNKNOWN.getValue());
+	public static final KeyMapping PROFILE = key("profile", InputConstants.UNKNOWN.getValue());
 	public static final KeyMapping CINEMATIC = key("cinematic", InputConstants.KEY_F7);
 	public static final KeyMapping FRIENDS = key("friends", InputConstants.KEY_O);
 	public static final KeyMapping EMOTE = key("emote", InputConstants.KEY_G);
@@ -49,7 +50,8 @@ public final class LmgKeys {
 			new Bind(CINEMATIC, "Cinematic mode", "Film bars, no HUD, smooth camera."),
 			new Bind(FRIENDS, "Friends", "Who's online, and join them."),
 			new Bind(EMOTE, "Emote wheel (hold)", "Hold, point, let go."),
-			new Bind(PHOTO, "Photo mode", "Freeze, frame it, save it."));
+			new Bind(PHOTO, "Photo mode", "Freeze, frame it, save it."),
+			new Bind(PROFILE, "Next profile", "Everyday, PvP, Screenshots: swap in one press."));
 
 	private LmgKeys() {}
 
@@ -101,6 +103,7 @@ public final class LmgKeys {
 			say(c.hideCosmetics ? "Cosmetics hidden" : "Cosmetics showing");
 			LmgConfig.save();
 		}
+		while (PROFILE.consumeClick()) Looks.next(LmgKeys::say);
 		while (HUD_BAR.consumeClick()) {
 			c.hudEnabled = !c.hudEnabled;
 			LmgConfig.save();

@@ -35,6 +35,18 @@ public final class WorldFilter {
 		return PhotoMode.active() || b <= 0 || b >= BLUR.length ? null : BLUR[b];
 	}
 
+	private static final Identifier CHROMA = LmgClient.id("chroma");
+
+	/** Photo mode's depth of field (it reads the depth, so it goes first). */
+	public static Identifier focus() {
+		return PhotoMode.active() ? PhotoMode.focus.effect : null;
+	}
+
+	/** Colour fringes at the edges, if you turned them on. */
+	public static Identifier lens() {
+		return LmgConfig.get().lensChroma ? CHROMA : null;
+	}
+
 	/** True if the grey filter really runs (if a graphics driver can't, the menus darken more instead). */
 	public static boolean greyWorking() {
 		Minecraft mc = Minecraft.getInstance();

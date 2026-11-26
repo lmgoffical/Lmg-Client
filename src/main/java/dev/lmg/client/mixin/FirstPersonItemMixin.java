@@ -23,6 +23,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(FirstPersonHandsAndItemsRenderer.class)
 public abstract class FirstPersonItemMixin {
+	/** No hand floating in front of the camera in photo mode or freecam (it's not where you are). */
+	@Inject(method = "submitHandsWithItems", at = @At("HEAD"), cancellable = true)
+	private void lmg$noHandWhenAway(CallbackInfo ci) {
+		if (dev.lmg.client.feature.PhotoMode.active() || dev.lmg.client.feature.Freecam.on()) ci.cancel();
+	}
+
 	@Inject(method = "applyItemArmTransform", at = @At("TAIL"))
 	private void lmg$placeItem(PoseStack pose, HumanoidArm arm, float inverseArmHeight, CallbackInfo ci) {
 		LmgConfig c = LmgConfig.get();

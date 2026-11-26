@@ -45,6 +45,13 @@ public abstract class AvatarRendererMixin {
 			Integer uid = dev.lmg.client.social.Uids.of(entity.getUUID());
 			if (uid != null) state.nameTag = dev.lmg.client.social.Uids.withUid(state.nameTag, uid);
 		}
+		// their health after the name
+		if (state.nameTag != null && LmgConfig.get().nameTagHealth && entity instanceof net.minecraft.world.entity.LivingEntity le) {
+			float hp = le.getHealth() + le.getAbsorptionAmount();
+			int col = hp > 14 ? 0x6BD58A : hp > 7 ? 0xF2C14E : 0xFF5A5A;
+			state.nameTag = state.nameTag.copy().append(net.minecraft.network.chat.Component.literal(" " + Math.round(hp) + "\u2665")
+					.withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(col)));
+		}
 		// a pink heart on your partner's name tag
 		if (state.nameTag != null && entity instanceof net.minecraft.world.entity.player.Player pl
 				&& LmgConfig.get().partnerHearts && dev.lmg.client.social.Partner.isPartner(pl)) {

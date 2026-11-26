@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.29", "<b>Easier, and more of everything.</b> Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."],
   ["0.28", "<b>Your sword, your crosshair.</b> Move, turn and resize what you hold and watch it change as you drag (try Big &amp; low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."],
   ["0.27", "<b>Easier to find your way.</b> The menu is now seven groups with pages (Visuals has Sky, Weather, Effects and Cinematic), and a short tour shows you round the first time. Pick any colour with a slider instead of presets. New: your own crosshair, damage numbers, hurt flash colour, motion blur and colour filters. Lmg UIDs (low numbers are rare), and snow that doesn't look like tiles."],
   ["0.26", "<b>Friends &amp; more.</b> Friends list with one-click join, partners with matching outfits, an emote wheel (G), photo mode (F8), snow that settles around you, a way back to where you died, and seasonal menus."],
@@ -149,7 +150,8 @@ const FAQ = [
   ["Can other people see my wings, cape or pets?", "Other Lmg players can, if you switch on Share pets & cosmetics (in the Pets screen, or Game &gt; Tools). It's off until you turn it on. People without Lmg just see your normal skin."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
   ["What's a UID?", "Your Lmg number. Press Get mine in Social &gt; UID (or turn on Friends) and you get the next one, for good. The lower it is, the rarer: 1 to 10 are Founders, up to 100 OG, up to 1000 Early. Other Lmg players see it on your name tag."],
-  ["Where did a setting go?", "Settings are grouped now: Visuals, You, Combat, HUD, Social, Menu and Game, each with pages along the top. Menu &gt; Help &gt; Show me around runs the tour again."],
+  ["Where did a setting go?", "Click Search at the top of the menu (or just start typing) and type its name. Settings are grouped into Visuals, You, Combat, HUD, Social, Menu and Game. Menu &gt; Help &gt; Show me around runs the tour again."],
+  ["My game is slow. What should I turn off?", "Game &gt; FPS &gt; Low-end mode turns the heavy things down in one click, and puts them back when you turn it off. The little bars next to a setting show how much it costs."],
   ["What do my friends see?", "If you turn on Friends: that you're online, what you're doing, and the server you're on (unless you switch Show my server off). Nobody else sees any of it, and turning Friends off deletes it."],
 ];
 
@@ -196,6 +198,9 @@ async function pageHome() {
         <div><h3>Winter</h3><p>Snow that falls and settles on the ground around you - only on your screen, so it's fine anywhere.</p></div>
         <div><h3>Any colour you like</h3><p>Sky, aurora, trails, hits, crosshair, menu background, cosmetics: drag a slider to pick the exact shade.</p></div>
         <div><h3>Crosshair &amp; effects</h3><p>Pick a crosshair, draw your own pixel by pixel or use the Lmg star, and make it spin. Plus damage numbers, a hurt flash in any colour, motion blur and colour filters.</p></div>
+        <div><h3>Find anything</h3><p>Search every setting, or just start typing. The little gear next to a setting opens its finer options.</p></div>
+        <div><h3>PvP panels</h3><p>Clicks per second, combo and reach (real hits only), plus your armour with how worn it is. Hit sounds too.</p></div>
+        <div><h3>Looks &amp; profiles</h3><p>Start from Clean, Showcase, PvP or Cosy. Keep an Everyday, PvP and Screenshots setup and swap with one key.</p></div>
         <div><h3>Held items</h3><p>Move, turn and resize your sword with sliders and watch it change in your hand. Big &amp; low is the showcase look.</p></div>
         <div><h3>UIDs</h3><p>Grab your Lmg number. The lower it is, the rarer: Founders get 1 to 10. It shows on your name tag for other Lmg players.</p></div>
       </div>
@@ -213,6 +218,8 @@ async function pageHome() {
           ["menu", "Right Shift: the world goes black and white behind the menu", "The settings menu with snow settling on its top edge over a grey world"],
           ["death", "After dying: a trail and a beam back to the spot", "A trail of small red sparkles leading across a field at night to a red beam"],
           ["emotes", "Other Lmg players see your emotes too", "Two players dancing side by side"],
+          ["pvp", "PvP stats, armour, hotbar style and a name tag in your colour", "A zombie labelled Training dummy with a pink name box, a damage number, and panels for clicks per second, combo, reach and armour"],
+          ["more", "A gear next to a setting opens more options", "The crosshair options card: size, spin, gap, line length, thickness, centre dot and dark edge"],
           ["held", "Big &amp; low: your sword held low and to the middle", "A first-person view holding a big diamond sword low in the middle of the screen, angled up to the right"],
           ["crosshair", "Draw your own crosshair, with previews on sky, grass and cave", "The crosshair editor: a pink plus drawn on a pixel grid, three small previews and options for mirror, spin and colour"],
           ["groups", "Seven groups, with pages along the top", "The settings menu on Visuals, Effects, listing crosshair, damage number and motion blur options"],
@@ -631,8 +638,9 @@ const LEGAL = {
       <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>
       <li><b>Friends (off unless you turn it on).</b> If you turn on Friends, the game proves your account with Mojang (same check as above) and we store: your Minecraft username and account ID, a session key (only a scrambled copy), the friends you add and the requests you send, your partner if you pick one, and whether you're online and what you're doing (menus, singleplayer, Realms, or a server). The server's address and name are shown only to your friends, and only while <i>Show my server</i> is on. <i>Appear offline</i> hides you from everyone. <b>Turning Friends off deletes all of this</b> from our database straight away.</li>
       <li><b>Emotes.</b> With Friends on, when you play an emote on a multiplayer server, our server signs it and passes it to other Lmg players on the same server. It goes to a channel named after a scrambled code of the server's address, not the address itself. An emote that lasts (sitting, dancing) is kept for up to 10 minutes so people who arrive later see it. In singleplayer nothing is sent.</li>
+      <li><b>Invites (with Friends on).</b> When you invite friends to the server you're on, we store who you invited and when. They see it for 5 minutes, with the server you're on; old invites are deleted within an hour. Nicknames you give friends stay on your computer.</li>
       <li><b>UIDs (only if you press <i>Get mine</i>, or turn on Friends).</b> The game proves your account with Mojang (same check as above), then we save your Minecraft account ID, the number you got and when. Your number is public: anyone can look up the number for an account, and other Lmg players see it on your name tag. Numbers are handed out in order and aren't reused.</li>
-      <li><b>Photo mode, winter, the way back after dying, crosshairs, damage numbers, filters and motion blur.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
+      <li><b>Photo mode, winter, the way back after dying, crosshairs, damage numbers, filters and motion blur, PvP stats, hit sounds, lens effects, mist and profiles.</b> These only happen on your screen; photos are saved in your own screenshots folder.</li>
     </ul>
     <h3>The website</h3>
     <ul>

@@ -33,7 +33,8 @@ public final class FriendToast implements Toast {
 
 	public static void show(UUID uuid, String name, String line) {
 		Minecraft mc = Minecraft.getInstance();
-		mc.gui.toastManager().addToast(new FriendToast(uuid, name, line));
+		String nick = Social.nickname(uuid);
+		mc.gui.toastManager().addToast(new FriendToast(uuid, nick.isBlank() ? name : nick, line));
 	}
 
 	@Override

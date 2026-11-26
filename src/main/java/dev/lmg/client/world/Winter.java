@@ -77,7 +77,8 @@ public final class Winter {
 		boolean on = snowing(mc) && mc.player != null;
 		boolean here = on && snowsAt(mc.level, mc.player.blockPosition());
 		// settles over ~90 seconds, melts in ~30
-		cover = Math.max(0f, Math.min(1f, cover + (here ? 1f / 1800f : -1f / 600f)));
+		float speed = LmgConfig.WINTER_SPEEDS[LmgConfig.get().winterSpeed];
+		cover = Math.max(0f, Math.min(1f, cover + (here ? speed / 1800f : -speed / 600f)));
 		if (!LmgConfig.get().winterSettles || cover <= 0f || mc.player == null || mc.level == null) {
 			columns = new ArrayList<>();
 			lastCenter = null;
@@ -165,7 +166,7 @@ public final class Winter {
 		Vec3 cam = ctx.levelState().cameraRenderState.pos;
 		PoseStack pose = ctx.poseStack();
 		// a layer about 1.5 pixels thick (2 when it's fully settled)
-		float thick = (1f + Math.min(1f, cover) * 1.2f) / 16f;
+		float thick = (1f + Math.min(1f, cover) * 1.2f) * LmgConfig.WINTER_DEPTHS[LmgConfig.get().winterDepth] / 16f;
 		ctx.submitNodeCollector().submitCustomGeometry(pose, RenderTypes.entityCutout(SNOW_TEXTURE), (p, vc) -> {
 			for (int[] c : list) {
 				float x0 = (float) (c[0] - cam.x), z0 = (float) (c[2] - cam.z);

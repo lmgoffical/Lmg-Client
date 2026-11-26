@@ -66,23 +66,64 @@ public class PhotoModeScreen extends Screen {
 			PhotoMode.start();
 		}
 		makeTextures();
+		buildControls();
+	}
+
+	/** 0 = the look (filter, focus, frame...), 1 = the camera (zoom, timer, pose...). */
+	private static int tab;
+	private long countdownEnd;
+	private int lastBeep = -1;
+
+	private void buildControls() {
 		controls.clear();
-		controls.add(new Control("Filter", () -> PhotoMode.filter.label, Kind.CHOICE, null, null, 0, 0,
-				() -> PhotoMode.filter = cycle(PhotoMode.Filter.values(), PhotoMode.filter, 1),
-				() -> PhotoMode.filter = cycle(PhotoMode.Filter.values(), PhotoMode.filter, -1), -1));
-		controls.add(new Control("Zoom", () -> Math.round(PhotoMode.fov) + "°", Kind.SLIDER,
-				() -> 120 - PhotoMode.fov, v -> PhotoMode.fov = (float) (120 - v), 10, 110, null, null, 0));
-		controls.add(new Control("Tilt", () -> Math.round(PhotoMode.roll) + "°", Kind.SLIDER,
-				() -> PhotoMode.roll, v -> PhotoMode.roll = Math.abs(v) < 1.2 ? 0f : (float) v, -30, 30, null, null, 0));
-		controls.add(new Control("Vignette", () -> Math.round(PhotoMode.vignette * 100) + "%", Kind.SLIDER,
-				() -> PhotoMode.vignette, v -> PhotoMode.vignette = (float) v, 0, 1, null, null, 0));
-		controls.add(new Control("Film grain", () -> "", Kind.TOGGLE, () -> PhotoMode.grain ? 1 : 0,
-				v -> PhotoMode.grain = !PhotoMode.grain, 0, 0, null, null, 0));
-		controls.add(new Control("Frame", () -> PhotoMode.frame.label, Kind.CHOICE, null, null, 0, 0,
-				() -> PhotoMode.frame = cycle(PhotoMode.Frame.values(), PhotoMode.frame, 1),
-				() -> PhotoMode.frame = cycle(PhotoMode.Frame.values(), PhotoMode.frame, -1), 0));
-		controls.add(new Control("Hide me", () -> "", Kind.TOGGLE, () -> PhotoMode.hideMe ? 1 : 0,
-				v -> PhotoMode.hideMe = !PhotoMode.hideMe, 0, 0, null, null, 0));
+		if (tab == 0) {
+			controls.add(new Control("Look", () -> PhotoMode.look() == null ? "Your mix" : PhotoMode.look().label, Kind.CHOICE, null, null, 0, 0,
+					() -> lookStep(1), () -> lookStep(-1), 0));
+			controls.add(new Control("Filter", () -> PhotoMode.filter.label, Kind.CHOICE, null, null, 0, 0,
+					() -> PhotoMode.filter = cycle(PhotoMode.Filter.values(), PhotoMode.filter, 1),
+					() -> PhotoMode.filter = cycle(PhotoMode.Filter.values(), PhotoMode.filter, -1), -1));
+			controls.add(new Control("Focus", () -> PhotoMode.focus.label, Kind.CHOICE, null, null, 0, 0,
+					() -> PhotoMode.focus = cycle(PhotoMode.Focus.values(), PhotoMode.focus, 1),
+					() -> PhotoMode.focus = cycle(PhotoMode.Focus.values(), PhotoMode.focus, -1), 0));
+			controls.add(new Control("Vignette", () -> Math.round(PhotoMode.vignette * 100) + "%", Kind.SLIDER,
+					() -> PhotoMode.vignette, v -> PhotoMode.vignette = (float) v, 0, 1, null, null, 0));
+			controls.add(new Control("Film grain", () -> "", Kind.TOGGLE, () -> PhotoMode.grain ? 1 : 0,
+					v -> PhotoMode.grain = !PhotoMode.grain, 0, 0, null, null, 0));
+			controls.add(new Control("Frame", () -> PhotoMode.frame.label, Kind.CHOICE, null, null, 0, 0,
+					() -> PhotoMode.frame = cycle(PhotoMode.Frame.values(), PhotoMode.frame, 1),
+					() -> PhotoMode.frame = cycle(PhotoMode.Frame.values(), PhotoMode.frame, -1), 0));
+		} else {
+			controls.add(new Control("Zoom", () -> Math.round(PhotoMode.fov) + "°", Kind.SLIDER,
+					() -> 120 - PhotoMode.fov, v -> PhotoMode.fov = (float) (120 - v), 10, 110, null, null, 0));
+			controls.add(new Control("Tilt", () -> Math.round(PhotoMode.roll) + "°", Kind.SLIDER,
+					() -> PhotoMode.roll, v -> PhotoMode.roll = Math.abs(v) < 1.2 ? 0f : (float) v, -30, 30, null, null, 0));
+			controls.add(new Control("Timer", () -> PhotoMode.TIMERS[PhotoMode.timer] == 0 ? "Off" : PhotoMode.TIMERS[PhotoMode.timer] + " s", Kind.CHOICE, null, null, 0, 0,
+					() -> PhotoMode.timer = (PhotoMode.timer + 1) % PhotoMode.TIMERS.length,
+					() -> PhotoMode.timer = Math.floorMod(PhotoMode.timer - 1, PhotoMode.TIMERS.length), 0));
+			controls.add(new Control("Pose", () -> PhotoMode.pose == null ? "None" : PhotoMode.pose.label, Kind.CHOICE, null, null, 0, 0,
+					() -> poseStep(1), () -> poseStep(-1), 0));
+			controls.add(new Control("Grid", () -> "", Kind.TOGGLE, () -> PhotoMode.grid ? 1 : 0,
+					v -> PhotoMode.grid = !PhotoMode.grid, 0, 0, null, null, 0));
+			controls.add(new Control("Hide me", () -> "", Kind.TOGGLE, () -> PhotoMode.hideMe ? 1 : 0,
+					v -> PhotoMode.hideMe = !PhotoMode.hideMe, 0, 0, null, null, 0));
+		}
+	}
+
+	private static void lookStep(int dir) {
+		PhotoMode.Look cur = PhotoMode.look();
+		PhotoMode.Look[] all = PhotoMode.Look.values();
+		int i = cur == null ? (dir > 0 ? 0 : all.length - 1) : Math.floorMod(cur.ordinal() + dir, all.length);
+		all[i].apply();
+	}
+
+	/** None -> Wave -> Hug -> ... : your character strikes the pose for the shot. */
+	private static void poseStep(int dir) {
+		var all = dev.lmg.client.emote.Emote.values();
+		int i = PhotoMode.pose == null ? -1 : PhotoMode.pose.ordinal();
+		i = Math.floorMod(i + 1 + dir, all.length + 1) - 1;
+		PhotoMode.pose = i < 0 ? null : all[i];
+		if (PhotoMode.pose != null) dev.lmg.client.emote.Emotes.playQuiet(PhotoMode.pose);
+		else dev.lmg.client.emote.Emotes.stopMine();
 	}
 
 	private static <E extends Enum<E>> E cycle(E[] values, E cur, int dir) {
@@ -143,9 +184,36 @@ public class PhotoModeScreen extends Screen {
 		float flash = 1f - (Util.getMillis() - flashAt) / 260f;
 		if (flash > 0) g.fill(0, 0, width, height, Draw.withAlpha(0xFFFFFF, 0.55f * flash * flash));
 
-		if (!panelHidden) drawPanel(g, mouseX, mouseY);
+		// the rule-of-thirds grid (never in the photo itself)
+		if (PhotoMode.grid) {
+			int gc = Draw.withAlpha(0xFFFFFF, 0.28f);
+			for (int i = 1; i <= 2; i++) {
+				g.fill(width * i / 3, 0, width * i / 3 + 1, height, gc);
+				g.fill(0, height * i / 3, width, height * i / 3 + 1, gc);
+			}
+		}
+		// the self-timer
+		if (countdownEnd != 0) {
+			long left = countdownEnd - Util.getMillis();
+			if (left <= 0) {
+				countdownEnd = 0;
+				capture = 1;
+			} else {
+				int secsLeft = (int) Math.ceil(left / 1000.0);
+				float frac = (left % 1000) / 1000f;
+				Draw.scaledText(g, font, String.valueOf(secsLeft), width / 2f, height / 2f - 12, 3f + frac,
+						Draw.withAlpha(0xFFFFFF, 0.35f + 0.6f * frac));
+				if (secsLeft != lastBeep) {
+					lastBeep = secsLeft;
+					minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HAT.value(), secsLeft <= 1 ? 1.6f : 1.2f, 0.6f));
+				}
+			}
+		}
+		if (!panelHidden && countdownEnd == 0) drawPanel(g, mouseX, mouseY);
 		// how to move, in a small bar at the bottom
-		String t = panelHidden ? "H shows the controls  -  Enter takes the photo"
+		String t = !panelHidden && (PhotoMode.focus == PhotoMode.Focus.SOFT || PhotoMode.focus == PhotoMode.Focus.STRONG)
+				? "Focus: whatever is in the middle stays sharp  -  turn the camera to pick it"
+				: panelHidden ? "H shows the controls  -  Enter takes the photo"
 				: PhotoMode.orbit() ? "Drag to circle  -  Scroll to zoom  -  Ctrl+scroll: distance  -  H hides  -  Esc leaves"
 				: "WASD fly  -  Space / Shift up, down  -  Drag to look  -  Scroll to zoom  -  H hides";
 		int tw = font.width(t), cx = panelHidden ? width / 2 : (8 + PANEL_W + width) / 2;
@@ -207,8 +275,8 @@ public class PhotoModeScreen extends Screen {
 	private void drawPanel(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 260f));
 		int x0 = 8, y0 = 8, x1 = x0 + PANEL_W;
-		int rowH = Math.max(18, Math.min(22, (height - 16 - 96) / controls.size()));
-		int y1 = Math.min(height - 8, y0 + 40 + controls.size() * rowH + 50);
+		int rowH = Math.max(18, Math.min(22, (height - 16 - 112) / controls.size()));
+		int y1 = Math.min(height - 8, y0 + 56 + controls.size() * rowH + 50);
 		panelBottom = y1;
 		int primary = Theme.primary();
 		Draw.roundRect(g, x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7, Draw.withAlpha(0x1C2943, 0.9f * a));
@@ -217,8 +285,22 @@ public class PhotoModeScreen extends Screen {
 		String sub = PhotoMode.orbit() ? "circling you (server-safe)" : minecraft.isLocalServer() ? "the world is paused" : "the world keeps going";
 		g.text(font, sub, x0 + 10, y0 + 20, Draw.withAlpha(0x7C8BA3, a), false);
 		g.fill(x0 + 8, y0 + 32, x1 - 8, y0 + 33, Draw.withAlpha(0x1C2943, a));
+		// two tabs: the look, and the camera
+		String[] tabs = {"Look", "Camera"};
+		int tw = (PANEL_W - 20) / 2;
+		for (int i = 0; i < 2; i++) {
+			int tx = x0 + 8 + i * (tw + 4), ty = y0 + 37;
+			boolean sel = tab == i, over = mouseX >= tx && mouseX < tx + tw && mouseY >= ty && mouseY < ty + 13;
+			Draw.roundRect(g, tx, ty, tx + tw, ty + 13, 4, Draw.withAlpha(sel ? primary : 0x1C2943, (sel ? 0.9f : over ? 0.9f : 0.6f) * a));
+			g.centeredText(font, tabs[i], tx + tw / 2, ty + 3, Draw.withAlpha(sel ? Theme.textOn(primary) : 0xC9D3E3, a));
+			final int index = i;
+			hits.add(new Hit(tx, ty, tx + tw, ty + 13, () -> {
+				tab = index;
+				buildControls();
+			}));
+		}
 
-		int y = y0 + 40;
+		int y = y0 + 56;
 		for (Control c : controls) {
 			drawControl(g, c, x0 + 8, y, x1 - 8, rowH, mouseX, mouseY, a, primary);
 			y += rowH;
@@ -326,7 +408,15 @@ public class PhotoModeScreen extends Screen {
 	// ---- input -----------------------------------------------------------------------------------
 
 	public void takePhoto() {
-		if (capture == 0) capture = 1;
+		if (capture != 0 || countdownEnd != 0) return;
+		int secs = PhotoMode.TIMERS[PhotoMode.timer];
+		if (secs > 0) {
+			countdownEnd = Util.getMillis() + secs * 1000L;
+			// start the pose again so it's mid-move when the shutter goes
+			if (PhotoMode.pose != null) dev.lmg.client.emote.Emotes.playQuiet(PhotoMode.pose);
+		} else {
+			capture = 1;
+		}
 	}
 
 	@Override
@@ -405,6 +495,7 @@ public class PhotoModeScreen extends Screen {
 
 	@Override
 	public void removed() {
+		if (PhotoMode.pose != null) dev.lmg.client.emote.Emotes.stopMine();
 		PhotoMode.stop();
 	}
 }

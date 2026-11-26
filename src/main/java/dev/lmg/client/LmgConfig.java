@@ -83,6 +83,10 @@ public final class LmgConfig {
 		INFERNO("Inferno"),
 		MIDNIGHT("Midnight"),
 		COTTON_CANDY("Cotton candy"),
+		OCEAN("Ocean"),
+		MINT("Mint"),
+		LAVENDER("Lavender"),
+		GOLDEN("Golden"),
 		ACCENT("Match accent"),
 		VOID("Void"),
 		CUSTOM("Your colours");
@@ -175,7 +179,7 @@ public final class LmgConfig {
 
 	public enum Ambient {
 		OFF("Off"), FIREFLIES("Fireflies"), PETALS("Petals"), STARDUST("Stardust"),
-		SNOW("Snow"), ASH("Ash"), SPORES("Spores");
+		SNOW("Snow"), ASH("Ash"), SPORES("Spores"), LEAVES("Autumn leaves"), MIST("Low mist");
 
 		public final String label;
 
@@ -280,6 +284,48 @@ public final class LmgConfig {
 	public float itemX = 0f, itemY = 0f, itemZ = 0f;
 	public float itemTurn = 0f, itemTilt = 0f, itemRoll = 0f; // degrees
 	public float itemSize = 1f;
+	// ---- crosshair, more options ----
+	public int crosshairGap = 2, crosshairLength = 4, crosshairThickness = 1, crosshairDot = 1;
+	// ---- damage numbers, more options ----
+	public DamageStyle damageStyle = DamageStyle.SHADOW;
+	public float damageSize = 1f;        // 0.6 - 2
+	public float damageTime = 1.1f;      // seconds on screen
+	public boolean damageCritBig = true; // big hits pop out more
+	// ---- hit sounds ----
+	public HitSound hitSound = HitSound.OFF;
+	public float hitSoundVolume = 0.7f, hitSoundPitch = 1f;
+	public boolean hitSoundPlayersOnly = false;
+	// ---- PvP panel and armour panel ----
+	public boolean pvpHud = false, pvpCps = true, pvpCombo = true, pvpReach = true;
+	public boolean armourHud = false, armourHeld = true, armourNumbers = false;
+	public float pvpX = -1, pvpY = -1, armourX = -1, armourY = -1;
+	// ---- lens: in-game vignette, film grain, colour fringes ----
+	public int lensVignette = 0;         // 0 off, 1 soft, 2 strong
+	public int lensGrain = 0;            // 0 off, 1 light, 2 heavy
+	public boolean lensChroma = false;
+	// ---- hotbar and inventory ----
+	public HotbarStyle hotbarStyle = HotbarStyle.VANILLA;
+	public int hotbarRgb = -1;           // -1 = your accent
+	public float hotbarOpacity = 0.7f;
+	public int inventoryTint = -1;       // -1 = off
+	public float inventoryTintStrength = 0.3f;
+	// ---- name tags ----
+	public NameTagBg nameTagBg = NameTagBg.VANILLA;
+	public boolean nameTagHealth = false;
+	// ---- aurora, winter, trail: more options ----
+	public float auroraBrightness = 1f, auroraHeight = 0f;
+	public int winterSpeed = 1;          // index into WINTER_SPEED_LABELS
+	public int winterDepth = 1;          // index into WINTER_DEPTH_LABELS
+	public int trailAmount = 1;          // index into TRAIL_AMOUNT_LABELS
+	public float trailSize = 1f;
+	// ---- HUD bar ----
+	public boolean hudShowFriends = true;
+	// ---- profiles, starting looks, low-end mode ----
+	public String activeProfile = "Everyday";
+	public boolean lowEnd = false;
+	public String lowEndBackup = "";     // what low-end mode turned down, to put back
+	// ---- friends ----
+	public java.util.Map<String, String> friendNicknames = new java.util.HashMap<>();
 	public boolean damageNumbers = false;
 	public int damageRgb = 0xFF5A6E;
 	public int hurtRgb = 0xFF0000;       // the flash when something gets hurt
@@ -295,6 +341,50 @@ public final class LmgConfig {
 	public static final String[] MOTION_BLUR_LABELS = {"Off", "Light", "Medium", "Strong"};
 	public static final float[] CROSSHAIR_SIZES = {0.75f, 1f, 1.4f, 1.8f};
 	public static final String[] CROSSHAIR_SIZE_LABELS = {"Small", "Normal", "Big", "Huge"};
+
+	public static final String[] WINTER_SPEED_LABELS = {"Slow", "Normal", "Fast"};
+	public static final float[] WINTER_SPEEDS = {0.5f, 1f, 4f};
+	public static final String[] WINTER_DEPTH_LABELS = {"Thin", "Normal", "Deep"};
+	public static final float[] WINTER_DEPTHS = {0.6f, 1f, 2.2f};
+	public static final String[] TRAIL_AMOUNT_LABELS = {"Fewer", "Normal", "More"};
+	public static final String[] LENS_LABELS = {"Off", "Light", "Strong"};
+	public static final String[] PROFILES = {"Everyday", "PvP", "Screenshots"};
+
+	public enum DamageStyle {
+		PLAIN("Plain"), SHADOW("Shadow"), OUTLINE("Outlined"), BUBBLE("Bubble");
+		public final String label;
+
+		DamageStyle(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum HitSound {
+		OFF("Off"), CLICK("Click"), DING("Ding"), BELL("Bell"), PLING("Pling"), BASS("Bass"), POP("Pop"), CHIME("Chime");
+		public final String label;
+
+		HitSound(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum HotbarStyle {
+		VANILLA("Vanilla"), LMG("Lmg (rounded)"), CLEAR("See-through"), OUTLINE("Outline");
+		public final String label;
+
+		HotbarStyle(String label) {
+			this.label = label;
+		}
+	}
+
+	public enum NameTagBg {
+		VANILLA("Vanilla"), NONE("No box"), DARK("Dark box"), ACCENT("Your colour");
+		public final String label;
+
+		NameTagBg(String label) {
+			this.label = label;
+		}
+	}
 
 	public static final float[] SPIN_SPEEDS = {0f, 40f, 120f, 360f};   // degrees a second
 	public static final String[] SPIN_LABELS = {"Off", "Slow", "Medium", "Fast"};
@@ -370,7 +460,7 @@ public final class LmgConfig {
 	public boolean oreGlow = false;
 	public int itemScale = 0; // index into ITEM_SCALES
 	public boolean lowerItems = false;
-	public boolean lmgTotem = true;
+	public boolean lmgTotem = false;   // off until you turn it on (it changes how totems look)
 	public boolean fullbright = false;
 	public boolean lowFire = false;
 	public boolean noHurtCam = false;
@@ -501,10 +591,33 @@ public final class LmgConfig {
 
 	/** Replaces the current settings with {@code other} (keeps where you've dragged the menu to). */
 	public static void apply(LmgConfig other) {
-		other.menuOffsetX = instance.menuOffsetX;
-		other.menuOffsetY = instance.menuOffsetY;
+		keepPersonal(other);
 		instance = other.sanitized();
 		save();
+	}
+
+	/**
+	 * Things that belong to you, not to a "look": your UID, the tour, what you share and with
+	 * whom. Loading a config (yours, a friend's, or a profile) never changes these, so importing
+	 * someone's code can't switch on sharing or give you their number.
+	 */
+	private static void keepPersonal(LmgConfig other) {
+		LmgConfig me = instance;
+		other.menuOffsetX = me.menuOffsetX;
+		other.menuOffsetY = me.menuOffsetY;
+		other.myUid = me.myUid;
+		other.tourDone = me.tourDone;
+		other.welcomeSeen = me.welcomeSeen;
+		other.shareAvatar = me.shareAvatar;
+		other.friendsEnabled = me.friendsEnabled;
+		other.friendsShowServer = me.friendsShowServer;
+		other.friendsAppearOffline = me.friendsAppearOffline;
+		other.friendsToasts = me.friendsToasts;
+		other.matchPartner = me.matchPartner;
+		other.friendNicknames = me.friendNicknames;
+		other.activeProfile = me.activeProfile;
+		other.lowEnd = me.lowEnd;
+		other.lowEndBackup = me.lowEndBackup;
 	}
 
 	/** A copy of the current settings as JSON (used for saved configs and share codes). */
@@ -578,6 +691,32 @@ public final class LmgConfig {
 		if (crosshair == null) crosshair = Crosshair.VANILLA;
 		crosshairSize = clampIndex(crosshairSize, CROSSHAIR_SIZES.length, 1);
 		crosshairSpin = clampIndex(crosshairSpin, SPIN_SPEEDS.length, 0);
+		crosshairGap = Math.max(0, Math.min(8, crosshairGap));
+		crosshairLength = Math.max(1, Math.min(10, crosshairLength));
+		crosshairThickness = Math.max(1, Math.min(3, crosshairThickness));
+		crosshairDot = Math.max(0, Math.min(3, crosshairDot));
+		if (damageStyle == null) damageStyle = DamageStyle.SHADOW;
+		damageSize = clampF(damageSize, 0.6f, 2f);
+		damageTime = clampF(damageTime, 0.5f, 3f);
+		if (hitSound == null) hitSound = HitSound.OFF;
+		hitSoundVolume = clampF(hitSoundVolume, 0.1f, 1f);
+		hitSoundPitch = clampF(hitSoundPitch, 0.5f, 2f);
+		lensVignette = clampIndex(lensVignette, LENS_LABELS.length, 0);
+		lensGrain = clampIndex(lensGrain, LENS_LABELS.length, 0);
+		if (hotbarStyle == null) hotbarStyle = HotbarStyle.VANILLA;
+		hotbarOpacity = clampF(hotbarOpacity, 0.1f, 1f);
+		inventoryTintStrength = clampF(inventoryTintStrength, 0.05f, 0.8f);
+		if (nameTagBg == null) nameTagBg = NameTagBg.VANILLA;
+		auroraBrightness = clampF(auroraBrightness, 0.3f, 2f);
+		auroraHeight = clampF(auroraHeight, -20f, 40f);
+		winterSpeed = clampIndex(winterSpeed, WINTER_SPEEDS.length, 1);
+		winterDepth = clampIndex(winterDepth, WINTER_DEPTHS.length, 1);
+		trailAmount = clampIndex(trailAmount, TRAIL_AMOUNT_LABELS.length, 1);
+		trailSize = clampF(trailSize, 0.5f, 2f);
+		if (activeProfile == null || activeProfile.isBlank()) activeProfile = PROFILES[0];
+		if (lowEndBackup == null) lowEndBackup = "";
+		if (friendNicknames == null) friendNicknames = new java.util.HashMap<>();
+		friendNicknames.entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null || e.getValue().isBlank());
 		if (crosshairPixels == null || crosshairPixels.length != DRAW_SIZE) crosshairPixels = defaultDrawing();
 		// held item: older versions had size steps and a "lower" switch
 		itemScale = clampIndex(itemScale, ITEM_SCALES.length, 0);

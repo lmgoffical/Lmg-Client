@@ -75,9 +75,17 @@ public final class Social {
 
 	public record Person(UUID uuid, String name) {}
 
+	/** A friend asking you to come and play on their server. */
+	public record Invite(UUID uuid, String name, String server, String serverName, Instant at) {
+		public String where() {
+			return serverName != null && !serverName.isBlank() ? serverName : server;
+		}
+	}
+
 	/** Everything the Friends screen shows. */
-	public record State(List<Friend> friends, List<Person> incoming, List<Person> outgoing, UUID partner, UUID partnerRequest) {
-		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null);
+	public record State(List<Friend> friends, List<Person> incoming, List<Person> outgoing, UUID partner, UUID partnerRequest,
+						List<Invite> invites) {
+		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null, List.of());
 
 		public Friend friend(UUID id) {
 			for (Friend f : friends) if (f.uuid.equals(id)) return f;
@@ -395,8 +403,53 @@ public final class Social {
 			case "too_many" -> "You've got a lot of friends. Remove some first.";
 			case "not_friends" -> "You need to be friends first.";
 			case "no_request" -> "That request isn't there any more.";
+			case "not_on_server" -> "Join a server first (with Show my server on), then invite.";
 			default -> "Something went wrong (" + code + ").";
 		};
+	}
+
+	/** Invites friends to the server you're on. {@code done} gets null on success, or what went wrong. */
+	public static void invite(java.util.Collection<UUID> ids, Consumer<String> done) {
+		if (ids.isEmpty()) {
+			done.accept("Nobody to invite.");
+			return;
+		}
+		JsonObject a = new JsonObject();
+		com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+		ids.forEach(id -> arr.add(id.toString()));
+		a.add("p_uuids", arr);
+		act("lmg_social_invite", a, done);
+	}
+
+	private static final java.util.Set<String> dismissed = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+	/** Hides an invite (just on this computer; it runs out on its own after 5 minutes). */
+	public static void dismiss(Invite i) {
+		dismissed.add(i.uuid() + "@" + (i.at() == null ? "" : i.at().toString()));
+		State s = state;
+		List<Invite> left = new ArrayList<>(s.invites());
+		left.remove(i);
+		state = new State(s.friends(), s.incoming(), s.outgoing(), s.partner(), s.partnerRequest(), left);
+		changed();
+	}
+
+	/** Your own nickname for a friend, if you gave one: "Mia (Mia_Builds)". */
+	public static String nameOf(UUID id, String name) {
+		String nick = LmgConfig.get().friendNicknames.get(id.toString());
+		return nick == null || nick.isBlank() ? name : nick + " (" + name + ")";
+	}
+
+	public static String nickname(UUID id) {
+		return LmgConfig.get().friendNicknames.getOrDefault(id.toString(), "");
+	}
+
+	public static void setNickname(UUID id, String nick) {
+		String n = nick == null ? "" : nick.trim();
+		if (n.length() > 20) n = n.substring(0, 20);
+		if (n.isEmpty()) LmgConfig.get().friendNicknames.remove(id.toString());
+		else LmgConfig.get().friendNicknames.put(id.toString(), n);
+		LmgConfig.save();
+		changed();
 	}
 
 	public static void add(String name, Consumer<String> done) {
@@ -437,7 +490,15 @@ public final class Social {
 		}
 		// online first, then by name
 		friends.sort((x, y) -> x.online() != y.online() ? (x.online() ? -1 : 1) : x.name().compareToIgnoreCase(y.name()));
-		State next = new State(friends, people(o, "incoming"), people(o, "outgoing"), uuid(o, "partner"), uuid(o, "partnerRequest"));
+		List<Invite> invites = new ArrayList<>();
+		for (JsonElement e : arr(o, "invites")) {
+			JsonObject i = e.getAsJsonObject();
+			Instant at = instant(i, "at");
+			if (dismissed.contains(i.get("uuid").getAsString() + "@" + (at == null ? "" : at.toString()))) continue;
+			invites.add(new Invite(UUID.fromString(i.get("uuid").getAsString()), i.get("name").getAsString(),
+					str(i, "server"), str(i, "serverName"), at));
+		}
+		State next = new State(friends, people(o, "incoming"), people(o, "outgoing"), uuid(o, "partner"), uuid(o, "partnerRequest"), invites);
 		state = next;
 		if (!firstSync) notifyChanges(mc, old, next);
 		firstSync = false;
@@ -467,6 +528,10 @@ public final class Social {
 		for (Person p : next.incoming()) {
 			if (old.incoming().stream().noneMatch(q -> q.uuid().equals(p.uuid())))
 				FriendToast.show(p.uuid(), p.name(), "wants to be friends");
+		}
+		for (Invite i : next.invites()) {
+			if (old.invites().stream().noneMatch(q -> q.uuid().equals(i.uuid()) && java.util.Objects.equals(q.at(), i.at())))
+				FriendToast.show(i.uuid(), i.name(), "invites you to " + i.where() + " - press O");
 		}
 		if (next.partnerRequest() != null && !next.partnerRequest().equals(old.partnerRequest())) {
 			Friend f = next.friend(next.partnerRequest());

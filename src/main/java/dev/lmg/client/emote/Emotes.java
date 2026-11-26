@@ -65,6 +65,14 @@ public final class Emotes {
 		EmoteNet.send(e);
 	}
 
+	/** Plays an emote without turning the camera (photo mode has its own camera). */
+	public static void playQuiet(Emote e) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null) return;
+		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position()));
+		EmoteNet.send(e);
+	}
+
 	public static void stopMine() {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;

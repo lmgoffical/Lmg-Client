@@ -37,6 +37,14 @@ public final class WorldVisuals {
 					rgb(0.13f, 0.17f, 0.32f), rgb(0.02f, 0.02f, 0.06f), rgb(0.45f, 0.35f, 0.90f), 0.8f, true);
 			case COTTON_CANDY -> new Palette(rgb(0.76f, 0.66f, 1.00f), rgb(0.16f, 0.10f, 0.26f),
 					rgb(1.00f, 0.76f, 0.90f), rgb(0.18f, 0.10f, 0.22f), rgb(1.00f, 0.55f, 0.85f), 1.1f, false);
+			case OCEAN -> new Palette(rgb(0.20f, 0.55f, 0.85f), rgb(0.02f, 0.06f, 0.14f),
+					rgb(0.45f, 0.75f, 0.95f), rgb(0.03f, 0.07f, 0.13f), rgb(0.40f, 0.80f, 1.00f), 0.9f, false);
+			case MINT -> new Palette(rgb(0.55f, 0.92f, 0.80f), rgb(0.04f, 0.12f, 0.10f),
+					rgb(0.75f, 0.97f, 0.88f), rgb(0.04f, 0.10f, 0.08f), rgb(0.60f, 1.00f, 0.75f), 0.9f, false);
+			case LAVENDER -> new Palette(rgb(0.70f, 0.62f, 0.95f), rgb(0.08f, 0.05f, 0.16f),
+					rgb(0.86f, 0.78f, 1.00f), rgb(0.07f, 0.05f, 0.13f), rgb(0.90f, 0.60f, 1.00f), 1.0f, false);
+			case GOLDEN -> new Palette(rgb(1.00f, 0.80f, 0.45f), rgb(0.12f, 0.08f, 0.04f),
+					rgb(1.00f, 0.86f, 0.60f), rgb(0.10f, 0.07f, 0.04f), rgb(1.00f, 0.70f, 0.30f), 1.2f, false);
 			case ACCENT -> {
 				Vector3f a = fromRgbInt(LmgConfig.get().accentRgb());
 				yield new Palette(mix(a, rgb(1, 1, 1), 0.15f), scale(a, 0.16f),

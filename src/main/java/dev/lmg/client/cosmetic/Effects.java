@@ -42,13 +42,13 @@ public final class Effects {
 		boolean moving = v.x * v.x + v.z * v.z > 0.0009;
 		if (!moving) return;
 		int every = switch (cfg.trail) {
-			case HEARTS, NOTES -> 5;
-			default -> 1;
+			case HEARTS, NOTES -> new int[]{9, 5, 3}[cfg.trailAmount];
+			default -> cfg.trailAmount == 0 ? 2 : 1;
 		};
 		if (tick % every != 0) return;
 		ParticleOptions particle = switch (cfg.trail) {
 			case SPARKLE -> ParticleTypes.END_ROD;
-			case ACCENT_DUST -> new DustParticleOptions(cfg.trailColor(), 1.0f);
+			case ACCENT_DUST -> new DustParticleOptions(cfg.trailColor(), cfg.trailSize);
 			case HEARTS -> ParticleTypes.HEART;
 			case NOTES -> ParticleTypes.NOTE;
 			case SOUL_FLAMES -> ParticleTypes.SOUL_FIRE_FLAME;
@@ -56,7 +56,7 @@ public final class Effects {
 			default -> null;
 		};
 		if (particle == null) return;
-		int count = cfg.trail == LmgConfig.Trail.ACCENT_DUST ? 2 : 1;
+		int count = (cfg.trail == LmgConfig.Trail.ACCENT_DUST ? 2 : 1) * (cfg.trailAmount == 2 ? 2 : 1);
 		for (int i = 0; i < count; i++) {
 			double x = player.getX() - v.x * 2 + (RANDOM.nextDouble() - 0.5) * 0.4;
 			double y = player.getY() + 0.1 + RANDOM.nextDouble() * 0.2;
@@ -82,6 +82,15 @@ public final class Effects {
 						0, -0.05, 0);
 				case ASH -> level.addParticle(ParticleTypes.WHITE_ASH, x, player.getY() + 1 + RANDOM.nextDouble() * 6, z, 0, 0, 0);
 				case SPORES -> level.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, x, player.getY() + 1 + RANDOM.nextDouble() * 5, z, 0, 0, 0);
+				case LEAVES -> {
+					// red, orange and yellow leaves drifting down
+					var kind = switch (RANDOM.nextInt(3)) {
+						case 0 -> ParticleTypes.RED_POPLAR_LEAVES;
+						case 1 -> ParticleTypes.ORANGE_POPLAR_LEAVES;
+						default -> ParticleTypes.YELLOW_POPLAR_LEAVES;
+					};
+					level.addParticle(kind, x, player.getY() + 4 + RANDOM.nextDouble() * 6, z, 0, 0, 0);
+				}
 				default -> {}
 			}
 		}

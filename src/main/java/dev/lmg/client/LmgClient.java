@@ -61,6 +61,10 @@ public class LmgClient implements ClientModInitializer {
 			if (!dev.lmg.client.feature.Visuals.drawCrosshair(graphics)) vanilla.extractRenderState(graphics, delta);
 		});
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("damage_numbers"), dev.lmg.client.feature.Visuals::drawNumbers);
+		// lens effects sit right on the world, under everything else on screen
+		HudElementRegistry.attachElementBefore(VanillaHudElements.MISC_OVERLAYS, id("lens"), dev.lmg.client.render.LensOverlay::draw);
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("pvp_hud"), new dev.lmg.client.hud.PvpHud());
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("armour_hud"), new dev.lmg.client.hud.ArmourHud());
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, id("death_compass"),
 				(graphics, delta) -> dev.lmg.client.map.DeathTrail.drawCompass(graphics, Minecraft.getInstance()));
 		// Save the map when you leave a world or close the game.
@@ -88,7 +92,7 @@ public class LmgClient implements ClientModInitializer {
 					Component.literal("Lmg Ore Edges"), PackActivationType.NORMAL);
 			// The Star of David totem is on by default (toggle in the PvP tab).
 			ResourceLoader.registerBuiltinPack(id("lmg_totem"), mod,
-					Component.literal("Lmg Totem"), PackActivationType.DEFAULT_ENABLED);
+					Component.literal("Lmg Totem"), PackActivationType.NORMAL);
 		});
 
 		// Things drawn in the world: custom block overlay, target reticle, aurora.
@@ -100,6 +104,7 @@ public class LmgClient implements ClientModInitializer {
 			WorldRender.targetReticle(context);
 			OreGlow.render(context);
 			dev.lmg.client.world.Winter.render(context);
+			dev.lmg.client.world.Mist.render(context);
 			dev.lmg.client.map.DeathTrail.render(context);
 		});
 
@@ -125,6 +130,7 @@ public class LmgClient implements ClientModInitializer {
 			dev.lmg.client.emote.Emotes.tick(mc);
 			dev.lmg.client.emote.EmoteNet.tick(mc);
 			dev.lmg.client.world.Winter.tick(mc);
+			dev.lmg.client.world.Mist.tick(mc);
 			dev.lmg.client.map.DeathTrail.tick(mc);
 			dev.lmg.client.feature.Visuals.tick(mc);
 			dev.lmg.client.social.Uids.tick(mc);
