@@ -40,7 +40,9 @@ public class CosmeticsLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
 			equipped = LmgConfig.get().equipped;
 			colors = LmgConfig.get().cosmeticColors;
 		} else {
-			// another Lmg player who shared their cosmetics
+			// another Lmg player who shared their cosmetics (only drawn within the set distance)
+			int range = LmgConfig.OTHERS_RANGES[LmgConfig.get().othersRange];
+			if (state.distanceToCameraSq > (double) range * range) return;
 			AvatarSync.Shared shared = sharedFor(state.id);
 			if (shared == null) return;
 			equipped = shared.equipped();

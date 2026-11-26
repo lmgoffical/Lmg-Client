@@ -28,11 +28,11 @@ import java.util.function.Supplier;
  * Drag the header to move the panel; its position is remembered.
  */
 public class LmgSettingsScreen extends Screen {
-	private static final String[] TABS = {"Theme", "Configs", "World", "Cinematic", "Avatar", "Target", "PvP", "Items", "HUD", "Maps", "Keys", "Tools"};
+	private static final String[] TABS = {"Theme", "Configs", "World", "Cinematic", "Avatar", "Target", "PvP", "Items", "HUD", "Maps", "Keys", "Tools", "FPS"};
 	/** One plain line under each tab's name, so you know what you're looking at. */
 	private static final String[] SUBTITLES = {"how this menu looks", "save setups, share them with a code", "sky, fog, clouds and weather", "shaders and film mode, for videos",
 			"cosmetics, trails and particles", "whatever you're aiming at", "seeing clearly in a fight", "held items and the totem",
-			"the bar at the top and what's on it", "minimap, world map and waypoints", "click a key, then press the new one", "zoom, freecam and a few extras"};
+			"the bar at the top and what's on it", "minimap, world map and waypoints", "click a key, then press the new one", "zoom, freecam and a few extras", "make the game run smoother"};
 	private static final String[] TIPS = {"drag the top bar to move this menu", "double-click the top bar to re-center it",
 			"right-click a setting to go back one", "M opens the world map", "hold C to zoom, scroll to zoom more",
 			"every key can be changed in Keys", "Right Shift closes this"};
@@ -420,6 +420,37 @@ public class LmgSettingsScreen extends Screen {
 						waitingKey = waitingKey == b.key() ? null : b.key();
 					}).withHint(waitingKey == b.key() ? "Press a key. Esc clears it." : b.hint()));
 				}
+			}
+			case "FPS" -> {
+				r.add(SettingRow.toggle("FPS boost", () -> c.fpsBoost, dev.lmg.client.feature.FpsBoost::set)
+						.withHint("Turns down Minecraft's heaviest settings. Off undoes it."));
+				r.add(SettingRow.toggle("Trail in first person", () -> c.trailFirstPerson, v -> c.trailFirstPerson = v)
+						.withHint("Off: the trail only spawns when you can see it."));
+				r.add(SettingRow.toggle("Follow particle setting", () -> c.followParticleSetting, v -> c.followParticleSetting = v)
+						.withHint("Minecraft's Particles setting limits ours too."));
+				r.add(SettingRow.choice("Minimap refresh", () -> LmgConfig.REFRESH_LABELS[c.minimapRefresh],
+						() -> c.minimapRefresh = step(c.minimapRefresh, LmgConfig.MINIMAP_REFRESH_MS.length, 1),
+						() -> c.minimapRefresh = step(c.minimapRefresh, LmgConfig.MINIMAP_REFRESH_MS.length, -1))
+						.withHint("Only redraws when you move. Saver = fewer redraws."));
+				r.add(SettingRow.choice("Map scanning", () -> LmgConfig.SCAN_LABELS[c.mapScan],
+						() -> c.mapScan = step(c.mapScan, LmgConfig.SCAN_SWEEP.length, 1),
+						() -> c.mapScan = step(c.mapScan, LmgConfig.SCAN_SWEEP.length, -1))
+						.withHint("How fast the map fills in. Slow = lighter."));
+				r.add(SettingRow.choice("Others' pets & cosmetics", () -> "within " + LmgConfig.OTHERS_RANGES[c.othersRange],
+						() -> c.othersRange = step(c.othersRange, LmgConfig.OTHERS_RANGES.length, 1),
+						() -> c.othersRange = step(c.othersRange, LmgConfig.OTHERS_RANGES.length, -1))
+						.withHint("Further players are drawn plain."));
+				r.add(SettingRow.toggle("Ore glow", () -> c.oreGlow, v -> c.oreGlow = v)
+						.withHint("Light now, but off is lighter still."));
+				r.add(SettingRow.toggle("Aurora", () -> c.aurora != LmgConfig.Aurora.OFF,
+						v -> c.aurora = v ? LmgConfig.Aurora.values()[Math.min(1, LmgConfig.Aurora.values().length - 1)] : LmgConfig.Aurora.OFF)
+						.withHint("Northern lights at night."));
+				r.add(SettingRow.choice("Ambient particles", () -> LmgConfig.AMOUNT_LABELS[c.ambientAmount],
+						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, 1),
+						() -> c.ambientAmount = step(c.ambientAmount, LmgConfig.AMOUNT_LABELS.length, -1))
+						.withHint("Fewer floating particles = smoother."));
+				r.add(SettingRow.choice("Shaders", this::shaderLabel, () -> pickShader(1), () -> pickShader(-1))
+						.withHint("Shaders cost the most FPS by far."));
 			}
 			default -> { // Tools
 				r.add(SettingRow.choice("Zoom amount", () -> LmgConfig.ZOOM_LABELS[c.zoomLevel],

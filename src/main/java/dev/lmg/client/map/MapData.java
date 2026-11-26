@@ -59,12 +59,15 @@ public final class MapData {
 		int radius = Math.min(mc.options.getEffectiveRenderDistance(), 16);
 		if (radius != spiralRadius) buildSpiral(radius);
 		int pcx = mc.player.blockPosition().getX() >> 4, pcz = mc.player.blockPosition().getZ() >> 4;
-		// The chunks right around you are rescanned constantly, the rest in a slow sweep.
-		for (int i = 0; i < 9; i++) {
-			int[] o = spiral[(ticks * 9 + i) % Math.min(spiral.length, 25)];
+		// The 25 chunks right around you are re-mapped every few ticks (spread out), the rest in a slow sweep.
+		LmgConfig cfg = LmgConfig.get();
+		int nearEvery = LmgConfig.SCAN_NEAR_EVERY[cfg.mapScan];
+		int near = Math.min(spiral.length, 25);
+		for (int i = ticks % nearEvery; i < near; i += nearEvery) {
+			int[] o = spiral[i];
 			scanChunk(level, pcx + o[0], pcz + o[1]);
 		}
-		for (int i = 0; i < CHUNKS_PER_TICK; i++) {
+		for (int i = 0; i < LmgConfig.SCAN_SWEEP[cfg.mapScan]; i++) {
 			int[] o = spiral[cursor];
 			cursor = (cursor + 1) % spiral.length;
 			scanChunk(level, pcx + o[0], pcz + o[1]);
@@ -82,6 +85,7 @@ public final class MapData {
 		while (it.hasNext()) {
 			MapRegion r = it.next();
 			if (Math.abs(r.rx - prx) > 3 || Math.abs(r.rz - prz) > 3) {
+				if (r == lastRegion) lastRegion = null;
 				r.close();
 				it.remove();
 			}
@@ -172,7 +176,15 @@ public final class MapData {
 
 	/** Colour of the block at x, z (ARGB), or 0 if it isn't mapped. */
 	public static int colorAt(int x, int z) {
+		// the minimap asks for thousands of neighbouring pixels: remember the last region
+		long key = ((long) (x >> 9) << 32) ^ ((z >> 9) & 0xFFFFFFFFL);
+		MapRegion last = lastRegion;
+		if (last != null && key == lastKey) return last.get(x & 511, z & 511);
 		MapRegion r = region(x >> 9, z >> 9, false);
+		if (r != null) {
+			lastKey = key;
+			lastRegion = r;
+		}
 		if (r == null) {
 			if (!hasFile(x >> 9, z >> 9)) return 0;
 			r = region(x >> 9, z >> 9, true);
@@ -181,6 +193,8 @@ public final class MapData {
 	}
 
 	private static final Map<Long, Boolean> FILE_CACHE = new HashMap<>();
+	private static long lastKey;
+	private static MapRegion lastRegion;
 
 	private static boolean hasFile(int rx, int rz) {
 		if (folder == null) return false;
@@ -241,6 +255,7 @@ public final class MapData {
 		Waypoints.save();
 		for (MapRegion r : REGIONS.values()) r.close();
 		REGIONS.clear();
+		lastRegion = null;
 		FILE_CACHE.clear();
 		worldKey = null;
 		folder = null;

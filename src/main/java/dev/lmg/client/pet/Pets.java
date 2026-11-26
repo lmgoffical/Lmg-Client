@@ -135,7 +135,7 @@ public final class Pets {
 		}
 		java.util.Set<UUID> seen = new java.util.HashSet<>();
 		for (Player p : level.players()) {
-			if (p == me || p.isRemoved() || p.distanceTo(me) > 48) continue;
+			if (p == me || p.isRemoved() || p.distanceTo(me) > LmgConfig.OTHERS_RANGES[LmgConfig.get().othersRange]) continue;
 			dev.lmg.client.sync.AvatarSync.Shared shared = dev.lmg.client.sync.AvatarSync.get(p.getUUID());
 			if (shared == null) continue;
 			seen.add(p.getUUID());

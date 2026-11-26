@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.23", "<b>Smoother.</b> A new FPS tab with a one-click FPS boost you can undo. The trail only spawns when you can see it, ore glow and the minimap do far less work, and the map scanner is lighter."],
   ["0.22", "<b>Cinematic.</b> One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."],
   ["0.21", "<b>See each other's pets.</b> Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."],
   ["0.20", "<b>Pets.</b> Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."],

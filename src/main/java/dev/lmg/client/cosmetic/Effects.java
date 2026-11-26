@@ -7,6 +7,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,7 +27,13 @@ public final class Effects {
 		if (player == null || level == null || mc.isPaused()) return;
 		tick++;
 		LmgConfig cfg = LmgConfig.get();
-		if (cfg.trail != LmgConfig.Trail.OFF && !player.isSpectator()) trail(level, player, cfg);
+		// Minecraft's own Particles setting: Minimal = none of ours, Decreased = half
+		ParticleStatus status = mc.options.particles().get();
+		if (cfg.followParticleSetting && status == ParticleStatus.MINIMAL) return;
+		if (cfg.followParticleSetting && status == ParticleStatus.DECREASED && tick % 2 == 0) return;
+		// the trail is behind you, so in first person you'd never see it: don't spawn it
+		boolean seeYourself = !mc.options.getCameraType().isFirstPerson() || dev.lmg.client.feature.Freecam.on();
+		if (cfg.trail != LmgConfig.Trail.OFF && !player.isSpectator() && (seeYourself || cfg.trailFirstPerson)) trail(level, player, cfg);
 		if (cfg.ambient != LmgConfig.Ambient.OFF) ambient(level, player, cfg);
 	}
 

@@ -30,6 +30,7 @@ public class MinimapHud implements HudElement {
 	private static final Identifier ARROW = LmgClient.id("textures/gui/map_arrow.png");
 	private static DynamicTexture texture;
 	private static long lastBuild;
+	private static long lastState;
 	private static int lastBottom = -1;
 
 	/** Where the minimap ends when it sits in its default top-right spot (so other things can go below it). */
@@ -63,10 +64,17 @@ public class MinimapHud implements HudElement {
 		float zoom = LmgConfig.MINIMAP_ZOOMS[c.minimapZoom];
 		boolean rotate = c.minimapRotate, round = c.minimapRound;
 
+		// Redraw the picture only when something changed (you moved or turned, or a setting),
+		// at most as often as the refresh setting allows, and once a second for new map data.
 		long now = System.currentTimeMillis();
-		if (texture == null || now - lastBuild > 33) {
+		long state = Double.doubleToLongBits(Math.floor(px * 2)) * 31 + Double.doubleToLongBits(Math.floor(pz * 2))
+				+ (rotate ? Math.round(yaw / 2f) * 977L : 0) + (long) (zoom * 101) + (round ? 7 : 0);
+		long since = now - lastBuild;
+		boolean changed = state != lastState;
+		if (texture == null || (changed && since >= LmgConfig.MINIMAP_REFRESH_MS[c.minimapRefresh]) || since > 1000) {
 			build(px, pz, yaw, zoom, rotate, round);
 			lastBuild = now;
+			lastState = state;
 		}
 
 		// frame

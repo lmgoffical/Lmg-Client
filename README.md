@@ -48,6 +48,16 @@ The installer sets up Fabric and downloads Lmg Client, Fabric API, **Sodium** (F
 - **Mods:** main menu → Mods (or Tools → Mods). Lists everything in your mods folder with its version and description, marks the Lmg pack, and lets you switch mods on or off. Changes apply the next time you start the game. On Windows a running mod's file is locked, so switching it off finishes right after the game closes.
 - **Minecraft settings:** with "Themed vanilla menus" on, Minecraft's own buttons, sliders and lists use the Lmg look (following your menu style), and Options opens a hub with FOV, render distance, brightness and volume up top and a card for each settings page. "Classic options" opens the original screen.
 
+## FPS
+
+The FPS tab collects everything that affects performance:
+
+- **FPS boost** turns down Minecraft's heaviest settings (entity shadows, biome blend, particles, improved transparency, render distance 12, simulation distance 8, weather radius 5). Your old values are saved and come back when you switch it off.
+- **Trail** only spawns in third person or freecam (you can't see it in first person). Lmg's particles follow Minecraft's *Particles* setting (Minimal = none, Decreased = half).
+- **Ore glow** scans a chunk section at a time and skips sections with no ores, and only rescans when you've moved 2 blocks (or every 2 seconds).
+- **Minimap** only redraws when you move or turn (and once a second for new map data). *Minimap refresh* and *Map scanning* trade smoothness for speed.
+- **Other players' pets and cosmetics** are only drawn within a set distance.
+
 ## Cinematic, colours and target highlight
 
 - **Cinematic tab:** *Shaders* switches between Off, **Golden haze** (Complementary Unbound, the warm foggy look with light rays) and **Lighter** (Complementary Reimagined). Packs are downloaded from Modrinth at pinned versions, checked against their SHA-1, and turned on through Iris. *Shader settings* opens Iris's own menu. **Cinematic mode** (F7) hides the HUD, turns on the smooth camera and adds film bars and a vignette. *Golden hour* locks the sun low (client-side), and *Smooth freecam* makes freecam glide.

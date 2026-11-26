@@ -324,6 +324,22 @@ public final class LmgConfig {
 	/** False until the "before you start" screen has been shown once. */
 	public boolean welcomeSeen = false;
 
+	// ---- performance ----
+	public static final int[] MINIMAP_REFRESH_MS = {50, 125, 333};
+	public static final String[] REFRESH_LABELS = {"Smooth", "Normal", "Saver"};
+	public static final int[] SCAN_SWEEP = {8, 4, 2};          // far chunks mapped per tick
+	public static final int[] SCAN_NEAR_EVERY = {5, 10, 20};   // ticks between re-maps of the chunks around you
+	public static final String[] SCAN_LABELS = {"Fast", "Normal", "Slow"};
+	public static final int[] OTHERS_RANGES = {16, 32, 48};
+	public boolean trailFirstPerson = false;
+	public boolean followParticleSetting = true;
+	public int minimapRefresh = 1;
+	public int mapScan = 1;
+	public int othersRange = 1;
+	public boolean fpsBoost = false;
+	/** Minecraft settings from before FPS boost, so turning it off puts them back. */
+	public java.util.Map<String, String> fpsBoostSaved = new java.util.HashMap<>();
+
 	// ---- custom colours (from the colour picker; -1 = use the preset) ----
 	public int accentRgb = -1;
 	public int overlayRgb = -1;
@@ -473,6 +489,10 @@ public final class LmgConfig {
 		if (pets == null) pets = new java.util.ArrayList<>();
 		dev.lmg.client.pet.PetConfig.sanitize(pets);
 		targetRange = clampIndex(targetRange, TARGET_RANGES.length, d.targetRange);
+		minimapRefresh = clampIndex(minimapRefresh, MINIMAP_REFRESH_MS.length, d.minimapRefresh);
+		mapScan = clampIndex(mapScan, SCAN_SWEEP.length, d.mapScan);
+		othersRange = clampIndex(othersRange, OTHERS_RANGES.length, d.othersRange);
+		if (fpsBoostSaved == null) fpsBoostSaved = new java.util.HashMap<>();
 		barSize = clampIndex(barSize, BAR_SIZES.length, d.barSize);
 		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
 		freecamSpeed = clampIndex(freecamSpeed, FREECAM_SPEEDS.length, d.freecamSpeed);
