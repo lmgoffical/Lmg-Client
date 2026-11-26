@@ -1,9 +1,9 @@
 {
-  "version": "0.35.0",
+  "version": "0.35.1",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.35.0.jar",
-    "sha1": "4b48ab64a8e0fb788bf141f6badee51f2f2e3c45"
+    "file": "lmg-client-0.35.1.jar",
+    "sha1": "02a961bfd3987fbb9922c24f2909a4ec2c72197a"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.35.1",
+      "text": "Cosmetics clicks fixed. The tabs down the side and the + buttons now react to exactly where they're drawn. And if you were matching your partner's outfit, picking something yourself now stops matching (it used to put their outfit back on you every couple of seconds, so it looked like the buttons did nothing). Turn matching back on with the button at the top."
+    },
+    {
       "version": "0.35",
       "text": "34 new cosmetics and a new Tails tab. Tails: cat, fox, bunny, devil, dragon and robot, and they swish as you walk. Hats: witch, cowboy, party, flower crown, frog, headphones and a star crown. Glasses: heart, round, star, snow goggles and a monocle. Ears: bear, devil horns, bug antennae and elf. Wings: fairy, dragon and crystal. Auras: heart orbit, planet rings, leaf swirl and spirit flames. Capes: Moonlit Sea, Inferno, Rainbow, Night Forest and Racer. Shared tails show for other Lmg players too."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.31",
       "text": "Partners, closer. If your partner says yes (Social &gt; Partner &gt; Let my partner climb on me), you can sit on their head or their shoulder. Stand still next to them for a bit and you start playing around them: hopping round, pulling their arm, poking them, then sitting down together. Other Lmg players see it too."
-    },
-    {
-      "version": "0.30",
-      "text": "Delete means delete. Menu &gt; Help &gt; Delete all my Lmg data wipes everything our server has about you: friends, invites, your UID, shared pets and cosmetics, and the config codes you shared. On the website, your profile page has Delete my account, which removes your login, profile and every post."
     }
   ],
   "launcher": {

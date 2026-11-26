@@ -173,8 +173,25 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		return id.equals(LmgConfig.get().equipped.get(tab));
 	}
 
+	private void openTab(String t) {
+		if (t.equals(tab)) return;
+		tab = lastTab = t;
+		scroll = 0;
+		selected = null;
+		hits.clear();
+		if (t.equals("custom")) CustomModels.reload();
+		rebuildWidgets();
+	}
+
 	private void toggle(String id) {
 		LmgConfig c = LmgConfig.get();
+		// Matching your partner copies their outfit onto you every couple of seconds, which would undo
+		// this straight away - so picking something yourself stops matching.
+		if (c.matchPartner && !tab.equals(SKINS)) {
+			c.matchPartner = false;
+			var f = dev.lmg.client.social.Social.partner() == null ? null : dev.lmg.client.social.Social.state().friend(dev.lmg.client.social.Social.partner());
+			toast("Stopped matching " + (f != null ? f.name() : "your partner") + " so you can pick your own. Turn it back on up top.");
+		}
 		if (tab.equals(SKINS)) {
 			if (id.isEmpty() || id.equals(c.customSkin)) {
 				c.customSkin = null;
@@ -203,6 +220,14 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 
 	private String toast = "";
 	private long toastAt;
+
+	/** Where each tab and card was drawn last frame, so a click lands on exactly what you see. */
+	private record Hit(boolean tab, String id, int x0, int y0, int x1, int y1, int cardY) {
+		boolean has(double x, double y) {
+			return x >= x0 && x < x1 && y >= y0 && y < y1;
+		}
+	}
+	private final List<Hit> hits = new ArrayList<>();
 
 	private void toast(String text) {
 		toast = text;
@@ -247,6 +272,7 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		MenuSnow.panelTop(x0, y0, x0 + W);
 
 		// sidebar: one tab per category, with how many items it has
+		hits.clear();
 		int sx = x0 + 6, sy = y0 + HEADER + 8;
 		g.fill(x0 + SIDEBAR + 2, y0 + HEADER + 6, x0 + SIDEBAR + 3, y0 + H - 8, Draw.fade(p.border, a));
 		for (String t : TABS) {
@@ -256,6 +282,7 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 				sy += 12;
 			}
 			boolean active = t.equals(tab);
+			hits.add(new Hit(true, t, sx, sy, x0 + SIDEBAR, sy + 16, sy));
 			boolean over = mouseX >= sx && mouseX < x0 + SIDEBAR && mouseY >= sy && mouseY < sy + 16;
 			float h = anim("tab:" + t, over ? 1 : 0, dt);
 			MenuSkin.tab(g, font, sx, sy, SIDEBAR - 8, 16, Component.literal(tabName(t)), active ? 1f : 0f, h);
@@ -287,6 +314,8 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 			if (r < 0 || r >= visibleRows + 1) continue;
 			int cx = gridX + c * (CARD_W + GAP), cy = gridY + r * (CARD_H + GAP);
 			drawCard(g, list.get(i), cx, cy, mouseX, mouseY, dt, a, p);
+			int top = Math.max(cy, gridY), bottom = Math.min(cy + CARD_H, gridY + gridH);
+			if (bottom > top) hits.add(new Hit(false, list.get(i), cx, top, cx + CARD_W, bottom, cy));
 		}
 		g.disableScissor();
 		if (list.isEmpty() || (tab.equals(SKINS) && list.size() == 1)) emptyHint(g, p, a);
@@ -555,18 +584,25 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		double mx = event.x(), my = event.y();
 		if (event.button() != 0) return false;
 
-		// tabs
+		// what was drawn last frame (tabs and cards)
+		for (Hit hit : new ArrayList<>(hits)) {
+			if (!hit.has(mx, my)) continue;
+			if (hit.tab()) {
+				openTab(hit.id());
+			} else {
+				boolean onButton = mx >= hit.x0() + CARD_W - 14 && my < hit.cardY() + 14;
+				if (onButton || doubleClick || hit.id().equals(selected)) toggle(hit.id());
+				else selected = hit.id();
+			}
+			return true;
+		}
+
+		// tabs (only used before the first frame is drawn)
 		int sx = x0 + 6, sy = y0 + HEADER + 8;
 		for (String t : TABS) {
 			if (t.equals(SKINS)) sy += 18;
 			if (mx >= sx && mx < x0 + SIDEBAR && my >= sy && my < sy + 16) {
-				if (!t.equals(tab)) {
-					tab = lastTab = t;
-					scroll = 0;
-					selected = null;
-					if (t.equals("custom")) CustomModels.reload();
-					rebuildWidgets();
-				}
+				openTab(t);
 				return true;
 			}
 			sy += 18;

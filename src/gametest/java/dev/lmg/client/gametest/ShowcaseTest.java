@@ -36,6 +36,13 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.getInput().resizeWindow(1280, 720);
 		ctx.waitTicks(5);
+		if (want("cosclick")) {
+			ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.LmgTitleScreen(false)));
+			ctx.waitTicks(20);
+			ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.CosmeticsScreen(mc.gui.screen())));
+			ctx.waitTicks(40);
+			clickHatsTab(ctx, "title");
+		}
 
 		try (TestSingleplayerContext world = ctx.worldBuilder().create()) {
 			world.getConnection().waitForChunksRender();
@@ -85,6 +92,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("v29photo")) v29photo(ctx, world);
 			if (want("cosmetics")) cosmetics(ctx);
 			if (want("newcos")) newCosmetics(ctx, world);
+			if (want("cosclick")) cosmeticsClicks(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -975,6 +983,86 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
 		ctx.setScreen(() -> null);
+	}
+
+	/** Real mouse clicks on the Cosmetics screen: a side tab, then a card's + button. */
+	private void cosmeticsClicks(ClientGameTestContext ctx) {
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(10);
+		ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.CosmeticsScreen(mc.gui.screen())));
+		ctx.waitTicks(40);
+		clickHatsTab(ctx, "world");
+	}
+
+	private void clickHatsTab(ClientGameTestContext ctx, String where) {
+		int[] pos = ctx.computeOnClient(mc -> {
+			try {
+				var cs = mc.gui.screen();
+				int x0 = field(cs, "x0"), y0 = field(cs, "y0");
+				double sc = mc.getWindow().getGuiScale();
+				// the "Hats" tab is the 3rd one: y0 + HEADER(24) + 8 + 2*18, centre +8
+				return new int[]{(int) ((x0 + 40) * sc), (int) ((y0 + 24 + 8 + 2 * 18 + 8) * sc), (int) sc};
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.getInput().setCursorPos(pos[0], pos[1]);
+		ctx.waitTicks(2);
+		ctx.getInput().pressMouse(0);
+		ctx.waitTicks(5);
+		String tab = ctx.computeOnClient(mc -> {
+			try {
+				var f = mc.gui.screen().getClass().getDeclaredField("tab");
+				f.setAccessible(true);
+				return mc.gui.screen().getClass().getSimpleName() + ":" + f.get(mc.gui.screen());
+			} catch (Exception e) {
+				return String.valueOf(mc.gui.screen());
+			}
+		});
+		System.out.println("LMGCLICK " + where + " after tab click: " + tab);
+		// now the "+" on the first hat card, with partner matching switched on
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().matchPartner = true;
+			LmgConfig.get().equipped.remove("hats");
+		});
+		int[] plus = ctx.computeOnClient(mc -> {
+			try {
+				var cs = mc.gui.screen();
+				double sc = mc.getWindow().getGuiScale();
+				int gx = field(cs, "gridX"), gy = field(cs, "gridY"), cw = field(cs, "CARD_W");
+				return new int[]{(int) ((gx + cw - 7) * sc), (int) ((gy + 7) * sc)};
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.getInput().setCursorPos(plus[0], plus[1]);
+		ctx.waitTicks(2);
+		ctx.getInput().pressMouse(0);
+		ctx.waitTicks(60);   // longer than the partner re-match interval
+		String hat = ctx.computeOnClient(mc -> LmgConfig.get().equipped.get("hats") + " match=" + LmgConfig.get().matchPartner);
+		System.out.println("LMGCLICK " + where + " after + click: " + hat);
+		// and back to another tab
+		ctx.getInput().setCursorPos(pos[0], pos[1] + 3 * 18 * pos[2]);
+		ctx.waitTicks(2);
+		ctx.getInput().pressMouse(0);
+		ctx.waitTicks(5);
+		String tab2 = ctx.computeOnClient(mc -> {
+			try {
+				var f = mc.gui.screen().getClass().getDeclaredField("tab");
+				f.setAccessible(true);
+				return String.valueOf(f.get(mc.gui.screen()));
+			} catch (Exception e) {
+				return "?";
+			}
+		});
+		System.out.println("LMGCLICK " + where + " second tab: " + tab2);
+		ctx.takeScreenshot("cosclick-" + where);
+	}
+
+	private static int field(Object o, String name) throws Exception {
+		var f = o.getClass().getDeclaredField(name);
+		f.setAccessible(true);
+		return f.getInt(o);
 	}
 
 	private static String testToken() {
