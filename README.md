@@ -33,6 +33,8 @@ Community site with accounts, a forum, announcements and a config gallery: <http
 
 The app installs Fabric, Lmg Client, Fabric API, **Sodium** (FPS), **Lithium** (smoother ticks) and **Iris** (shaders) at versions pinned to work together, checks every download against its SHA-1, and keeps everything in its own folder, `%appdata%\.lmgclient`, so it never clashes with other mods. Worlds and resource packs are shared with normal Minecraft.
 
+**What's in the app:** your Minecraft account and skin face (name and ID read from the Minecraft Launcher's account file, skin from Mojang), a Play button that shows *Update & Play* when there's an update and *Playing* while the game runs, download sizes while installing, a heads-up when Minecraft crashed with a link to the report, What's new, a **Mods** tab (switch mods on/off, with dependency checks), and **Settings** (memory slider, shaders on/off, close on launch, repair, remove the app). It remembers where you put the window. Enter = Play, Esc = Home, Ctrl+1/2/3 = tabs.
+
 **Updates are automatic:** each time you open the app it updates Lmg Client and the mods, and updates itself (the manifest lists the newest app with its SHA-1). It never signs you in or sees your password: Mojang's launcher does that.
 
 The old `installer/Install-Lmg-Client.bat` still works and does the same install.

@@ -116,7 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
-  ["0.24", "<b>The Lmg Client app.</b> A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. Plus What's new, memory settings and repair."],
+  ["0.24", "<b>The Lmg Client app.</b> A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. App 1.1 shows your account and skin, and adds Mods and Settings tabs, crash alerts and download sizes."],
   ["0.23", "<b>Smoother.</b> A new FPS tab with a one-click FPS boost you can undo. The trail only spawns when you can see it, ore glow and the minimap do far less work, and the map scanner is lighter."],
   ["0.22", "<b>Cinematic.</b> One-click golden-hour shaders, a film mode (F7) with bars, a vignette and a smooth camera, and smoother freecam. Plus a real colour picker, and the target outline now waits until things are close, then changes colour once you can hit them."],
   ["0.21", "<b>See each other's pets.</b> Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."],
@@ -602,7 +602,7 @@ const LEGAL = {
       <li><b>No analytics, no telemetry, no tracking.</b> The mod doesn't report what you play or click.</li>
       <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
       <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
-      <li><b>The Lmg Client app</b> downloads from GitHub, Fabric and Modrinth only, and saves its few settings in your user folder. It never asks for or sees your Minecraft password; you sign in with Mojang's own launcher.</li>
+      <li><b>The Lmg Client app</b> downloads from GitHub, Fabric and Modrinth only, and saves its few settings in your user folder. It never asks for or sees your Minecraft password; you sign in with Mojang's own launcher. To say hi, it reads only your player name and ID from the Minecraft Launcher's account file (nothing else in that file is used, kept or sent), and loads your skin's face from Mojang's servers.</li>
       <li><b>Shaders.</b> If you pick a shader pack in the Cinematic tab, it's downloaded from Modrinth, which sees your IP address like any download.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
       <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>

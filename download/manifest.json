@@ -38,7 +38,7 @@
   "changelog": [
     {
       "version": "0.24",
-      "text": "The Lmg Client app. A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. Plus What's new, memory settings and repair."
+      "text": "The Lmg Client app. A proper desktop app: one Play button that installs and updates everything (and itself), then opens Minecraft with Lmg picked. App 1.1 shows your account and skin, and adds Mods and Settings tabs, crash alerts and download sizes."
     },
     {
       "version": "0.23",
