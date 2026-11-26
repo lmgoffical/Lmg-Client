@@ -104,6 +104,7 @@ public class LmgClient implements ClientModInitializer {
 			OreGlow.tick(mc);
 			dev.lmg.client.feature.LmgKeys.tick(mc);
 			dev.lmg.client.pet.Pets.tick(mc);
+			dev.lmg.client.sync.AvatarSync.tick(mc);
 			dev.lmg.client.map.MapData.tick(mc);
 		});
 		LOGGER.info("{} loaded", CLIENT_NAME);

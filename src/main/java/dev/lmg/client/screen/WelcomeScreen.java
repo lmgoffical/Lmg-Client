@@ -35,7 +35,7 @@ public class WelcomeScreen extends Screen {
 	private static final String[][] SECTIONS = {
 			{"What this is", "Lmg Client changes how Minecraft looks: sky, fog, menus, the HUD and cosmetics. It doesn't change how the game plays. It's free, and it isn't made by or connected to Mojang or Microsoft."},
 			{"Servers", "Some servers ban visual helpers that show things through walls. Server-safe mode is on by default: on multiplayer servers, freecam and ore glow stay off. Always read a server's rules before using anything else."},
-			{"Your data", "No tracking, no analytics. The mod checks GitHub for updates when it starts. It only uploads a config when you press Share, and anyone with the code can download it."},
+			{"Your data", "No tracking, no analytics. The mod checks GitHub for updates when it starts. Configs are uploaded only when you press Share. Pets and cosmetics are shared with other Lmg players only if you turn that on."},
 	};
 
 	@Override

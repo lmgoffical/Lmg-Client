@@ -36,6 +36,7 @@ import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.animal.rabbit.Rabbit;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.DyeColor;
@@ -67,18 +68,26 @@ public final class Pets {
 		final String identity;
 		final Entity entity;
 		final ClientLevel level;
+		final boolean remote;   // belongs to another Lmg player
 		int idleTicks;
 		double bob;
 
 		Live(PetConfig cfg, Entity entity, ClientLevel level) {
+			this(cfg, entity, level, false);
+		}
+
+		Live(PetConfig cfg, Entity entity, ClientLevel level, boolean remote) {
 			this.cfg = cfg;
 			this.identity = cfg.identity();
 			this.entity = entity;
 			this.level = level;
+			this.remote = remote;
 		}
 	}
 
 	private static final List<Live> LIVE = new ArrayList<>();
+	/** Pets of other Lmg players near you who shared them. */
+	private static final Map<UUID, List<Live>> OTHERS = new HashMap<>();
 
 	private Pets() {}
 
@@ -116,9 +125,46 @@ public final class Pets {
 		}
 
 		for (int i = 0; i < LIVE.size(); i++) move(LIVE.get(i), owner, level, i);
+		tickOthers(owner, level);
 	}
 
-	private static Vec3 spawnSpot(LocalPlayer owner, int slot) {
+	private static void tickOthers(LocalPlayer me, ClientLevel level) {
+		if (!LmgConfig.get().showOthers) {
+			OTHERS.clear();
+			return;
+		}
+		java.util.Set<UUID> seen = new java.util.HashSet<>();
+		for (Player p : level.players()) {
+			if (p == me || p.isRemoved() || p.distanceTo(me) > 48) continue;
+			dev.lmg.client.sync.AvatarSync.Shared shared = dev.lmg.client.sync.AvatarSync.get(p.getUUID());
+			if (shared == null) continue;
+			seen.add(p.getUUID());
+			List<PetConfig> wanted = new ArrayList<>();
+			for (PetConfig c : shared.pets()) if (c.enabled && wanted.size() < MAX) wanted.add(c);
+			List<Live> lives = OTHERS.computeIfAbsent(p.getUUID(), k -> new ArrayList<>());
+			boolean rebuild = lives.size() != wanted.size();
+			for (int i = 0; !rebuild && i < wanted.size(); i++) {
+				rebuild = !lives.get(i).identity.equals(wanted.get(i).identity()) || lives.get(i).level != level
+						|| !lives.get(i).cfg.mode.equals(wanted.get(i).mode) || lives.get(i).cfg.size != wanted.get(i).size
+						|| !lives.get(i).cfg.name.equals(wanted.get(i).name);
+			}
+			if (rebuild) {
+				lives.clear();
+				for (int i = 0; i < wanted.size(); i++) {
+					Entity e = create(wanted.get(i), level, p);
+					if (e == null) continue;
+					Vec3 at = spawnSpot(p, i);
+					e.setPos(at.x, at.y, at.z);
+					e.setOldPosAndRot();
+					lives.add(new Live(wanted.get(i), e, level, true));
+				}
+			}
+			for (int i = 0; i < lives.size(); i++) move(lives.get(i), p, level, i);
+		}
+		OTHERS.keySet().retainAll(seen);
+	}
+
+	private static Vec3 spawnSpot(Player owner, int slot) {
 		return offset(owner, SLOTS[slot % SLOTS.length][0], SLOTS[slot % SLOTS.length][1], owner.getYRot());
 	}
 
@@ -130,7 +176,7 @@ public final class Pets {
 		return new Vec3(owner.getX() + rx * right + fx * forward, owner.getY(), owner.getZ() + rz * right + fz * forward);
 	}
 
-	private static void move(Live l, LocalPlayer owner, ClientLevel level, int slot) {
+	private static void move(Live l, Player owner, ClientLevel level, int slot) {
 		Entity e = l.entity;
 		e.setOldPosAndRot();
 		if (e instanceof LivingEntity living) {
@@ -231,17 +277,21 @@ public final class Pets {
 		else if (e instanceof Fox f) f.setSitting(sit);
 	}
 
-	private static void mirrorCrouch(Entity e, LocalPlayer owner) {
+	private static void mirrorCrouch(Entity e, Player owner) {
 		if (e instanceof RemotePlayer p) p.setPose(owner.isCrouching() ? Pose.CROUCHING : Pose.STANDING);
 	}
 
 	// ---- creating pets ---------------------------------------------------------------------------
 
 	private static Entity create(PetConfig cfg, ClientLevel level) {
+		return create(cfg, level, Minecraft.getInstance().player);
+	}
+
+	private static Entity create(PetConfig cfg, ClientLevel level, Player owner) {
 		try {
 			PetType type = cfg.type();
 			if (type == PetType.MINI_PLAYER) {
-				String name = cfg.mine ? Minecraft.getInstance().getGameProfile().name() : cfg.player;
+				String name = cfg.mine && owner != null ? owner.getGameProfile().name() : cfg.player;
 				return new RemotePlayer(level, new GameProfile(UUID.nameUUIDFromBytes(("lmg-pet:" + name).getBytes()), "Lmg pet"));
 			}
 			Entity e = type.entity.create(level, EntitySpawnReason.LOAD);
@@ -328,18 +378,29 @@ public final class Pets {
 	public static void extract(LevelExtractionContext ctx) {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer owner = mc.player;
-		if (owner == null || LIVE.isEmpty() || owner.isInvisible() || owner.isSpectator()) return;
+		if (owner == null) return;
+		boolean showMine = !owner.isInvisible() && !owner.isSpectator();
 		float partial = ctx.deltaTracker().getGameTimeDeltaPartialTick(false);
 		boolean firstPerson = !ctx.camera().isDetached();
 		for (Live l : LIVE) {
+			if (!showMine) break;
 			if (l.cfg.attached() && firstPerson) continue;   // would sit right in front of your eyes
 			EntityRenderState state = state(l, owner, partial);
 			if (state != null) ctx.levelState().entityRenderStates.add(state);
 		}
+		if (OTHERS.isEmpty() || ctx.level() == null) return;
+		for (Map.Entry<UUID, List<Live>> e : OTHERS.entrySet()) {
+			Player other = ctx.level().getPlayerByUUID(e.getKey());
+			if (other == null || other.isInvisible() || other.isSpectator()) continue;
+			for (Live l : e.getValue()) {
+				EntityRenderState state = state(l, other, partial);
+				if (state != null) ctx.levelState().entityRenderStates.add(state);
+			}
+		}
 	}
 
 	/** The pet's render state for this frame (also used by the Pets screen preview). */
-	private static EntityRenderState state(Live l, LocalPlayer owner, float partial) {
+	private static EntityRenderState state(Live l, Player owner, float partial) {
 		Minecraft mc = Minecraft.getInstance();
 		EntityRenderState state;
 		try {
@@ -377,7 +438,7 @@ public final class Pets {
 		if (cfg.attached()) state.shadowRadius = 0;
 		state.isInvisible = false;
 
-		if (cfg.name.isBlank()) {
+		if (cfg.name.isBlank() || (l.remote && !LmgConfig.get().showOtherPetNames)) {
 			state.nameTag = null;
 		} else {
 			state.nameTag = Component.literal(cfg.name);
@@ -386,13 +447,16 @@ public final class Pets {
 		state.scoreText = null;
 
 		if (state instanceof AvatarRenderState avatar) {
-			PlayerSkin skin = cfg.mine ? mySkin() : PetSkins.get(cfg.player);
+			PlayerSkin skin = !cfg.mine ? PetSkins.get(cfg.player)
+					: owner == mc.player ? mySkin()
+					: owner instanceof net.minecraft.client.player.AbstractClientPlayer acp ? acp.getSkin() : null;
 			if (skin != null) avatar.skin = skin;
 			avatar.showHat = avatar.showJacket = avatar.showLeftPants = avatar.showRightPants = true;
 			avatar.showLeftSleeve = avatar.showRightSleeve = true;
 			avatar.showCape = avatar.skin != null && avatar.skin.cape() != null;
 			// a mini you wears your cosmetics too
 			if (cfg.mine && cfg.cosmetics) avatar.id = owner.getId();
+			else avatar.id = l.entity.getId();
 		}
 		return state;
 	}

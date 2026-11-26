@@ -72,7 +72,11 @@ public final class CosmeticRegistry {
 
 	/** The colour to draw an item with, from the config (hex / "accent" / "rainbow") or its default. */
 	public static int colorFor(CosmeticModel model, float ticks) {
-		String c = LmgConfig.get().cosmeticColors.get(model.id);
+		return colorFor(model, LmgConfig.get().cosmeticColors.get(model.id), ticks);
+	}
+
+	/** Same, for a colour that came from somewhere else (another player's shared setup). */
+	public static int colorFor(CosmeticModel model, String c, float ticks) {
 		if (c == null || c.isBlank()) return model.defaultRgb();
 		if (c.equals("accent")) return LmgConfig.get().accent.rgb;
 		if (c.equals("rainbow")) return java.awt.Color.HSBtoRGB((ticks / 120f) % 1f, 0.55f, 1f) & 0xFFFFFF;

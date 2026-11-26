@@ -35,6 +35,7 @@ public class PetsScreen extends Screen {
 	private int W, H, x0, y0, midX, midW;
 	private EditBox nameBox, playerBox;
 	private float spin;
+	private int shareStatusY;
 	private String typedPlayer;   // waits until you stop typing before looking the skin up
 	private long typedAt;
 	private long lastFrame = -1;
@@ -77,6 +78,14 @@ public class PetsScreen extends Screen {
 				rebuildWidgets();
 			}));
 		}
+
+		// share with other Lmg players (off until you turn it on)
+		int shareY = ly + (pets().size() < Pets.MAX ? 20 : 0);
+		addRenderableWidget(SettingRow.toggle("Others see them", () -> LmgConfig.get().shareAvatar, v -> {
+			LmgConfig.get().shareAvatar = v;
+			LmgConfig.save();
+		}).withHint("Other Lmg players see your pets and cosmetics.").at(x0 + 4, shareY, LEFT_W, 14, openedAt));
+		shareStatusY = shareY + 18;
 
 		PetConfig pet = current();
 		if (pet == null) return;
@@ -217,6 +226,12 @@ public class PetsScreen extends Screen {
 			}
 		}
 		g.fill(x0 + LEFT_W + 6, y0 + HEADER + 6, x0 + LEFT_W + 7, y0 + H - 8, Draw.fade(p.border(), a));
+		int sy = shareStatusY;
+		for (var line : font.split(Component.literal(dev.lmg.client.sync.AvatarSync.status()), LEFT_W - 8)) {
+			if (sy > y0 + H - 12) break;
+			g.text(font, line, x0 + 10, sy, Draw.withAlpha(LmgConfig.get().shareAvatar ? 0xA3B0C4 : p.dim(), a), false);
+			sy += 10;
+		}
 
 		PetConfig pet = current();
 		if (pet != null) {
@@ -261,8 +276,10 @@ public class PetsScreen extends Screen {
 			g.centeredText(font, pet == null ? "Add a pet to see it" : "Join a world", px + pw / 2, py + ph / 2 - 8, Draw.withAlpha(p.dim(), a));
 			if (pet != null) g.centeredText(font, "to see a preview", px + pw / 2, py + ph / 2 + 3, Draw.withAlpha(p.dim(), a));
 		}
-		g.text(font, "Only you can see", px + 2, py + ph + 6, Draw.withAlpha(p.dim(), a), false);
-		g.text(font, "your pets.", px + 2, py + ph + 16, Draw.withAlpha(p.dim(), a), false);
+		if (!LmgConfig.get().shareAvatar) {
+			g.text(font, "Only you can see", px + 2, py + ph + 6, Draw.withAlpha(p.dim(), a), false);
+			g.text(font, "your pets right now.", px + 2, py + ph + 16, Draw.withAlpha(p.dim(), a), false);
+		}
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 	}

@@ -400,6 +400,14 @@ public class LmgSettingsScreen extends Screen {
 						.withHint("See your mods, switch them on or off."));
 				r.add(SettingRow.button("About & safety", "Open", () -> minecraft.gui.setScreen(new WelcomeScreen(this, false)))
 						.withHint("What this mod does, and what it sends."));
+				r.add(SettingRow.toggle("Share pets & cosmetics", () -> c.shareAvatar, v -> c.shareAvatar = v)
+						.withHint("Other Lmg players see them. Off by default."));
+				r.add(SettingRow.toggle("See others' pets & cosmetics", () -> c.showOthers, v -> {
+					c.showOthers = v;
+					if (!v) dev.lmg.client.sync.AvatarSync.clearRemote();
+				}).withHint("From Lmg players near you who share theirs."));
+				r.add(SettingRow.toggle("Show their pet names", () -> c.showOtherPetNames, v -> c.showOtherPetNames = v)
+						.withHint("Turn off to hide names other people chose."));
 				r.add(SettingRow.toggle("Hide cosmetics", () -> c.hideCosmetics, v -> c.hideCosmetics = v)
 						.withHint("Your plain skin, nothing else."));
 			}

@@ -324,6 +324,14 @@ public final class LmgConfig {
 	/** False until the "before you start" screen has been shown once. */
 	public boolean welcomeSeen = false;
 
+	// ---- sharing pets and cosmetics with other Lmg players ----
+	/** Off until you turn it on. */
+	public boolean shareAvatar = false;
+	/** True while the database has your shared setup (so switching off removes it). */
+	public boolean avatarShared = false;
+	public boolean showOthers = true;
+	public boolean showOtherPetNames = true;
+
 	// ---- pets (up to 3) ----
 	public java.util.List<dev.lmg.client.pet.PetConfig> pets = new java.util.ArrayList<>();
 	public boolean hideCosmetics = false;

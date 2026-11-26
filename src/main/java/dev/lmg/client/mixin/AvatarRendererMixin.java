@@ -23,7 +23,20 @@ public abstract class AvatarRendererMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
 			at = @At("TAIL"))
 	private void lmg$cape(Avatar entity, AvatarRenderState state, float partialTick, CallbackInfo ci) {
-		if (entity != Minecraft.getInstance().player || state.skin == null) return;
+		if (state.skin == null) return;
+		if (entity != Minecraft.getInstance().player) {
+			// another Lmg player's shared cape
+			if (!(entity instanceof net.minecraft.world.entity.player.Player other)) return;
+			dev.lmg.client.sync.AvatarSync.Shared shared = dev.lmg.client.sync.AvatarSync.get(other.getUUID());
+			if (shared == null) return;
+			dev.lmg.client.cosmetic.CosmeticModel theirs = dev.lmg.client.cosmetic.CosmeticRegistry.get(shared.equipped().get("capes"));
+			if (theirs == null || theirs.capeTexture == null) return;
+			ClientAsset.Texture tex = lmg$capes.computeIfAbsent(theirs.capeTexture, t -> new ClientAsset.ResourceTexture(
+					LmgClient.id("cosmetic/" + t), LmgClient.id("textures/cosmetic/" + t)));
+			state.skin = new PlayerSkin(state.skin.body(), tex, state.skin.elytra(), state.skin.model(), state.skin.secure());
+			state.showCape = true;
+			return;
+		}
 		PlayerSkin skin = state.skin;
 		// custom skin (from config/lmgclient-skins)
 		PlayerSkin custom = dev.lmg.client.cosmetic.CustomSkins.current();

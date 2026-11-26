@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.21", "<b>See each other's pets.</b> Switch on sharing and other Lmg players near you see your pets, cosmetics and cape. Your account is checked with Mojang, and sharing is off until you turn it on."],
   ["0.20", "<b>Pets.</b> Up to three: cats, dogs, foxes, parrots, axolotls and 20 more, or a mini player with anyone's skin. They follow you, ride your shoulder or sit on your head, and you can name them. Plus a Mods screen to see and switch off your mods, and Minecraft's own settings in the Lmg look."],
   ["0.19", "<b>Safer by default.</b> Server-safe mode keeps freecam and ore glow off on servers. A short \"before you start\" screen explains what the mod does and sends. The installer lists what it will do before it starts. Legal pages, a report link on threads, and a licence."],
   ["0.18", "<b>Maps and keys.</b> A minimap and a world map with waypoints, zoom, freecam, and a Keys tab to bind anything. The menu got friendlier too."],
@@ -138,7 +139,7 @@ const FAQ = [
   ["Will I get banned for using it?", "Nobody can promise that for any mod, so please read each server's rules. Lmg turns on server-safe mode by default: on multiplayer servers it keeps freecam and ore glow off. Ore edges is a texture pack, so switch it off on servers that don't allow it."],
   ["Is it free?", "Yes. It's free to download and use, it isn't for sale, and there are no ads. See the Licences page for the details."],
   ["Who makes it?", "A small independent team. Lmg Client is not made by, connected to or endorsed by Mojang AB or Microsoft. Minecraft is a trademark of Mojang AB."],
-  ["Can other people see my wings, cape or pets?", "Not yet - cosmetics and pets only show on your own screen. Showing them to other Lmg users is on the list."],
+  ["Can other people see my wings, cape or pets?", "Other Lmg players can, if you switch on Share pets & cosmetics (in the Pets screen or the Tools tab). It's off until you turn it on. People without Lmg just see your normal skin."],
   ["Which version of Minecraft?", "Java Edition 26.3 with Fabric. The installer sets everything up for you."],
 ];
 
@@ -598,6 +599,7 @@ const LEGAL = {
       <li><b>Update check.</b> When the game starts, the mod downloads one small file from GitHub to see if a newer version exists. GitHub sees your IP address, as it does for any web request.</li>
       <li><b>Config codes.</b> Only when you press <i>Share</i>, the settings you chose (colours, sizes, toggles - no personal information) are uploaded to our database, which returns a short code. Anyone with that code can download those settings. You can't take that upload back, so think before sharing.</li>
       <li><b>Stays on your computer.</b> Your maps, waypoints, saved configs, custom skins and custom models are kept in your Minecraft config folder. We never see them.</li>
+      <li><b>Sharing pets and cosmetics (off unless you turn it on).</b> If you switch on <i>Share pets &amp; cosmetics</i>, your Minecraft username and account ID, your pets (including the names you give them) and the Lmg cosmetics you're wearing are saved in our database. Anyone can read them - that's how other Lmg players see them in game. To prove the account is yours, the game asks Mojang to confirm it, the same check Minecraft servers use. Your login token only goes to Mojang, never to us. Switch sharing off and your entry is deleted the next time the game runs.</li>
     </ul>
     <h3>The website</h3>
     <ul>
@@ -627,6 +629,7 @@ const LEGAL = {
       <li><b>Share honestly.</b> Configs should be what they say they are. Don't use a config code to pass off something else.</li>
       <li><b>Don't spam</b> or post the same thing over and over, and don't advertise other sites or products without asking first.</li>
       <li><b>Credit others.</b> If a config, skin or model is someone else's work, say so.</li>
+      <li><b>Pet names are public</b> when you share your pets, so the same rules apply to them.</li>
     </ul>
     <h3>Reporting</h3>
     <p>Use the <i>Report this thread</i> link at the top of any thread. It opens a GitHub issue with the thread's link filled in. Please don't add personal details to the report.</p>
