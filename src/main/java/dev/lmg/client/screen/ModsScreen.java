@@ -3,6 +3,7 @@ package dev.lmg.client.screen;
 import com.mojang.blaze3d.Blaze3D;
 import dev.lmg.client.mods.ModList;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -93,10 +94,12 @@ public class ModsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x66000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
@@ -104,6 +107,7 @@ public class ModsScreen extends Screen {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 300f));
 		CosmeticsScreen.Pal p = CosmeticsScreen.pal();
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, "Mods", a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 
 		long off = mods.stream().filter(m -> !m.on()).count();
 		String summary = mods.size() + " mods" + (off > 0 ? "  -  " + off + " off" : "");
@@ -185,6 +189,8 @@ public class ModsScreen extends Screen {
 		g.text(font, foot, x0 + 10, y0 + H - 16, Draw.withAlpha(footColor, a), false);
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	private int badge(GuiGraphicsExtractor g, String text, int x, int y, int rgb, float a) {

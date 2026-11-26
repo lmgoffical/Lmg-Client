@@ -1,6 +1,7 @@
 package dev.lmg.client.screen;
 
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -105,10 +106,12 @@ public class MinecraftSettingsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x66000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
@@ -116,6 +119,7 @@ public class MinecraftSettingsScreen extends Screen {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 300f));
 		CosmeticsScreen.Pal p = CosmeticsScreen.pal();
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, "Minecraft settings", a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 		g.text(font, "The game's own settings. Changes save when you go back.", x0 + 10, y0 + HEADER + 9, Draw.withAlpha(p.dim(), a), false);
 
 		for (int i = 0; i < cards.length; i++) {
@@ -131,6 +135,7 @@ public class MinecraftSettingsScreen extends Screen {
 		}
 		g.text(font, "Classic options has world difficulty and a few extras.", x0 + 10, y0 + H - 17, Draw.withAlpha(p.dim(), a), false);
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	@Override

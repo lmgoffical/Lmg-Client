@@ -1,9 +1,9 @@
 {
-  "version": "0.24.0",
+  "version": "0.25.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.24.0.jar",
-    "sha1": "b5402453bdaddec3dd603421e709ef4af0369cc5"
+    "file": "lmg-client-0.25.0.jar",
+    "sha1": "f0d35348660c840b740651de7e098a2963dd91d6"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.25",
+      "text": "Snow. Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top. Theme tab \\u2192 Snow to change it."
+    },
+    {
       "version": "0.24",
       "text": "The app. Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."
     },
@@ -55,15 +59,11 @@
     {
       "version": "0.20",
       "text": "Pets. 25 animals or a tiny version of anyone. Name them, put them on your shoulder."
-    },
-    {
-      "version": "0.19",
-      "text": "Safer by default. Freecam and ore glow stay off on servers. Real terms and privacy pages."
     }
   ],
   "launcher": {
-    "version": "1.2.0",
+    "version": "1.2.1",
     "file": "Lmg-Client.exe",
-    "sha1": "9bd5689abc002cbc60a383ab1d449665256cbdac"
+    "sha1": "614660c18783855496ee63517d10a592ea68e5b1"
   }
 }

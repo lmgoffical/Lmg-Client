@@ -5,6 +5,7 @@ import dev.lmg.client.LmgConfig;
 import dev.lmg.client.config.CloudCodes;
 import dev.lmg.client.config.ConfigProfiles;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import dev.lmg.client.world.OreOutlines;
@@ -205,6 +206,10 @@ public class LmgSettingsScreen extends Screen {
 						() -> c.backdrop = cycle(LmgConfig.Backdrop.values(), c.backdrop, 1),
 						() -> c.backdrop = cycle(LmgConfig.Backdrop.values(), c.backdrop, -1), () -> c.backdrop.top)
 						.withHint("Behind the main menu."));
+				r.add(SettingRow.choice("Snow", () -> MenuSnow.LABELS[c.menuSnow],
+						() -> c.menuSnow = step(c.menuSnow, MenuSnow.LABELS.length, 1),
+						() -> c.menuSnow = step(c.menuSnow, MenuSnow.LABELS.length, -1))
+						.withHint("Falls in this menu and piles up on top."));
 				r.add(SettingRow.choice("Animation speed", () -> LmgConfig.ANIMATION_SPEED_LABELS[c.animationSpeed],
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, 1),
 						() -> c.animationSpeed = step(c.animationSpeed, LmgConfig.ANIMATION_SPEEDS.length, -1))
@@ -555,10 +560,12 @@ public class LmgSettingsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick); // keep the game visible, blurred
-			g.fill(0, 0, width, height, 0x55000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
@@ -567,6 +574,7 @@ public class LmgSettingsScreen extends Screen {
 		int x0 = panelX, y0 = panelY, x1 = panelX + panelW(), y1 = panelY + panelH();
 
 		MenuSkin.panel(g, font, x0, y0, x1, y1, HEADER_H, SIDEBAR_W, FOOTER_H, TABS[lastTab], intro);
+		MenuSnow.panelTop(x0, y0, x1);
 
 		LmgConfig.MenuStyle style = MenuSkin.style();
 		int[] tc = MenuSkin.textColors();
@@ -596,6 +604,8 @@ public class LmgSettingsScreen extends Screen {
 		g.text(font, hint, hx0, y1 - FOOTER_H + 6, Draw.withAlpha(hintColor, intro), false);
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+
+		MenuSnow.drawFront(g, 1f);
 		if (dropdown != null) drawDropdown(g, mouseX, mouseY);
 	}
 

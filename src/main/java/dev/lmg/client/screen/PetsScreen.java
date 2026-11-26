@@ -5,6 +5,7 @@ import dev.lmg.client.pet.PetConfig;
 import dev.lmg.client.pet.PetType;
 import dev.lmg.client.pet.Pets;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -180,10 +181,12 @@ public class PetsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x66000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
@@ -201,6 +204,7 @@ public class PetsScreen extends Screen {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 300f));
 		CosmeticsScreen.Pal p = CosmeticsScreen.pal();
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, "Pets", a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 
 		// left column: your pets
 		g.text(font, "Your pets (" + pets().size() + "/" + Pets.MAX + ")", x0 + 10, y0 + HEADER + 8, Draw.withAlpha(p.dim(), a), false);
@@ -282,6 +286,8 @@ public class PetsScreen extends Screen {
 		}
 
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	private void drawPet(GuiGraphicsExtractor g, PetConfig pet, int x1, int y1, int x2, int y2) {

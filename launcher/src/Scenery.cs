@@ -32,8 +32,8 @@ namespace LmgLauncher
                 using (var b = new SolidBrush(Color.FromArgb(70, 0xE8, 0xED, 0xF5)))
                     for (int i = 0; i < 14; i++) g.FillRectangle(b, rnd.Next(width), rnd.Next(height / 3), 2, 2);
                 // the moon, a square one
-                using (var b = new SolidBrush(Color.FromArgb(60, 0xF2, 0xC1, 0x4E))) g.FillRectangle(b, width - 150, 18, 16, 16);
-                using (var b = new SolidBrush(Color.FromArgb(25, 0xF2, 0xC1, 0x4E))) g.FillRectangle(b, width - 154, 14, 24, 24);
+                using (var b = new SolidBrush(Color.FromArgb(60, 0xF2, 0xC1, 0x4E))) g.FillRectangle(b, width - 64, 18, 16, 16);
+                using (var b = new SolidBrush(Color.FromArgb(25, 0xF2, 0xC1, 0x4E))) g.FillRectangle(b, width - 68, 14, 24, 24);
 
                 int[] back = Heights(cols, rows, rnd, 4, 9);
                 int[] front = Heights(cols, rows, rnd, 2, 6);

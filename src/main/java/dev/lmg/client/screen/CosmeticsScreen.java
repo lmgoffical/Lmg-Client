@@ -8,6 +8,7 @@ import dev.lmg.client.cosmetic.CosmeticRegistry;
 import dev.lmg.client.cosmetic.CustomModels;
 import dev.lmg.client.cosmetic.CustomSkins;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -212,10 +213,12 @@ public class CosmeticsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x66000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
@@ -226,6 +229,7 @@ public class CosmeticsScreen extends Screen {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 300f));
 		Pal p = pal();
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, "Cosmetics", a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 
 		// sidebar: one tab per category, with how many items it has
 		int sx = x0 + 6, sy = y0 + HEADER + 8;
@@ -285,6 +289,7 @@ public class CosmeticsScreen extends Screen {
 			if (ta > 0) g.centeredText(font, toast, x0 + W / 2, y0 + H + 6, Draw.withAlpha(0xFFFFFF, ta * a));
 		}
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	private void drawCard(GuiGraphicsExtractor g, String id, int x, int y, int mx, int my, float dt, float a, Pal p) {

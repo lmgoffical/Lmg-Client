@@ -39,8 +39,8 @@ namespace LmgLauncher
         List<KeyValuePair<string, string>> news = new List<KeyValuePair<string, string>>();
 
         readonly List<Control> homeControls = new List<Control>(), modsControls = new List<Control>(), settingsControls = new List<Control>();
-        readonly Btn navHome, navMods, navSettings, play, switchLink, changelogLink;
-        RectangleF crashOpenRect, crashHideRect;   // drawn links on the crash line
+        readonly Btn navHome, navMods, navSettings, play, switchLink;
+        RectangleF crashOpenRect, crashHideRect, changelogRect;   // links drawn onto the window
         int hotLink;
         readonly ModsView modsView;
         readonly Slider ram;
@@ -90,7 +90,6 @@ namespace LmgLauncher
                 var l = Link(homeControls, label, lx, 404, action);
                 lx += (int)(l.Width / Dpi.Scale) + 22;
             }
-            changelogLink = Link(homeControls, "Full changelog on the website", 600, 476, () => Open("https://lmgoffical.github.io/Lmg-Client/"));
 
             // mods
             modsView = Add(modsControls, new ModsView(Fonts.Bold(10.5f), fSmall, fPixelSmall), 48, 120, 844, 382, null);
@@ -201,7 +200,6 @@ namespace LmgLauncher
             play.Enabled = !busy && !playing;
             play.Label = playing ? "Playing" : busy ? "One sec..." : updateReady ? "Update & play" : "Play";
             play.Tag2 = Installer.InstalledVersion() is string v && !updateReady ? v.Replace(".0", "") : installer.LatestVersion?.Replace(".0", "");
-            changelogLink.Visible = home && news.Count > 0;
             play.Invalidate();
         }
 
@@ -499,8 +497,7 @@ namespace LmgLauncher
                 using (var b = new SolidBrush(i == 0 ? C.Text : C.Muted)) g.DrawString(n.Value, fSmall, b, new RectangleF(x, y + 16, 300, size.Height + 2));
                 y += size.Height + 30;
             }
-            changelogLink.Left = Dpi.D(x - 2);
-            changelogLink.Top = Dpi.D(Math.Min(470, y - 6));
+            changelogRect = news.Count > 0 ? DrawnLink(g, "Full changelog on the website", x, Math.Min(470, y - 6), hotLink == 3) : RectangleF.Empty;
         }
 
         /// <summary>A text link drawn straight onto the window (no separate control).</summary>
@@ -518,7 +515,7 @@ namespace LmgLauncher
         {
             base.OnMouseMove(e);
             var p = Logical(e.Location);
-            int hot = tab != Tab.Home ? 0 : crashOpenRect.Contains(p) ? 1 : crashHideRect.Contains(p) ? 2 : 0;
+            int hot = tab != Tab.Home ? 0 : crashOpenRect.Contains(p) ? 1 : crashHideRect.Contains(p) ? 2 : changelogRect.Contains(p) ? 3 : 0;
             if (hot != hotLink) { hotLink = hot; Cursor = hot != 0 ? Cursors.Hand : Cursors.Default; Invalidate(); }
         }
 
@@ -529,6 +526,7 @@ namespace LmgLauncher
             var p = Logical(e.Location);
             if (crashOpenRect.Contains(p)) OpenCrash();
             else if (crashHideRect.Contains(p)) DismissCrash();
+            else if (changelogRect.Contains(p)) Open("https://lmgoffical.github.io/Lmg-Client/#/changelog");
         }
 
         static string When(DateTime t)

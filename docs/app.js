@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.25", "<b>Snow.</b> Right Shift now greys out the world behind the menu, and snow falls around it and piles up on top. Theme tab \u2192 Snow to change it."],
   ["0.24", "<b>The app.</b> Lmg has its own little app now. Press Play and it updates everything, then opens Minecraft for you."],
   ["0.23", "<b>Smoother.</b> A new FPS tab, and the trail, ore glow and minimap do a lot less work."],
   ["0.22", "<b>Cinematic.</b> Golden-hour shaders in one click, a film mode on F7, and a proper colour picker."],
@@ -229,7 +230,7 @@ async function pageDownload() {
         <p class="muted">A small app (under 1 MB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download the app</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the app isn't signed yet &mdash; click <i>More info &rarr; Run anyway</i>.</p>
-        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>8a2e7c6e28efd8dea03e747ae6ede544290f0348deb03b72d12b6eb54daa9b57</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
+        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>dbb7c628bc52cd79f6dcdaa96815f53966cdc241cbc963ee21074597094de9b3</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
         <img class="app-shot" src="img/app.png" alt="The Lmg Client app: a greeting with your skin, a Play button and the changelog" width="940" height="580">
       </div>
       <div class="card">

@@ -4,6 +4,7 @@ import dev.lmg.client.LmgConfig;
 import dev.lmg.client.config.CloudCodes;
 import dev.lmg.client.config.ConfigProfiles;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -204,16 +205,19 @@ public class ConfigsScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x55000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 300f));
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, "Configs", a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 		int[] tc = MenuSkin.textColors();
 
 		List<String> names = ConfigProfiles.list();
@@ -245,6 +249,7 @@ public class ConfigsScreen extends Screen {
 			}
 		}
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	@Override

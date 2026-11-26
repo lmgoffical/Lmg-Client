@@ -251,6 +251,7 @@ public final class LmgConfig {
 	public boolean curtains = true;
 	public int sparkles = 2; // index into SPARKLE_AMOUNTS
 	public boolean skinSpin = true;
+	public int menuSnow = 2; // index into MenuSnow.AMOUNTS: off, light, snowy, blizzard
 
 	// ---- world visuals (client-side only) ----
 	public SkyTheme skyTheme = SkyTheme.VANILLA;
@@ -484,6 +485,7 @@ public final class LmgConfig {
 		ambientAmount = clampIndex(ambientAmount, AMOUNT_LABELS.length, d.ambientAmount);
 		animationSpeed = clampIndex(animationSpeed, ANIMATION_SPEEDS.length, d.animationSpeed);
 		sparkles = clampIndex(sparkles, SPARKLE_AMOUNTS.length, d.sparkles);
+		menuSnow = clampIndex(menuSnow, dev.lmg.client.render.MenuSnow.AMOUNTS.length, d.menuSnow);
 		hudScale = clampIndex(hudScale, HUD_SCALES.length, d.hudScale);
 		hudOpacity = clampIndex(hudOpacity, HUD_OPACITIES.length, d.hudOpacity);
 		if (pets == null) pets = new java.util.ArrayList<>();

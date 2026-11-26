@@ -2,6 +2,7 @@ package dev.lmg.client.screen;
 
 import dev.lmg.client.LmgConfig;
 import dev.lmg.client.render.Draw;
+import dev.lmg.client.render.MenuSnow;
 import dev.lmg.client.render.MenuBackground;
 import dev.lmg.client.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -129,16 +130,19 @@ public class ColorPickerScreen extends Screen {
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		if (minecraft.level != null) {
 			super.extractBackground(g, mouseX, mouseY, partialTick);
-			g.fill(0, 0, width, height, 0x55000000);
+			MenuSnow.greyBackdrop(g, width, height);
 		} else {
 			MenuBackground.draw(g, width, height, true);
 		}
+		MenuSnow.update(width, height);
+		MenuSnow.drawBack(g, 1f);
 	}
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		float a = Draw.easeOutCubic(Theme.progress(openedAt, 220f));
 		MenuSkin.simplePanel(g, font, x0, y0, x0 + W, y0 + H, HEADER, title, a);
+		MenuSnow.panelTop(x0, y0, x0 + W);
 
 		// the box: left to right = how strong, top to bottom = how bright
 		int bx = boxX(), by = boxY();
@@ -181,6 +185,7 @@ public class ColorPickerScreen extends Screen {
 			Draw.roundRect(g, sx, sy, sx + 14, sy + 14, 2, Draw.withAlpha(PRESETS[i], a));
 		}
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
+		MenuSnow.drawFront(g, 1f);
 	}
 
 	private static void ring(GuiGraphicsExtractor g, int x, int y, int color) {
