@@ -6,9 +6,7 @@
 //         We hand back a random session token and keep only its SHA-256.
 // emote:  checks the session token, saves the emote (for players who walk up later) and
 //         broadcasts it to everyone on the same server, signed with an Ed25519 key, so
-//         nobody can make your character do something you didn't. Climbing emotes (sitting on
-//         someone's head or shoulder, playing around them) are only sent if that person's
-//         "Who can climb on me" setting includes you, and carry who they're with.
+//         nobody can make your character do something you didn't.
 // pubkey: the public half of that key (it's built into the mod).
 // uid:    your Lmg number (the next free one the first time), after the same Mojang check.
 // forget: deletes everything we hold for your Minecraft account, after the same Mojang check:
@@ -22,9 +20,6 @@ import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 const USERNAME = /^[A-Za-z0-9_]{1,16}$/;
 const ROOM = /^[0-9a-f]{16}$/;
 const EMOTES = new Set(["wave", "hug", "sit", "dance", "clap", "cheer", "point", "bow"]);
-// done with someone: only if their "Who can climb on me" setting includes you
-const PARTNER_EMOTES = new Set(["perch_head", "perch_shoulder", "play"]);
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const SESSION_DAYS = 30;
 const MAX_SESSIONS = 5;
 
@@ -71,12 +66,6 @@ async function loadKey() {
   }
   signingKey = await crypto.subtle.importKey("jwk", data!.private_jwk, { name: "Ed25519" }, false, ["sign"]);
   publicKey = data!.public_key;
-}
-
-/** Does {@code owner}'s "Who can climb on me" setting include {@code climber}? */
-async function mayClimb(climber: string, owner: string): Promise<boolean> {
-  const { data, error } = await db.rpc("lmg_may_climb", { p_climber: climber, p_owner: owner });
-  return !error && data === true;
 }
 
 // ---- actions ---------------------------------------------------------------------------------
@@ -157,20 +146,7 @@ async function emote(body: any) {
   if (!uuid) return reply(401, { error: "bad_session" });
   const room = String(body?.room ?? "");
   const what = body?.emote === null ? null : String(body?.emote ?? "");
-  if (!ROOM.test(room) || (what !== null && !EMOTES.has(what) && !PARTNER_EMOTES.has(what))) return reply(400, { error: "Bad request" });
-
-  // climbing / playing: with whom (your partner if you don't say), and does their setting allow it?
-  let withUuid: string | null = null;
-  if (what !== null && PARTNER_EMOTES.has(what)) {
-    let target = typeof body?.with === "string" && UUID_RE.test(body.with) ? body.with : null;
-    if (!target) {
-      const { data: mine } = await db.from("lmg_partners").select("to_uuid").eq("from_uuid", uuid).maybeSingle();
-      if (!mine) return reply(403, { error: "no_partner" });
-      target = mine.to_uuid as string;
-    }
-    if (target === uuid || !(await mayClimb(uuid, target))) return reply(403, { error: "not_allowed" });
-    withUuid = target;
-  }
+  if (!ROOM.test(room) || (what !== null && !EMOTES.has(what))) return reply(400, { error: "Bad request" });
 
   // at most a few emotes a second per player
   const { data: pr } = await db.from("lmg_presence").select("emote_at").eq("uuid", uuid).maybeSingle();
@@ -180,24 +156,22 @@ async function emote(body: any) {
   const now = new Date();
   await db.from("lmg_presence").upsert({
     uuid, emote: what, emote_room: what ? room : null, emote_at: what ? now.toISOString() : null,
-    emote_with: withUuid, updated_at: now.toISOString(),
+    updated_at: now.toISOString(),
   }, { onConflict: "uuid" });
 
   await loadKey();
   const t = now.getTime();
-  // partner emotes sign who they're with too (older clients just skip them)
-  const message = `lmg-emote|${uuid}|${what ?? "stop"}|${room}|${t}` + (withUuid ? `|${withUuid}` : "");
+  const message = `lmg-emote|${uuid}|${what ?? "stop"}|${room}|${t}`;
   const sig = b64(await crypto.subtle.sign({ name: "Ed25519" }, signingKey!, new TextEncoder().encode(message)));
   const res = await fetch(`${URL_}/realtime/v1/api/broadcast`, {
     method: "POST",
     headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      messages: [{ topic: `lmg-emotes-${room}`, event: "emote",
-        payload: { u: uuid, e: what ?? "stop", r: room, t, s: sig, ...(withUuid ? { w: withUuid } : {}) } }],
+      messages: [{ topic: `lmg-emotes-${room}`, event: "emote", payload: { u: uuid, e: what ?? "stop", r: room, t, s: sig } }],
     }),
   });
   if (!res.ok) return reply(502, { error: "Couldn't send it" });
-  return reply(200, { ok: true, t, with: withUuid });
+  return reply(200, { ok: true, t });
 }
 
 Deno.serve(async (req) => {

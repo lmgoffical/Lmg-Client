@@ -143,38 +143,6 @@ public final class EmoteNet {
 		Social.http().sendAsync(req, HttpResponse.BodyHandlers.discarding());
 	}
 
-	/**
-	 * A partner emote. The server checks you're partners and that they said yes; if not,
-	 * {@code refused} gets the reason. In singleplayer (no room) it just plays on your screen.
-	 */
-	public static void sendWith(Emote e, UUID with, java.util.function.Consumer<String> refused) {
-		String r = room;
-		String token = Social.token();
-		if (r == null || token == null) return;
-		JsonObject body = new JsonObject();
-		body.addProperty("action", "emote");
-		body.addProperty("token", token);
-		body.addProperty("room", r);
-		body.addProperty("emote", e.id);
-		if (with != null) body.addProperty("with", with.toString());
-		HttpRequest req = HttpRequest.newBuilder(URI.create("https://fieakrewvbyubtyxpqhr.supabase.co/functions/v1/social"))
-				.header("apikey", Social.publishableKey()).header("Content-Type", "application/json").timeout(Duration.ofSeconds(10))
-				.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
-		Social.http().sendAsync(req, HttpResponse.BodyHandlers.ofString()).thenAccept(res -> {
-			if (res.statusCode() == 200 || res.statusCode() == 429) return;
-			String why = res.body() != null && res.body().contains("not_allowed") ? "Their setting doesn't let you climb on them."
-					: res.body() != null && res.body().contains("no_partner") ? "You need a partner for that (Friends > Partner)."
-					: "Couldn't do that right now.";
-			refused.accept(why);
-		});
-	}
-
-	private static HttpRequest function(JsonObject body) {
-		return HttpRequest.newBuilder(URI.create("https://fieakrewvbyubtyxpqhr.supabase.co/functions/v1/social"))
-				.header("apikey", Social.publishableKey()).header("Content-Type", "application/json").timeout(Duration.ofSeconds(10))
-				.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
-	}
-
 	// ---- receiving -------------------------------------------------------------------------------
 
 	private static final class Listener implements WebSocket.Listener {
@@ -211,25 +179,21 @@ public final class EmoteNet {
 	static void handle(JsonObject msg) {
 		if (!"broadcast".equals(str(msg, "event"))) return;
 		JsonObject outer = msg.getAsJsonObject("payload");
-		if (outer == null) return;
-		String kind = str(outer, "event");
+		if (outer == null || !"emote".equals(str(outer, "event"))) return;
 		JsonObject p = outer.getAsJsonObject("payload");
-		if (p == null || kind == null) return;
-		if (!"emote".equals(kind)) return;
+		if (p == null) return;
 		String u = str(p, "u"), e = str(p, "e"), r = str(p, "r"), s = str(p, "s");
 		long t = p.has("t") ? p.get("t").getAsLong() : 0;
 		if (u == null || e == null || r == null || s == null) return;
 		// only this server's room, only fresh, only signed by our server
 		if (!r.equals(room) || Math.abs(System.currentTimeMillis() - t) > 30_000) return;
-		String w = str(p, "w");
-		if (!verify("lmg-emote|" + u + "|" + e + "|" + r + "|" + t + (w != null ? "|" + w : ""), s)) {
+		if (!verify("lmg-emote|" + u + "|" + e + "|" + r + "|" + t, s)) {
 			LmgClient.LOGGER.debug("Ignored an emote with a bad signature");
 			return;
 		}
 		Emote emote = "stop".equals(e) ? null : Emote.byId(e);
 		if (emote == null && !"stop".equals(e)) return;
-		if (emote != null && emote.withPartner() && w == null) return;   // partner emotes always say who with
-		Emotes.remote(UUID.fromString(u), emote, t, w == null ? null : UUID.fromString(w));
+		Emotes.remote(UUID.fromString(u), emote, t);
 	}
 
 	static boolean verify(String message, String signatureB64) {
@@ -271,9 +235,7 @@ public final class EmoteNet {
 					Emote e = Emote.byId(str(o, "emote"));
 					if (e == null || !e.lasting()) continue;
 					long started = java.time.OffsetDateTime.parse(str(o, "started_at")).toInstant().toEpochMilli();
-					String with = str(o, "with_uuid");
-					if (e.withPartner() && with == null) continue;
-					Emotes.remote(UUID.fromString(str(o, "uuid")), e, started, with == null ? null : UUID.fromString(with));
+					Emotes.remote(UUID.fromString(str(o, "uuid")), e, started);
 				}
 			} catch (Exception ex) {
 				LmgClient.LOGGER.debug("Bad active emotes", ex);

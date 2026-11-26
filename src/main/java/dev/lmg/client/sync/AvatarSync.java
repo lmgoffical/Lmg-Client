@@ -151,7 +151,9 @@ public final class AvatarSync {
 	private static JsonObject payload() {
 		LmgConfig c = LmgConfig.get();
 		JsonObject data = new JsonObject();
-		data.add("pets", GSON.toJsonTree(c.pets));
+		com.google.gson.JsonArray pets = GSON.toJsonTree(c.pets).getAsJsonArray();
+		for (var p : pets) p.getAsJsonObject().addProperty("climb", c.petsClimb);
+		data.add("pets", pets);
 		JsonObject equipped = new JsonObject(), colors = new JsonObject();
 		if (!c.hideCosmetics) {
 			for (Map.Entry<String, String> e : c.equipped.entrySet()) {

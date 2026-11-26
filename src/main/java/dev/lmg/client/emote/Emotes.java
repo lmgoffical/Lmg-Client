@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class Emotes {
 	/** One playing emote. {@code where} is where the player stood when it started. */
-	public record Playing(Emote emote, long startMs, Vec3 where, UUID with) {
+	public record Playing(Emote emote, long startMs, Vec3 where) {
 		public float seconds() {
 			return (clock() - startMs) / 1000f;
 		}
@@ -55,7 +55,7 @@ public final class Emotes {
 			dev.lmg.client.feature.LmgKeys.say("Can't do that right now.");
 			return;
 		}
-		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position(), null));
+		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position()));
 		// see yourself do it (and go back to how you were looking after)
 		if (LmgConfig.get().emoteCamera && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
 			cameraBefore = mc.options.getCameraType();
@@ -69,28 +69,8 @@ public final class Emotes {
 	public static void playQuiet(Emote e) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
-		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position(), null));
+		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position()));
 		EmoteNet.send(e);
-	}
-
-	/**
-	 * Sitting on, or playing around, your partner. Shows straight away; if the server says your
-	 * partner hasn't allowed it, it stops again and {@code said} hears why.
-	 */
-	public static void playWith(Emote e, UUID partner, java.util.function.Consumer<String> said) {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.player == null || partner == null) return;
-		PLAYING.put(mc.player.getUUID(), new Playing(e, clock(), mc.player.position(), partner));
-		EmoteNet.sendWith(e, partner, problem -> mc.execute(() -> {
-			Playing now = PLAYING.get(mc.player == null ? null : mc.player.getUUID());
-			if (now != null && now.emote() == e) PLAYING.remove(mc.player.getUUID());
-			if (said != null) said.accept(problem);
-		}));
-	}
-
-	/** Everyone doing something right now (to find who's playing around whom). */
-	public static Map<UUID, Playing> all() {
-		return PLAYING;
 	}
 
 	public static void stopMine() {
@@ -112,10 +92,6 @@ public final class Emotes {
 
 	/** Another player started an emote ({@code null} = they stopped). */
 	public static void remote(UUID uuid, Emote e, long startMs) {
-		remote(uuid, e, startMs, null);
-	}
-
-	public static void remote(UUID uuid, Emote e, long startMs, UUID with) {
 		Minecraft mc = Minecraft.getInstance();
 		mc.execute(() -> {
 			if (mc.player != null && uuid.equals(mc.player.getUUID())) return;  // your own echo
@@ -127,7 +103,7 @@ public final class Emotes {
 			if (p == null) return;
 			long elapsed = Math.max(0, Math.min(15_000, System.currentTimeMillis() - startMs));
 			long start = clock() - elapsed;
-			PLAYING.put(uuid, new Playing(e, start, p.position(), with));
+			PLAYING.put(uuid, new Playing(e, start, p.position()));
 		});
 	}
 
@@ -155,12 +131,6 @@ public final class Emotes {
 			boolean gone = p == null || p.isRemoved();
 			boolean moved = p != null && horizontalDistance(p.position(), pl.where()) > 0.12;
 			boolean busy = p != null && (p.isPassenger() || p.isFallFlying() || p.isSwimming() || p.isSwinging());
-			// partner emotes end when the partner leaves or gets too far away (or, for you, stops allowing it)
-			if (pl.emote().withPartner()) {
-				Player with = pl.with() == null ? null : level.getPlayerByUUID(pl.with());
-				if (with == null || p == null || with.distanceTo(p) > dev.lmg.client.social.PartnerPlay.MAX_DISTANCE) gone = true;
-				if (mine && !dev.lmg.client.social.ClimbAllow.mayClimbOn(pl.with())) gone = true;
-			}
 			if (mine && mc.player != null && (mc.options.keyJump.isDown() || mc.options.keyShift.isDown())) moved = true;
 			if (over || gone || moved || busy) {
 				PLAYING.remove(en.getKey());

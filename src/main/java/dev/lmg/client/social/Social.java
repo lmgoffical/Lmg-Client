@@ -84,8 +84,8 @@ public final class Social {
 
 	/** Everything the Friends screen shows. */
 	public record State(List<Friend> friends, List<Person> incoming, List<Person> outgoing, UUID partner, UUID partnerRequest,
-						List<Invite> invites, String climbWho, boolean partnerAllowsClimb) {
-		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null, List.of(), "nobody", false);
+						List<Invite> invites) {
+		static final State EMPTY = new State(List.of(), List.of(), List.of(), null, null, List.of());
 
 		public Friend friend(UUID id) {
 			for (Friend f : friends) if (f.uuid.equals(id)) return f;
@@ -441,7 +441,7 @@ public final class Social {
 		State s = state;
 		List<Invite> left = new ArrayList<>(s.invites());
 		left.remove(i);
-		state = new State(s.friends(), s.incoming(), s.outgoing(), s.partner(), s.partnerRequest(), left, s.climbWho(), s.partnerAllowsClimb());
+		state = new State(s.friends(), s.incoming(), s.outgoing(), s.partner(), s.partnerRequest(), left);
 		changed();
 	}
 
@@ -482,13 +482,6 @@ public final class Social {
 		act("lmg_social_remove", a, done);
 	}
 
-	/** "Who can climb on me": "nobody", "partner", "friends" or "everyone". */
-	public static void setClimbWho(String who, Consumer<String> done) {
-		JsonObject a = new JsonObject();
-		a.addProperty("p_who", who);
-		act("lmg_social_climb_who", a, done);
-	}
-
 	/** Ask (or say yes to) a friend as partner. {@code null} ends it. */
 	public static void partner(UUID id, Consumer<String> done) {
 		JsonObject a = new JsonObject();
@@ -517,8 +510,7 @@ public final class Social {
 			invites.add(new Invite(UUID.fromString(i.get("uuid").getAsString()), i.get("name").getAsString(),
 					str(i, "server"), str(i, "serverName"), at));
 		}
-		State next = new State(friends, people(o, "incoming"), people(o, "outgoing"), uuid(o, "partner"), uuid(o, "partnerRequest"), invites,
-				o.has("climbWho") && !o.get("climbWho").isJsonNull() ? o.get("climbWho").getAsString() : "nobody", bool(o, "partnerAllowsClimb"));
+		State next = new State(friends, people(o, "incoming"), people(o, "outgoing"), uuid(o, "partner"), uuid(o, "partnerRequest"), invites);
 		state = next;
 		if (!firstSync) notifyChanges(mc, old, next);
 		firstSync = false;
@@ -556,10 +548,6 @@ public final class Social {
 		if (next.partnerRequest() != null && !next.partnerRequest().equals(old.partnerRequest())) {
 			Friend f = next.friend(next.partnerRequest());
 			if (f != null) FriendToast.show(f.uuid(), f.name(), "asked you to be partners ❤");
-		}
-		if (next.partner() != null && next.partnerAllowsClimb() && !old.partnerAllowsClimb()) {
-			Friend f = next.friend(next.partner());
-			if (f != null) FriendToast.show(f.uuid(), f.name(), "lets you climb on them ❤");
 		}
 		if (next.partner() != null && !next.partner().equals(old.partner())) {
 			Friend f = next.friend(next.partner());

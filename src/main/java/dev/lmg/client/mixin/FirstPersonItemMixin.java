@@ -26,8 +26,7 @@ public abstract class FirstPersonItemMixin {
 	/** No hand floating in front of the camera in photo mode or freecam (it's not where you are). */
 	@Inject(method = "submitHandsWithItems", at = @At("HEAD"), cancellable = true)
 	private void lmg$noHandWhenAway(CallbackInfo ci) {
-		if (dev.lmg.client.feature.PhotoMode.active() || dev.lmg.client.feature.Freecam.on()
-				|| dev.lmg.client.social.PartnerPlay.myCamera(0f) != null) ci.cancel();
+		if (dev.lmg.client.feature.PhotoMode.active() || dev.lmg.client.feature.Freecam.on()) ci.cancel();
 	}
 
 	@Inject(method = "applyItemArmTransform", at = @At("TAIL"))

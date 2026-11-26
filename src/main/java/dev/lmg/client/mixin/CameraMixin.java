@@ -33,16 +33,6 @@ public abstract class CameraMixin {
 				return;
 			}
 		}
-		// sitting on your partner: you see from up there
-		var perch = dev.lmg.client.social.PartnerPlay.myCamera(partialTicks);
-		if (perch != null) {
-			if (detached) {
-				var f = ((Camera) (Object) this).forwardVector();
-				perch = perch.subtract(f.x() * 3.0, f.y() * 3.0, f.z() * 3.0);
-			}
-			setPosition(perch);
-			return;
-		}
 		if (!Freecam.on()) return;
 		setPosition(Freecam.position(partialTicks));
 		setRotation(Freecam.yaw(), Freecam.pitch());

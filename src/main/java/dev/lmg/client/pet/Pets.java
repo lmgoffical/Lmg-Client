@@ -71,9 +71,11 @@ public final class Pets {
 		final boolean remote;   // belongs to another Lmg player
 		int idleTicks;
 		double bob;
-		// playing around the owner
-		int ownerStill, playTicks;
-		double ownerX = Double.NaN, ownerZ;
+		// climbing on the owner ("Pets climb on me"): where it sits now (null = walking about),
+		// and how far up it is (0 on the ground, 1 sat on you)
+		String perch, lastPerch;
+		int climbTicks;
+		float climb, climbO;
 
 		Live(PetConfig cfg, Entity entity, ClientLevel level) {
 			this(cfg, entity, level, false);
@@ -149,7 +151,7 @@ public final class Pets {
 			for (int i = 0; !rebuild && i < wanted.size(); i++) {
 				rebuild = !lives.get(i).identity.equals(wanted.get(i).identity()) || lives.get(i).level != level
 						|| !lives.get(i).cfg.mode.equals(wanted.get(i).mode) || lives.get(i).cfg.size != wanted.get(i).size
-						|| !lives.get(i).cfg.name.equals(wanted.get(i).name);
+						|| !lives.get(i).cfg.name.equals(wanted.get(i).name) || lives.get(i).cfg.climb != wanted.get(i).climb;
 			}
 			if (rebuild) {
 				lives.clear();
@@ -165,6 +167,26 @@ public final class Pets {
 			for (int i = 0; i < lives.size(); i++) move(lives.get(i), p, level, i);
 		}
 		OTHERS.keySet().retainAll(seen);
+	}
+
+	/** How long a climbing pet stays up on you, and how long it then walks about, in ticks. */
+	private static final int RIDE = 460, ROAM = 240;
+	/** First pet on your head, the next two on your shoulders. */
+	private static final String[] CLIMB_SPOTS = {"HEAD", "LEFT_SHOULDER", "RIGHT_SHOULDER"};
+
+	/** Does this owner have "Pets climb on me" on? */
+	private static boolean climbs(Live l) {
+		return l.remote ? l.cfg.climb : LmgConfig.get().petsClimb;
+	}
+
+	/** Where the pet sits on its owner this tick, or null when it's walking about. */
+	private static String perchFor(Live l, Player owner, int slot) {
+		if (l.cfg.attached()) return l.cfg.mode;
+		if (!climbs(l) || owner.isPassenger() || owner.isFallFlying() || owner.isSwimming()) return null;
+		// each pet is a little out of step with the others, so they don't all hop on at once
+		// (they start off walking, then climb up one after another)
+		int phase = (l.climbTicks + RIDE + 60 + slot * 60) % (RIDE + ROAM);
+		return phase < RIDE ? CLIMB_SPOTS[slot % CLIMB_SPOTS.length] : null;
 	}
 
 	private static Vec3 spawnSpot(Player owner, int slot) {
@@ -190,21 +212,34 @@ public final class Pets {
 		PetConfig cfg = l.cfg;
 		PetType type = cfg.type();
 
-		// has the owner been standing still? (then pets on Follow come and play)
-		double odx = owner.getX() - l.ownerX, odz = owner.getZ() - l.ownerZ;
-		if (Double.isNaN(l.ownerX) || odx * odx + odz * odz > 0.0004) l.ownerStill = 0;
-		else l.ownerStill++;
-		l.ownerX = owner.getX();
-		l.ownerZ = owner.getZ();
-		boolean idlePlay = "FOLLOW".equals(cfg.mode) && LmgConfig.get().petsPlayIdle
-				&& l.ownerStill > LmgConfig.get().partnerIdleSeconds * 20;
-		if ("PLAY".equals(cfg.mode) || idlePlay) {
-			play(l, owner, level, slot);
+		l.climbTicks++;
+		String was = l.perch;
+		l.perch = perchFor(l, owner, slot);
+		l.climbO = l.climb;
+		if (cfg.attached()) l.climb = l.climbO = 1f;
+		else l.climb = Mth.clamp(l.climb + (l.perch != null ? 0.07f : -0.07f), 0f, 1f);
+		if (was != null && l.perch == null && !cfg.attached()) {
+			// hopping down: land next to you, then walk about as usual
+			double[] s = SLOTS[slot % SLOTS.length];
+			Vec3 at = offset(owner, s[0] * 0.6, s[1] * 0.5, owner.yBodyRot);
+			e.setPos(at.x, type.flying ? owner.getY() + 1.2 : groundY(level, at.x, at.z, owner.getY(), owner.getY()), at.z);
+			e.setOldPosAndRot();
+		}
+		if (l.perch != null && l.climb < 1f) {
+			// on the way up: stay put, facing you (the hop itself is drawn in state())
+			float yaw = (float) (Mth.atan2(owner.getZ() - e.getZ(), owner.getX() - e.getX()) * Mth.RAD_TO_DEG) - 90f;
+			e.setYRot(Mth.approachDegrees(e.getYRot(), yaw, 40f));
+			if (e instanceof LivingEntity living) {
+				living.setYBodyRot(e.getYRot());
+				living.setYHeadRot(e.getYRot());
+				living.walkAnimation.update(0.3f, 0.4f, 1f);
+			}
+			setSitting(e, false);
+			mirrorCrouch(e, owner);
 			return;
 		}
-		l.playTicks = 0;
 
-		if (cfg.attached()) {
+		if (l.perch != null) {
 			// position is worked out per frame in extract(); keep the entity near you for lighting
 			e.setPos(owner.getX(), owner.getY() + owner.getBbHeight(), owner.getZ());
 			e.setYRot(owner.yBodyRot);
@@ -268,74 +303,6 @@ public final class Pets {
 			living.walkAnimation.update((float) Math.min(step * 4, 1.0), 0.4f, baby ? 3f : 1f);
 		}
 		setSitting(e, l.idleTicks > 80 && !type.flying);
-		mirrorCrouch(e, owner);
-	}
-
-	/**
-	 * Playing around the owner, the same routine as playing around a person: hopping round in
-	 * circles, bouncing in front of them, nuzzling up close, then sitting down beside them. Each
-	 * pet is a little out of step with the others.
-	 */
-	private static void play(Live l, Player owner, ClientLevel level, int slot) {
-		Entity e = l.entity;
-		PetType type = l.cfg.type();
-		l.playTicks++;
-		float t = l.playTicks / 20f + slot * 2.3f;
-		int seg = dev.lmg.client.social.PartnerPlay.segment(t);
-		float st = dev.lmg.client.social.PartnerPlay.segmentTime(t);
-		double yawR = Math.toRadians(owner.yBodyRot);
-		double fx = -Math.sin(yawR), fz = Math.cos(yawR);   // forward
-		double rx = -Math.cos(yawR), rz = -Math.sin(yawR);  // right hand
-		double side = slot % 2 == 0 ? 1 : -1;
-		double tx, tz, hop;
-		boolean faceOwner = true;
-		switch (seg) {
-			case 0 -> {
-				// round and round
-				double a = st * 1.5 + slot * 2.1;
-				double r = 1.4 + slot * 0.35;
-				tx = owner.getX() + Math.cos(a) * r;
-				tz = owner.getZ() + Math.sin(a) * r;
-				hop = Math.abs(Math.sin(st * 7 + slot)) * 0.5;
-				faceOwner = false;
-			}
-			case 1 -> {
-				// bouncing in front of you, excited
-				tx = owner.getX() + fx * 1.1 + rx * side * 0.5 * slot;
-				tz = owner.getZ() + fz * 1.1 + rz * side * 0.5 * slot;
-				hop = Math.abs(Math.sin(st * 9 + slot)) * 0.7;
-			}
-			case 2 -> {
-				// nuzzling up close
-				tx = owner.getX() + rx * side * 0.6 + fx * 0.2;
-				tz = owner.getZ() + rz * side * 0.6 + fz * 0.2;
-				hop = Math.abs(Math.sin(st * 3)) * 0.06;
-			}
-			default -> {
-				// a rest beside you
-				tx = owner.getX() + rx * side * (0.9 + slot * 0.4) + fx * 0.2;
-				tz = owner.getZ() + rz * side * (0.9 + slot * 0.4) + fz * 0.2;
-				hop = 0;
-			}
-		}
-		double nx = Mth.lerp(0.3, e.getX(), tx), nz = Mth.lerp(0.3, e.getZ(), tz);
-		double base = type.flying ? owner.getY() + 1.3 + Math.sin(l.playTicks * 0.15) * 0.15
-				: groundY(level, nx, nz, e.getY(), owner.getY());
-		e.setPos(nx, base + hop, nz);
-		e.setOnGround(hop < 0.02);
-		double mx = nx - e.xo, mz = nz - e.zo;
-		float yaw = faceOwner || mx * mx + mz * mz < 1e-4
-				? (float) (Mth.atan2(owner.getZ() - nz, owner.getX() - nx) * Mth.RAD_TO_DEG) - 90f
-				: (float) (Mth.atan2(mz, mx) * Mth.RAD_TO_DEG) - 90f;
-		float smooth = Mth.approachDegrees(e.getYRot(), yaw, 30f);
-		e.setYRot(smooth);
-		if (e instanceof LivingEntity living) {
-			living.setYBodyRot(smooth);
-			living.setYHeadRot(Mth.approachDegrees(living.getYHeadRot(), yaw, 40f));
-			boolean baby = e instanceof AgeableMob m && m.isBaby();
-			living.walkAnimation.update((float) Math.min(Math.sqrt(mx * mx + mz * mz) * 4 + hop, 1.0), 0.4f, baby ? 3f : 1f);
-		}
-		setSitting(e, seg == 3 && st > 0.6f && !type.flying);
 		mirrorCrouch(e, owner);
 	}
 
@@ -475,7 +442,7 @@ public final class Pets {
 		boolean firstPerson = !ctx.camera().isDetached();
 		for (Live l : LIVE) {
 			if (!showMine) break;
-			if (l.cfg.attached() && firstPerson) continue;   // would sit right in front of your eyes
+			if (l.perch != null && l.climb > 0.5f && firstPerson) continue;   // would sit right in front of your eyes
 			EntityRenderState state = state(l, owner, partial);
 			if (state != null) ctx.levelState().entityRenderStates.add(state);
 		}
@@ -503,31 +470,43 @@ public final class Pets {
 		PetConfig cfg = l.cfg;
 		float size = PetConfig.SIZES[cfg.size];
 		if (cfg.type() == PetType.MINI_PLAYER) size *= 0.75f;
-		if (cfg.attached()) {
+		String perch = l.perch;
+		float up = Mth.lerp(partial, l.climbO, l.climb);
+		if (perch == null && up > 0f) perch = l.lastPerch;   // still hopping down
+		if (perch != null) l.lastPerch = perch;
+		if (perch != null && up > 0f) {
 			// small enough to sit on you, whatever the animal
-			size = Math.min(size, 0.42f / Math.max(0.3f, l.entity.getBbWidth()));
+			float sit = Math.min(size, 0.42f / Math.max(0.3f, l.entity.getBbWidth()));
+			size = Mth.lerp(up, size, sit);
 			double yaw = Mth.rotLerp(partial, owner.yBodyRotO, owner.yBodyRot);
 			double headYaw = Mth.rotLerp(partial, owner.yHeadRotO, owner.yHeadRot);
 			double x = Mth.lerp(partial, owner.xo, owner.getX()), y = Mth.lerp(partial, owner.yo, owner.getY()), z = Mth.lerp(partial, owner.zo, owner.getZ());
 			double h = owner.getBbHeight();
-			double r = Math.toRadians(cfg.mode.equals("HEAD") ? headYaw : yaw);
+			double r = Math.toRadians(perch.equals("HEAD") ? headYaw : yaw);
 			double rx = -Math.cos(r), rz = -Math.sin(r);
-			switch (cfg.mode) {
+			switch (perch) {
 				case "LEFT_SHOULDER" -> { x -= rx * 0.36; z -= rz * 0.36; y += h * 0.78; }
 				case "RIGHT_SHOULDER" -> { x += rx * 0.36; z += rz * 0.36; y += h * 0.78; }
 				default -> y += h + 0.02;
 			}
+			if (up < 1f) {
+				// climbing up (or hopping down): a little jump between the ground and you
+				float k = up * up * (3 - 2 * up);
+				x = Mth.lerp(k, state.x, x);
+				z = Mth.lerp(k, state.z, z);
+				y = Mth.lerp(k, state.y, y) + Math.sin(up * Math.PI) * 0.55;
+			}
 			state.x = x;
 			state.y = y;
 			state.z = z;
-			if (state instanceof LivingEntityRenderState living) {
-				living.bodyRot = (float) (cfg.mode.equals("HEAD") ? headYaw : yaw);
+			if (up >= 1f && state instanceof LivingEntityRenderState living) {
+				living.bodyRot = (float) (perch.equals("HEAD") ? headYaw : yaw);
 				living.yRot = 0;
 			}
 		}
 		if (state instanceof LivingEntityRenderState living) living.scale *= size;
 		state.shadowRadius *= size;
-		if (cfg.attached()) state.shadowRadius = 0;
+		if (perch != null && up > 0.5f) state.shadowRadius = 0;
 		state.isInvisible = false;
 
 		if (cfg.name.isBlank() || (l.remote && !LmgConfig.get().showOtherPetNames)) {

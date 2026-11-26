@@ -69,6 +69,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("emotes")) emotes(ctx);
 			if (want("photo")) photo(ctx, world);
 			if (want("avatar")) avatar(ctx, world);
+			if (want("petsclimb")) petsClimb(ctx, world);
 			if (want("winter")) winter(ctx, world);
 			if (want("death")) death(ctx, world);
 			if (want("newmenu")) newMenu(ctx, world);
@@ -79,7 +80,6 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("tourskip")) tourSkip(ctx);
 			if (want("v29menu")) v29menu(ctx, world);
 			if (want("deletedata")) deleteData(ctx);
-			if (want("climb")) climb(ctx, world);
 			if (want("v29hud")) v29hud(ctx, world);
 			if (want("v29world")) v29world(ctx, world);
 			if (want("v29photo")) v29photo(ctx, world);
@@ -324,6 +324,44 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(10);
 	}
 
+	/** "Pets climb on me": they follow, then hop up on your head and shoulders one by one. */
+	private void petsClimb(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		ctx.runOnClient(mc -> {
+			var c = LmgConfig.get();
+			c.pets.clear();
+			for (String t : new String[]{"CAT", "FOX", "PARROT"}) {
+				var pet = new dev.lmg.client.pet.PetConfig();
+				pet.type = t;
+				pet.size = 2;
+				c.pets.add(pet);
+			}
+			c.petsClimb = true;
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		});
+		ctx.waitTicks(40);
+		world.getConnection().waitForChunksRender();
+		ctx.takeScreenshot("petsclimb-follow");
+		ctx.waitTicks(30);
+		ctx.takeScreenshot("petsclimb-hop");
+		ctx.waitTicks(150);
+		ctx.takeScreenshot("petsclimb-up");
+		ctx.waitTicks(320);
+		ctx.takeScreenshot("petsclimb-down");
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+		page(1, 0);   // You > Outfit
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		ctx.takeScreenshot("petsclimb-setting");
+		ctx.setScreen(() -> null);
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().pets.clear();
+			LmgConfig.get().petsClimb = false;
+		});
+		ctx.waitTicks(5);
+	}
+
 	/** Snow falling and settling on the grove (only on your screen). */
 	private void winter(ClientGameTestContext ctx, TestSingleplayerContext world) {
 		scene(world);
@@ -524,143 +562,6 @@ public class ShowcaseTest implements FabricClientGameTest {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/** Pretend Mia is our partner and has said yes to climbing. */
-	private static void fakePartner(net.minecraft.client.Minecraft mc) {
-		try {
-			var f = dev.lmg.client.social.Social.class.getDeclaredField("state");
-			f.setAccessible(true);
-			var mia = new dev.lmg.client.social.Social.Friend(MIA, "Mia_Builds", true, "singleplayer", null, null, null);
-			f.set(null, new dev.lmg.client.social.Social.State(java.util.List.of(mia), java.util.List.of(), java.util.List.of(),
-					MIA, null, java.util.List.of(), "partner", true));
-			var loaded = dev.lmg.client.social.Social.class.getDeclaredField("loaded");
-			loaded.setAccessible(true);
-			loaded.set(null, true);
-			LmgConfig.get().friendsEnabled = true;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		dev.lmg.client.social.PartnerPlay.testAllowed = true;
-	}
-
-	/** Partners: sitting on a head and a shoulder, and the play routine (with an arm being pulled). */
-	private void climb(ClientGameTestContext ctx, TestSingleplayerContext world) {
-		scene(world);
-		world.getServer().runCommand("time set 1000");
-		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
-		ctx.waitTicks(10);
-		ctx.runOnClient(mc -> {
-			fakePartner(mc);
-			LmgConfig.get().partnerPlayIdle = false;
-			var p = mc.player;
-			var mia = new net.minecraft.client.player.RemotePlayer(mc.level, new com.mojang.authlib.GameProfile(MIA, "Mia_Builds"));
-			mia.setId(-424243);
-			mia.snapTo(p.getX() + 1.3, p.getY(), p.getZ(), 0f, 0f);
-			mia.setYHeadRot(0f);
-			mia.setYBodyRot(0f);
-			mc.level.addEntity(mia);
-			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
-		});
-		ctx.waitTicks(40);
-		java.util.UUID[] me = new java.util.UUID[1];
-		ctx.runOnClient(mc -> me[0] = mc.player.getUUID());
-		// Mia climbs on me: head, then shoulder
-		ctx.runOnClient(mc -> dev.lmg.client.emote.Emotes.remote(MIA, dev.lmg.client.emote.Emote.PERCH_HEAD, System.currentTimeMillis() - 2000, me[0]));
-		ctx.waitTicks(20);
-		ctx.takeScreenshot("climb-head");
-		ctx.runOnClient(mc -> dev.lmg.client.emote.Emotes.remote(MIA, dev.lmg.client.emote.Emote.PERCH_SHOULDER, System.currentTimeMillis() - 2000, me[0]));
-		ctx.waitTicks(20);
-		ctx.takeScreenshot("climb-shoulder");
-		// Mia plays around me: each part of the routine
-		int[][] parts = {{2000, 0}, {7600, 1}, {11800, 2}, {15000, 3}};
-		for (int[] part : parts) {
-			ctx.runOnClient(mc -> dev.lmg.client.emote.Emotes.remote(MIA, dev.lmg.client.emote.Emote.PLAY, System.currentTimeMillis() - part[0], me[0]));
-			ctx.waitTicks(4);
-			ctx.takeScreenshot("climb-play-" + part[1]);
-		}
-		ctx.runOnClient(mc -> dev.lmg.client.emote.Emotes.remote(MIA, null, System.currentTimeMillis()));
-		ctx.waitTicks(5);
-		// now I climb on Mia: seen from behind, and through my own eyes up there
-		ctx.runOnClient(mc -> {
-			String why = dev.lmg.client.social.PartnerPlay.climb(dev.lmg.client.emote.Emote.PERCH_SHOULDER);
-			System.out.println("[climb] me on shoulder: " + (why == null ? "ok" : why) + " doing=" + dev.lmg.client.social.PartnerPlay.mine());
-			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
-		});
-		ctx.waitTicks(20);
-		ctx.takeScreenshot("climb-me-shoulder-back");
-		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
-		ctx.waitTicks(10);
-		ctx.takeScreenshot("climb-me-shoulder-eyes");
-		ctx.runOnClient(mc -> dev.lmg.client.social.PartnerPlay.getDown());
-		// pets play too: a cat and a fox set to "Play around me", seen from the front
-		ctx.runOnClient(mc -> {
-			LmgConfig c = LmgConfig.get();
-			c.pets.clear();
-			var cat = new dev.lmg.client.pet.PetConfig();
-			cat.type = "CAT";
-			cat.mode = "PLAY";
-			cat.size = 2;
-			var fox = new dev.lmg.client.pet.PetConfig();
-			fox.type = "FOX";
-			fox.mode = "PLAY";
-			fox.size = 2;
-			c.pets.add(cat);
-			c.pets.add(fox);
-			var mia = mc.level.getPlayerByUUID(MIA);
-			if (mia != null) mia.discard();
-			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
-		});
-		ctx.waitTicks(50);
-		ctx.takeScreenshot("climb-pets-hop");
-		ctx.waitTicks(110);
-		ctx.takeScreenshot("climb-pets-bounce");
-		ctx.waitTicks(200);
-		ctx.takeScreenshot("climb-pets-rest");
-		// a pet on Follow comes to play once you've been still a while
-		ctx.runOnClient(mc -> {
-			LmgConfig c = LmgConfig.get();
-			c.pets.get(0).mode = "FOLLOW";
-			c.pets.get(1).mode = "HEAD";
-			c.partnerIdleSeconds = 5;
-		});
-		ctx.waitTicks(140);
-		ctx.takeScreenshot("climb-pets-idle");
-		ctx.runOnClient(mc -> {
-			LmgConfig.get().pets.clear();
-			LmgConfig.get().partnerIdleSeconds = 20;
-		});
-		ctx.waitTicks(5);
-		// the menu page
-		page(4, 1);
-		ctx.setScreen(() -> new LmgSettingsScreen(null));
-		ctx.waitTicks(20);
-		ctx.takeScreenshot("climb-menu");
-		ctx.setScreen(() -> null);
-		// going idle next to Mia starts the play routine by itself; moving stops it
-		ctx.runOnClient(mc -> {
-			var p = mc.player;
-			var mia = new net.minecraft.client.player.RemotePlayer(mc.level, new com.mojang.authlib.GameProfile(MIA, "Mia_Builds"));
-			mia.setId(-424245);
-			mia.snapTo(p.getX() + 1.3, p.getY(), p.getZ(), 0f, 0f);
-			mc.level.addEntity(mia);
-			LmgConfig.get().partnerPlayIdle = true;
-			LmgConfig.get().partnerIdleSeconds = 5;
-			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
-		});
-		ctx.waitTicks(130);
-		ctx.runOnClient(mc -> System.out.println("[climb] after idle: " + dev.lmg.client.social.PartnerPlay.mine()));
-		ctx.takeScreenshot("climb-idle-play");
-		ctx.getInput().holdKeyFor(com.mojang.blaze3d.platform.InputConstants.KEY_W, 5);
-		ctx.waitTicks(5);
-		ctx.runOnClient(mc -> {
-			System.out.println("[climb] after moving: " + dev.lmg.client.social.PartnerPlay.mine());
-			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
-			dev.lmg.client.social.PartnerPlay.testAllowed = false;
-			LmgConfig.get().partnerIdleSeconds = 20;
-			var mia = mc.level.getPlayerByUUID(MIA);
-			if (mia != null) mia.discard();
-		});
 	}
 
 	/** "Delete all my Lmg data": the button, the question, and that it really deletes. */

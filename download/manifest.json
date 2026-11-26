@@ -1,9 +1,9 @@
 {
-  "version": "0.33.0",
+  "version": "0.34.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.33.0.jar",
-    "sha1": "549eed3271a586c3281bebb4ece245ee7c0283d2"
+    "file": "lmg-client-0.34.0.jar",
+    "sha1": "a7a0abbb112a973a818a6ba4583baec04df3040c"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.34",
+      "text": "Pets climb on you. One setting: You &gt; Outfit &gt; Pets climb on me. Your pets on Follow hop up onto your head and shoulders one after another, sit there a while, then hop down and walk about. Players climbing on each other is gone: the Climbing page, its key and the asking are all removed, and so is everything the server kept for it."
+    },
+    {
       "version": "0.33",
       "text": "No more asking - and pets play too. Climbing is a setting now: Social &gt; Climbing &gt; Who can climb on me (nobody, your partner, friends or everyone). Pets can be set to Play around me, and pets on Follow come and play when you stand still: hopping round you, bouncing, nuzzling up, then sitting beside you."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.29",
       "text": "Easier, and more of everything. Search every setting (or just start typing), a gear for more options, starting looks (Clean, Showcase, PvP, Cosy), profiles you swap with a key, and one-click low-end mode. New: PvP stats (CPS, combo, reach), an armour panel, hit sounds, hotbar styles, coloured inventories, name tag styles, damage number styles, four new skies, autumn leaves, ground mist, film grain and lens effects. Photo mode gets a self-timer, poses, a grid, ready-made looks and depth of field. Invite friends to your server, and give them nicknames."
-    },
-    {
-      "version": "0.28",
-      "text": "Your sword, your crosshair. Move, turn and resize what you hold and watch it change as you drag (try Big & low). Draw your own crosshair pixel by pixel, use the Lmg star, and make it spin. The tour now asks first, with a clear No thanks."
     }
   ],
   "launcher": {
