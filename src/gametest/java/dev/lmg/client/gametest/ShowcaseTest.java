@@ -106,6 +106,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("newcos")) newCosmetics(ctx, world);
 			if (want("cosclick")) cosmeticsClicks(ctx);
 			if (want("zoom")) zoomTest(ctx, world);
+			if (want("home")) homeTest(ctx, world);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -996,6 +997,63 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
 		ctx.setScreen(() -> null);
+	}
+
+	/** The tile home: screenshot, click the Combat tile, Back returns to the tiles, and the Sidebar setting skips it. */
+	private void homeTest(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		for (int[] sz : new int[][]{{1280, 720}, {1920, 1080}}) {
+			ctx.getInput().resizeWindow(sz[0], sz[1]);
+			ctx.waitTicks(5);
+			ctx.runOnClient(mc -> {
+				LmgConfig.get().menuTiles = true;
+				mc.gui.setScreen(dev.lmg.client.screen.LmgSettingsScreen.open(null));
+			});
+			ctx.waitTicks(30);
+			ctx.takeScreenshot("home-" + sz[0]);
+		}
+		// click the 3rd tile (Combat): first row, third column
+		int[] pos = ctx.computeOnClient(mc -> {
+			try {
+				var hs = mc.gui.screen();
+				var m = hs.getClass().getDeclaredMethod("tileRect", int.class);
+				m.setAccessible(true);
+				int[] r = (int[]) m.invoke(hs, 2);
+				double sc = mc.getWindow().getGuiScale();
+				return new int[]{(int) ((r[0] + r[2]) / 2 * sc), (int) ((r[1] + r[3]) / 2 * sc), (int) sc};
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.getInput().setCursorPos(pos[0], pos[1]);
+		ctx.waitTicks(2);
+		ctx.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+		ctx.waitTicks(20);
+		String after = ctx.computeOnClient(mc -> {
+			try {
+				var f = LmgSettingsScreen.class.getDeclaredField("lastCat");
+				f.setAccessible(true);
+				return mc.gui.screen().getClass().getSimpleName() + " group " + f.getInt(null);
+			} catch (Exception e) {
+				return String.valueOf(mc.gui.screen());
+			}
+		});
+		System.out.println("LMGHOME after tile click: " + after);
+		ctx.takeScreenshot("home-combat");
+		ctx.runOnClient(mc -> mc.gui.screen().onClose());   // same as "< Back"
+		ctx.waitTicks(10);
+		System.out.println("LMGHOME after back: " + ctx.computeOnClient(mc -> String.valueOf(mc.gui.screen() == null ? null : mc.gui.screen().getClass().getSimpleName())));
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().menuTiles = false;
+			mc.gui.setScreen(dev.lmg.client.screen.LmgSettingsScreen.open(null));
+		});
+		ctx.waitTicks(10);
+		System.out.println("LMGHOME with sidebar setting: " + ctx.computeOnClient(mc -> mc.gui.screen().getClass().getSimpleName()));
+		ctx.runOnClient(mc -> LmgConfig.get().menuTiles = true);
+		ctx.setScreen(() -> null);
+		ctx.getInput().resizeWindow(1280, 720);
+		ctx.waitTicks(5);
 	}
 
 	/** Zoom amount + speed: the Tools page, then how far the zoom gets in a quarter second at two speeds. */

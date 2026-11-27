@@ -67,7 +67,7 @@ public final class LmgKeys {
 	public static void tick(Minecraft mc) {
 		LmgConfig c = LmgConfig.get();
 		while (OPEN_MENU.consumeClick()) {
-			if (mc.gui.screen() == null) mc.gui.setScreen(new dev.lmg.client.screen.LmgSettingsScreen(null));
+			if (mc.gui.screen() == null) mc.gui.setScreen(dev.lmg.client.screen.LmgSettingsScreen.open(null));
 		}
 		while (FULLBRIGHT.consumeClick()) {
 			c.fullbright = !c.fullbright;

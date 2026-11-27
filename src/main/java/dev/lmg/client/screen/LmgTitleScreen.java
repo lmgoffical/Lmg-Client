@@ -60,7 +60,7 @@ public class LmgTitleScreen extends Screen {
 				() -> minecraft.gui.setScreen(new OptionsScreen(this, minecraft.options))));
 		y += BUTTON_GAP;
 		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Client"), t + 180,
-				() -> minecraft.gui.setScreen(new LmgSettingsScreen(this))));
+				() -> minecraft.gui.setScreen(LmgSettingsScreen.open(this))));
 		y += BUTTON_GAP;
 		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Cosmetics"), t + 210,
 				() -> minecraft.gui.setScreen(new CosmeticsScreen(this))));
@@ -154,7 +154,7 @@ public class LmgTitleScreen extends Screen {
 	@Override
 	public boolean keyPressed(KeyEvent event) {
 		if (LmgClient.OPEN_MENU_KEY.matches(event)) {
-			minecraft.gui.setScreen(new LmgSettingsScreen(this));
+			minecraft.gui.setScreen(LmgSettingsScreen.open(this));
 			return true;
 		}
 		return super.keyPressed(event);

@@ -248,6 +248,7 @@ public final class LmgConfig {
 	public Backdrop backdrop = Backdrop.DARK;
 	public int animationSpeed = 1; // index into ANIMATION_SPEEDS
 	public MenuStyle menuStyle = MenuStyle.LMG;
+	public boolean menuTiles = true;            // Right Shift opens the tile home first (false = straight to the sidebar menu)
 	public boolean menuUseAccent = false; // recolor Skeet/Neverlose with your accent color
 
 	// ---- menus ----

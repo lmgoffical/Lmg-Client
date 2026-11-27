@@ -412,6 +412,44 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 		}
 	}
 
+	// ---- used by the tile home (LmgHomeScreen) ----------------------------------------------------
+
+	/** What Right Shift opens: the tile home, or this menu straight away if you picked the sidebar. */
+	public static Screen open(Screen parent) {
+		return LmgConfig.get().menuTiles ? new LmgHomeScreen(parent) : new LmgSettingsScreen(parent);
+	}
+
+	/** This menu, on a group's last-used page. */
+	public static LmgSettingsScreen at(Screen parent, int cat, int pageIndex) {
+		search = null;
+		lastCat = Math.max(0, Math.min(CATS.length - 1, cat));
+		if (pageIndex >= 0) lastPage[lastCat] = Math.min(pageIndex, CATS[lastCat].pages().length - 1);
+		rowScroll = 0;
+		return new LmgSettingsScreen(parent);
+	}
+
+	/** This menu with the search box open (and the cursor in it). */
+	public static LmgSettingsScreen searching(Screen parent, String start) {
+		search = start == null ? "" : start;
+		rowScroll = 0;
+		return new LmgSettingsScreen(parent);
+	}
+
+	public static int groupCount() {
+		return CATS.length;
+	}
+
+	public static String groupName(int i) {
+		return CATS[i].name();
+	}
+
+	/** "sky, weather, effects, cinematic" */
+	public static String groupHint(int i) {
+		StringBuilder sb = new StringBuilder();
+		for (Page p : CATS[i].pages()) sb.append(sb.length() == 0 ? "" : ", ").append(p.name().toLowerCase(java.util.Locale.ROOT));
+		return sb.toString();
+	}
+
 	private static Page page() {
 		Page[] pages = CATS[lastCat].pages();
 		return pages[Math.max(0, Math.min(lastPage[lastCat], pages.length - 1))];
@@ -898,6 +936,10 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("Other Lmg players' numbers next to their names."));
 			}
 			case "Look" -> {
+				r.add(SettingRow.choice("Menu home", () -> c.menuTiles ? "Tiles" : "Sidebar",
+						() -> c.menuTiles = !c.menuTiles, () -> c.menuTiles = !c.menuTiles)
+						.withHint(c.menuTiles ? "Right Shift opens big tiles first. Sidebar goes straight here." : "Right Shift opens this menu straight away. Tiles shows a home page first.")
+						.keywords("layout tiles grid sidebar classic original home"));
 				r.add(SettingRow.dropdown("Menu style",
 						List.of("Lmg Client (original)", "Skeet", "Neverlose"),
 						List.of(c.accentRgb(), MenuSkin.SK_ACCENT, MenuSkin.NL_ACCENT),
@@ -1480,7 +1522,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			return true;
 		}
 		if (LmgClient.OPEN_MENU_KEY.matches(event)) {
-			onClose();
+			LmgConfig.save();
+			minecraft.gui.setScreen(parent instanceof LmgHomeScreen home ? home.parent() : parent);
 			return true;
 		}
 		return super.keyPressed(event);
