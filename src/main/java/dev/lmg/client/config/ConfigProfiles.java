@@ -92,25 +92,49 @@ public final class ConfigProfiles {
 	// Share codes
 	// ---------------------------------------------------------------------------------------------
 
-	/** A code for the current settings. */
+	/** A code for the current settings (without your personal settings - see LmgConfig.PERSONAL_FIELDS). */
 	public static String codeForCurrent(String name) {
 		JsonObject root = new JsonObject();
 		root.addProperty("n", cleanName(name));
-		root.add("c", LmgConfig.toJsonTree());
-		byte[] json = COMPACT.toJson(root).getBytes(StandardCharsets.UTF_8);
-		return CODE_PREFIX + Base64.getUrlEncoder().withoutPadding().encodeToString(deflate(json));
+		root.add("c", LmgConfig.toShareableJsonTree());
+		return encode(root);
 	}
 
-	/** A code for a saved config. */
+	/** A code for a saved config. Saved files keep personal settings; the code doesn't. */
 	public static String codeForSaved(String name) throws IOException {
 		String text = Files.readString(DIR.resolve(cleanName(name) + ".json"), StandardCharsets.UTF_8);
-		JsonObject root = JsonParser.parseString(text).getAsJsonObject();
-		byte[] json = COMPACT.toJson(root).getBytes(StandardCharsets.UTF_8);
-		return CODE_PREFIX + Base64.getUrlEncoder().withoutPadding().encodeToString(deflate(json));
+		return encode(JsonParser.parseString(text).getAsJsonObject());
+	}
+
+	/**
+	 * Re-encodes a long code with personal settings taken out. Codes made by this version are
+	 * already clean; this also cleans ones made by older versions before they get uploaded.
+	 */
+	public static String scrub(String code) {
+		return encode(parse(code));
 	}
 
 	/** Reads a share code. Throws IllegalArgumentException with a readable message if it's not valid. */
 	public static Profile decode(String code) {
+		JsonObject root = parse(code);
+		try {
+			String name = root.has("n") ? cleanName(root.get("n").getAsString()) : "Imported";
+			return new Profile(name, LmgConfig.fromJsonTree(root.get("c")));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("That code is broken or incomplete");
+		}
+	}
+
+	/** Builds a code from {"n": name, "c": settings}, always taking personal settings out of "c". */
+	private static String encode(JsonObject root) {
+		JsonObject out = root.deepCopy();
+		if (out.has("c") && out.get("c").isJsonObject()) LmgConfig.stripPersonal(out.getAsJsonObject("c"));
+		byte[] json = COMPACT.toJson(out).getBytes(StandardCharsets.UTF_8);
+		return CODE_PREFIX + Base64.getUrlEncoder().withoutPadding().encodeToString(deflate(json));
+	}
+
+	/** The {"n", "c"} JSON inside a long code. Throws IllegalArgumentException with a readable message. */
+	private static JsonObject parse(String code) {
 		if (code == null) throw new IllegalArgumentException("Clipboard is empty");
 		String trimmed = code.trim().replaceAll("\\s+", "");
 		int at = trimmed.indexOf(CODE_PREFIX);
@@ -119,9 +143,7 @@ public final class ConfigProfiles {
 		if (trimmed.length() > MAX_CODE_LENGTH) throw new IllegalArgumentException("Code is too long");
 		try {
 			byte[] json = inflate(Base64.getUrlDecoder().decode(trimmed));
-			JsonObject root = JsonParser.parseString(new String(json, StandardCharsets.UTF_8)).getAsJsonObject();
-			String name = root.has("n") ? cleanName(root.get("n").getAsString()) : "Imported";
-			return new Profile(name, LmgConfig.fromJsonTree(root.get("c")));
+			return JsonParser.parseString(new String(json, StandardCharsets.UTF_8)).getAsJsonObject();
 		} catch (Exception e) {
 			throw new IllegalArgumentException("That code is broken or incomplete");
 		}
