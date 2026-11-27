@@ -9,6 +9,7 @@ lmg-client jars there, and rewrites download/manifest.json, which the
 Windows installer and the in-game update check read.
 """
 import hashlib
+import html
 import json
 import re
 import urllib.error
@@ -70,7 +71,7 @@ def changelog(limit: int = 6) -> list:
     block = block[:block.index("];")]
     out = []
     for version, what in re.findall(r'\["([0-9.]+)", "((?:[^"\\]|\\.)*)"\]', block)[:limit]:
-        what = re.sub(r"<[^>]+>", "", what).replace("\\'", "'").replace('\\"', '"').replace("&amp;", "&")
+        what = html.unescape(re.sub(r"<[^>]+>", "", what).replace("\\'", "'").replace('\\"', '"'))
         out.append({"version": version, "text": what})
     return out
 

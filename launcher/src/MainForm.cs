@@ -40,7 +40,7 @@ namespace LmgLauncher
 
         readonly List<Control> homeControls = new List<Control>(), modsControls = new List<Control>(), settingsControls = new List<Control>(),
             photosControls = new List<Control>();
-        readonly Btn navHome, navMods, navPhotos, navSettings, play, switchLink;
+        readonly Btn navHome, navMods, navPhotos, navSettings, play, switchLink, updateOnly;
         readonly PhotosView photosView;
         RectangleF crashOpenRect, crashHideRect, changelogRect;   // links drawn onto the window
         int hotLink;
@@ -84,6 +84,8 @@ namespace LmgLauncher
 
             // home
             play = Add(homeControls, new Btn("Play", fPlay, Btn.Kind.Primary) { TagFont = fPixel }, 48, 238, 300, 58, () => Play());
+            // update without starting the game (only shown when there's an update)
+            updateOnly = Link(homeControls, "Just update", 364, 258, () => Play(updateOnly: true));
             switchLink = Link(homeControls, "switch account", 0, 180, () => Installer.OpenMinecraftLauncher());
             int lx = 48;
             foreach (var (label, action) in new (string, Action)[] {
@@ -211,6 +213,13 @@ namespace LmgLauncher
             switchLink.FitWidth();
             play.Enabled = !busy && !playing;
             play.Label = playing ? "Playing" : busy ? "One sec..." : updateReady ? "Update & play" : "Play";
+            bool showUpdate = home && updateReady && !busy && !playing;
+            if (updateOnly.Visible != showUpdate)
+            {
+                updateOnly.Visible = showUpdate;
+                if (showUpdate) updateOnly.BringToFront();
+            }
+            updateOnly.Invalidate();
             play.Tag2 = Installer.InstalledVersion() is string v && !updateReady ? v.Replace(".0", "") : installer.LatestVersion?.Replace(".0", "");
             play.Invalidate();
         }
@@ -228,7 +237,7 @@ namespace LmgLauncher
                 updateReady = have != null && !installer.UpToDate();
                 if (have == null) line1 = "Nothing's installed yet. Press Play and give it about a minute.";
                 else if (!updateReady) line1 = "You're on " + Short(latest) + ", the newest one." + LastPlayed();
-                else line1 = Short(latest) + " is out (you have " + Short(have) + "). Play updates it first.";
+                else line1 = Short(latest) + " is out (you have " + Short(have) + "). Update now, or Play updates it first.";
                 SetStatus("", C.Faint);
             }
             catch (Exception ex)
@@ -259,7 +268,7 @@ namespace LmgLauncher
             catch { return ""; }
         }
 
-        async void Play(bool repairOnly = false)
+        async void Play(bool repairOnly = false, bool updateOnly = false)
         {
             if (busy || playing) return;
             busy = true;
@@ -268,7 +277,7 @@ namespace LmgLauncher
             {
                 if (installer.Manifest == null) await installer.Fetch();
                 if (await AppSetup.UpdateSelf(installer, s => SetStatus(s, C.Faint))) { Close(); return; }
-                if (repairOnly || !installer.UpToDate())
+                if (repairOnly || updateOnly || !installer.UpToDate())
                 {
                     await installer.Install((msg, p) => BeginInvoke((Action)(() =>
                     {
@@ -283,6 +292,12 @@ namespace LmgLauncher
                 {
                     line1 = "Everything's been downloaded fresh.";
                     SetStatus("Repaired.", C.Good);
+                    return;
+                }
+                if (updateOnly)
+                {
+                    line1 = "You're on " + Short(installer.LatestVersion) + ", the newest one. Press Play whenever you're ready.";
+                    SetStatus("Updated.", C.Good);
                     return;
                 }
                 Installer.SelectProfile();
