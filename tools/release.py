@@ -103,6 +103,24 @@ def installer_zip(download: Path) -> None:
     print(f"  installer zip sha256 {digest}")
 
 
+def legacy_edition(download: Path) -> dict | None:
+    """The 1.8.9 Forge PvP edition (built in legacy-1.8.9/), copied next to the main jar."""
+    libs = ROOT / "legacy-1.8.9" / "build" / "libs"
+    jars = sorted((j for j in libs.glob("lmg-client-1.8.9-*.jar") if not j.name.endswith("-dev.jar")), key=lambda j: j.stat().st_mtime) if libs.exists() else []
+    if not jars:
+        return None
+    jar = jars[-1]
+    for old in download.glob("lmg-client-1.8.9-*.jar"):
+        if old.name != jar.name:
+            old.unlink()
+    data = jar.read_bytes()
+    (download / jar.name).write_bytes(data)
+    version = jar.stem[len("lmg-client-1.8.9-"):]
+    print(f"  1.8.9 edition {version}")
+    return {"name": "PvP edition", "minecraft": "1.8.9", "loader": "Forge 1.8.9-11.15.1.2318", "version": version,
+            "file": jar.name, "sha1": hashlib.sha1(data).hexdigest()}
+
+
 def main() -> None:
     version = prop("version")
     minecraft = prop("minecraft_version")
@@ -126,6 +144,9 @@ def main() -> None:
         "mods": resolve_modpack(minecraft),
         "changelog": changelog(),
     }
+    edition = legacy_edition(download)
+    if edition:
+        manifest["editions"] = [edition]
     app = launcher(download)
     if app:
         manifest["launcher"] = app

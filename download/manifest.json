@@ -61,6 +61,16 @@
       "text": "Cosmetics clicks fixed. The tabs down the side and the + buttons now react to exactly where they're drawn. And if you were matching your partner's outfit, picking something yourself now stops matching (it used to put their outfit back on you every couple of seconds, so it looked like the buttons did nothing). Turn matching back on with the button at the top."
     }
   ],
+  "editions": [
+    {
+      "name": "PvP edition",
+      "minecraft": "1.8.9",
+      "loader": "Forge 1.8.9-11.15.1.2318",
+      "version": "1.0.0",
+      "file": "lmg-client-1.8.9-1.0.0.jar",
+      "sha1": "5687aa9cef6d521a4f8a4092e4494db17cf792f2"
+    }
+  ],
   "launcher": {
     "version": "1.3.0",
     "file": "Lmg-Client.exe",

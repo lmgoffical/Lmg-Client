@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "lmgclient",
+    "name": "Lmg Client (1.8.9 PvP edition)",
+    "description": "A free visual client for Minecraft 1.8.9: HUD, zoom, crosshair, capes and the Lmg menu. Nothing that plays the game for you.",
+    "version": "${version}",
+    "mcversion": "1.8.9",
+    "url": "https://lmgoffical.github.io/Lmg-Client/",
+    "authorList": ["Lmg"],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

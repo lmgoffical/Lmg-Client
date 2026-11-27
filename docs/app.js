@@ -225,6 +225,7 @@ async function pageHome() {
         ${[
           ["newcos", "New in 0.35: tails, a witch hat, dragon wings, frog hat and more", "Eight players in different new outfits: a witch hat with fairy wings, devil horns with dragon wings and a fire cape, a frog hat with round glasses, headphones with goggles and crystal wings, a party hat with heart shades, a cowboy hat with a racing cape, a flower crown with fairy wings, and a star crown with star shades"],
           ["tails", "The new Tails tab: cat, fox, bunny, devil, dragon and robot", "The Cosmetics menu on the Tails tab, with a fox tail picked and its colour sliders"],
+          ["legacy189", "New: the 1.8.9 PvP edition, with HUD, zoom, crosshair and capes", "Four Minecraft 1.8.9 screens: the Lmg title screen, the Lmg menu tiles, the HUD with keystrokes and armour, and a player from behind wearing a cherry blossom cape and a halo"],
           ["photo", "Photo mode (F8): a warm filter and a Polaroid frame", "A Polaroid-framed photo of a player waving in a cherry grove by a pond"],
           ["partner", "Partners match outfits, each in their own colour", "Two players from behind wearing the same butterfly wings, one pink and one blue, with a heart on one name tag"],
           ["wheel", "Hold G for emotes. The middle shows you doing it", "The emote wheel: eight emotes around a preview of the player dancing"],
@@ -301,10 +302,38 @@ async function pageDownload() {
         </ol>
         <p class="muted small" style="margin-bottom:0">Updates happen by themselves: just open the app and press Play.</p>
       </div>
-    </div>`);
+    </div>
+
+    <section class="section">
+      <div class="section-head"><h2>Other versions</h2><span class="label">for players on older minecraft</span></div>
+      <div class="grid two">
+        <div class="card">
+          <div class="label" id="v189">minecraft 1.8.9 · forge</div>
+          <h3 style="margin-top:8px">1.8.9 PvP edition</h3>
+          <p class="muted">A smaller Lmg Client for 1.8.9: the Right Shift menu, a HUD you can drag around (FPS, CPS, keystrokes, armour, potions, coordinates, ping, clock), zoom with your own amount and speed, a custom crosshair, toggle sprint, fullbright, the Lmg capes, a halo, China hat and cat ears, and the Lmg title screen. Visual only, nothing that plays for you.</p>
+          <a class="btn primary" id="dl189" href="${REPO_RAW}/download/lmg-client-1.8.9-1.0.0.jar">Download for 1.8.9</a>
+          <p class="muted small" style="margin-top:12px">Friends, emotes and pets are only in the main version. On 1.8.9, only you see your cape and cosmetics.</p>
+        </div>
+        <div class="card">
+          <h3>Installing on 1.8.9</h3>
+          <ol class="muted" style="padding-left:20px;margin:0">
+            <li>Install <b>Forge for 1.8.9</b> from <a href="https://files.minecraftforge.net/net/minecraftforge/forge/index_1.8.9.html" target="_blank" rel="noopener">files.minecraftforge.net</a> (11.15.1.2318 is the usual one). Run the installer and pick <i>Install client</i>.</li>
+            <li>Put the Lmg jar in your mods folder: press Win+R, type <code>%appdata%\\.minecraft\\mods</code>, press Enter, and drop the file in.</li>
+            <li>In the Minecraft Launcher, pick the <b>forge 1.8.9</b> install and press Play.</li>
+            <li>In game, press <b>Right Shift</b>. Hold <b>C</b> to zoom.</li>
+          </ol>
+          <p class="muted small" style="margin-bottom:0">It works next to OptiFine and other 1.8.9 Forge mods.</p>
+        </div>
+      </div>
+    </section>`);
   try {
     const m = await (await fetch(REPO_RAW + "/download/manifest.json", { cache: "no-store" })).json();
     document.getElementById("version").textContent = `v${m.version} · minecraft ${m.minecraft}`;
+    const ed = (m.editions || []).find(e => e.minecraft === "1.8.9");
+    if (ed) {
+      document.getElementById("v189").textContent = `v${ed.version} · minecraft 1.8.9 · forge`;
+      document.getElementById("dl189").href = `${REPO_RAW}/download/${ed.file}`;
+    }
   } catch { /* keep the default label */ }
 }
 
