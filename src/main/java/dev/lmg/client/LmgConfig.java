@@ -572,9 +572,9 @@ public final class LmgConfig {
 	// ---- pets (up to 3) ----
 	public java.util.List<dev.lmg.client.pet.PetConfig> pets = new java.util.ArrayList<>();
 	public boolean hideCosmetics = false;
-	public boolean animatedCapes = true;
+	public boolean animatedCapes = true;        // capes move (frames from textures/cosmetic/anim)
 	public dev.lmg.client.crash.CrashReports.Mode crashReports = dev.lmg.client.crash.CrashReports.Mode.ASK;
-	public long crashesCheckedUpTo = 0;         // crash-reports newer than this are "new" (ms since 1970)        // capes move (frames from textures/cosmetic/anim)
+	public long crashesCheckedUpTo = 0;         // crash-reports newer than this are "new" (ms since 1970)
 
 	// ---- maps ----
 	public static final int[] MINIMAP_SIZES = {64, 84, 104, 128};

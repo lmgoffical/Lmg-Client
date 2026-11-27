@@ -1,9 +1,9 @@
 {
-  "version": "0.37.0",
+  "version": "0.37.1",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.37.0.jar",
-    "sha1": "f616ddbe5c52499d4d85dd905dd903565ab359f5"
+    "file": "lmg-client-0.37.1.jar",
+    "sha1": "3a9b28a43d1d2859109b1ee4d711d9b1675f7518"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.37.1",
+      "text": "Share codes stay yours. Config codes and uploaded configs no longer carry your personal settings (your UID, friend nicknames, friends and sharing switches, menu position, crash-report choice). Old codes still work."
+    },
+    {
       "version": "0.37",
       "text": "Crash reports. If the game crashes, the next time it starts it asks if you'd like to send the crash report so it gets fixed: Send, Always send, or Don't send. Your name, account ID, folder names and IP are taken out first. Change it any time in Menu > Help > Crash reports. The app (1.3.1) has a Just update button next to Play, for updating without starting the game."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.35.5",
       "text": "Zoom your way. Game > Tools now has a Zoom amount slider (1.5x to 30x closer) and a Zoom speed slider (1 very slow to 10 very fast). It starts on 3, slower than before, so it glides in instead of jumping. Scrolling while zooming still takes you further, on top of your amount."
-    },
-    {
-      "version": "0.35.4",
-      "text": "Left clicks fixed everywhere. Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."
     }
   ],
   "editions": [

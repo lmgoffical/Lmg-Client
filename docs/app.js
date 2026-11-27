@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.37.1", "<b>Share codes stay yours.</b> Config codes and uploaded configs no longer carry your personal settings (your UID, friend nicknames, friends and sharing switches, menu position, crash-report choice). Old codes still work."],
   ["0.37", "<b>Crash reports.</b> If the game crashes, the next time it starts it asks if you'd like to send the crash report so it gets fixed: Send, Always send, or Don't send. Your name, account ID, folder names and IP are taken out first. Change it any time in Menu &gt; Help &gt; Crash reports. The app (1.3.1) has a <b>Just update</b> button next to Play, for updating without starting the game."],
   ["0.36.2", "<b>Skeet menu drags properly.</b> Moving the menu by its top bar in the Skeet style now takes the grey group boxes along with everything else (they used to stay behind). The \"Accent on Skeet/Neverlose\" switch is now called \"Use my accent\" so it fits in its box."],
   ["0.36.1", "<b>Capes that move.</b> Every Lmg cape is animated now: the aurora ripples, the galaxy turns, flames flicker and embers rise, petals fall, waves roll, fireflies blink, the synthwave grid scrolls, clouds drift and the racing flag moves. Other Lmg players see yours move too. Don't want it? You &gt; Outfit &gt; Animated capes. The 1.8.9 edition (1.0.1) gets moving capes as well."],
