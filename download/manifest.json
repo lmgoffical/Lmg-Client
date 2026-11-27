@@ -1,9 +1,9 @@
 {
-  "version": "0.35.3",
+  "version": "0.35.4",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.35.3.jar",
-    "sha1": "f272bd7324af331c9da519f2694f7795199bb4b4"
+    "file": "lmg-client-0.35.4.jar",
+    "sha1": "f8207ddbc315f27dda73e7377617ae9e8fe92eef"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.35.4",
+      "text": "Left clicks fixed everywhere. Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."
+    },
+    {
       "version": "0.35.3",
       "text": "Small fixes. Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.34",
       "text": "Pets climb on you. One setting: You &gt; Outfit &gt; Pets climb on me. Your pets on Follow hop up onto your head and shoulders one after another, sit there a while, then hop down and walk about. Players climbing on each other is gone: the Climbing page, its key and the asking are all removed, and so is everything the server kept for it."
-    },
-    {
-      "version": "0.33",
-      "text": "No more asking - and pets play too. Climbing is a setting now: Social &gt; Climbing &gt; Who can climb on me (nobody, your partner, friends or everyone). Pets can be set to Play around me, and pets on Follow come and play when you stand still: hopping round you, bouncing, nuzzling up, then sitting beside you."
     }
   ],
   "launcher": {

@@ -1363,7 +1363,7 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			}
 			return true;   // the menu waits while the tour is up
 		}
-		if (waitingKey != null && event.button() > 1) {
+		if (waitingKey != null && event.button() != com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && event.button() != com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) {
 			// middle and side mouse buttons can be bound too
 			waitingKey.setKey(com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(event.button()));
 			bindDone();
@@ -1386,8 +1386,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			return true;
 		}
 		if (super.mouseClicked(event, doubleClick)) return true;
-		if (event.button() == 0 && avatar.mouseClicked(event.x(), event.y(), () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))) return true;
-		if (event.button() == 0 && inHeader(event.x(), event.y())) {
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && avatar.mouseClicked(event.x(), event.y(), () -> minecraft.gui.setScreen(new CosmeticsScreen(this)))) return true;
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && inHeader(event.x(), event.y())) {
 			if (doubleClick) { // double-click the header to put the panel back in the middle
 				LmgConfig.get().menuOffsetX = 0;
 				LmgConfig.get().menuOffsetY = 0;

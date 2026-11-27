@@ -739,7 +739,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(10);
 		for (int i = 0; i < 2; i++) {
 			ctx.runOnClient(mc -> {
-				dev.lmg.client.feature.Visuals.onClick(0);
+				dev.lmg.client.feature.Visuals.onClick(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
 				var z = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, mc.player.getBoundingBox().inflate(6)).stream().findFirst().orElse(null);
 				if (z != null) {
 					dev.lmg.client.feature.Visuals.onAttack(z);
@@ -1020,7 +1020,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.getInput().setCursorPos(pos[0], pos[1]);
 		ctx.waitTicks(2);
-		ctx.getInput().pressMouse(0);
+		ctx.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
 		ctx.waitTicks(5);
 		String tab = ctx.computeOnClient(mc -> {
 			try {
@@ -1049,14 +1049,14 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.getInput().setCursorPos(plus[0], plus[1]);
 		ctx.waitTicks(2);
-		ctx.getInput().pressMouse(0);
+		ctx.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
 		ctx.waitTicks(60);   // longer than the partner re-match interval
 		String hat = ctx.computeOnClient(mc -> LmgConfig.get().equipped.get("hats") + " match=" + LmgConfig.get().matchPartner);
 		System.out.println("LMGCLICK " + where + " after + click: " + hat);
 		// and back to another tab
 		ctx.getInput().setCursorPos(pos[0], pos[1] + 3 * 18 * pos[2]);
 		ctx.waitTicks(2);
-		ctx.getInput().pressMouse(0);
+		ctx.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
 		ctx.waitTicks(5);
 		String tab2 = ctx.computeOnClient(mc -> {
 			try {

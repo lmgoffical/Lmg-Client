@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.35.4", "<b>Left clicks fixed everywhere.</b> Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."],
   ["0.35.3", "<b>Small fixes.</b> Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."],
   ["0.35.2", "<b>\"Before you start\" fixed.</b> The Got it and Privacy policy buttons no longer sit on top of the text: the card now fits its text, the buttons have proper boxes, and on small windows the text scrolls while the buttons stay put."],
   ["0.35.1", "<b>Cosmetics clicks fixed.</b> The tabs down the side and the + buttons now react to exactly where they're drawn. And if you were matching your partner's outfit, picking something yourself now stops matching (it used to put their outfit back on you every couple of seconds, so it looked like the buttons did nothing). Turn matching back on with the button at the top."],

@@ -108,7 +108,7 @@ public class HudEditorScreen extends Screen {
 		if (super.mouseClicked(event, doubleClick)) return true;
 		Element e = elementAt(event.x(), event.y());
 		if (e == null) return false;
-		if (event.button() == 1) {
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) {
 			HudLayout.reset(e);
 			LmgConfig.save();
 			return true;

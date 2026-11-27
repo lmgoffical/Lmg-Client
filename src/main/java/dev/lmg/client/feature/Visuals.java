@@ -244,8 +244,8 @@ public final class Visuals {
 	/** A mouse button went down in game (not in a menu). */
 	public static void onClick(int button) {
 		long now = Util.getMillis();
-		if (button == 0) leftClicks.addLast(now);
-		else if (button == 1) rightClicks.addLast(now);
+		if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT) leftClicks.addLast(now);
+		else if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) rightClicks.addLast(now);
 	}
 
 	private static int perSecond(java.util.ArrayDeque<Long> q) {

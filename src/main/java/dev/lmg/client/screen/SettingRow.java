@@ -677,7 +677,7 @@ public class SettingRow extends AbstractWidget {
 
 	@Override
 	protected boolean isValidClickButton(MouseButtonInfo info) {
-		return info.button() == 0 || info.button() == 1;
+		return info.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT || info.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT;
 	}
 
 	@Override
@@ -687,7 +687,7 @@ public class SettingRow extends AbstractWidget {
 			return;
 		}
 		if (kind == Kind.SLIDER) {
-			if (event.button() == 1) {
+			if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) {
 				nudge(-1);
 				LmgConfig.save();
 			} else if (event.x() >= trackX0 - 4) {
@@ -703,7 +703,7 @@ public class SettingRow extends AbstractWidget {
 			if (opener != null) opener.accept(this);
 			return;
 		}
-		boolean back = event.button() == 1 || event.hasShiftDown()
+		boolean back = event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT || event.hasShiftDown()
 				|| (kind == Kind.CHOICE && event.x() >= prevArrowX0 && event.x() < prevArrowX1);
 		if (back) previous.run();
 		else next.run();

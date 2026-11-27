@@ -171,7 +171,7 @@ public class ItemLookScreen extends Screen {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		Slider s = sliderAt(event.x(), event.y());
 		if (s != null) {
-			if (event.button() == 1) s.set.accept(s.min >= 0 ? 1 : 0);
+			if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) s.set.accept(s.min >= 0 ? 1 : 0);
 			else {
 				dragging = s;
 				setFromMouse(s, event.x());

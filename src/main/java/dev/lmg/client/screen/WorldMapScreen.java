@@ -207,12 +207,12 @@ public class WorldMapScreen extends Screen {
 			return true;
 		}
 		if (my < TOP) return false;
-		if (event.button() == 0) {
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT) {
 			dragging = true;
 			movedWhileDragging = false;
 			return true;
 		}
-		if (event.button() == 1) {
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT) {
 			Waypoints.Waypoint w = waypointAt(mx, my);
 			if (w != null) Waypoints.remove(w);
 			else if (minecraft.player != null) {

@@ -299,7 +299,7 @@ public class CrosshairEditorScreen extends Screen {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		if (cell > 0 && event.x() >= gx0 && event.y() >= gy0 && event.x() < gx0 + cell * N && event.y() < gy0 + cell * N) {
 			remember();
-			painting = event.button() != 1;
+			painting = event.button() != com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT;
 			lastX = lastY = -1;
 			LmgConfig.get().crosshair = LmgConfig.Crosshair.DRAWN;
 			paintAt(event.x(), event.y());
