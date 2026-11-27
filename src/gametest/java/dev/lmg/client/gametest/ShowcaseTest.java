@@ -36,6 +36,18 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.getInput().resizeWindow(1280, 720);
 		ctx.waitTicks(5);
+		if (want("welcome")) {
+			int[][] sizes = {{1280, 720}, {1920, 1080}, {854, 480}, {1024, 600}};
+			for (int[] sz : sizes) {
+				ctx.getInput().resizeWindow(sz[0], sz[1]);
+				ctx.waitTicks(5);
+				ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.WelcomeScreen(null, true)));
+				ctx.waitTicks(30);
+				ctx.takeScreenshot("welcome-" + sz[0] + "x" + sz[1]);
+			}
+			ctx.getInput().resizeWindow(1280, 720);
+			ctx.waitTicks(5);
+		}
 		if (want("cosclick")) {
 			ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.LmgTitleScreen(false)));
 			ctx.waitTicks(20);
