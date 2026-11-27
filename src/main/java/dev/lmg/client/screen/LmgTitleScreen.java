@@ -43,7 +43,8 @@ public class LmgTitleScreen extends Screen {
 	@Override
 	protected void init() {
 		columnX = Math.round(width * 0.34f);
-		int columnHeight = 34 + 8 + 14 + 16 + BUTTON_GAP * 7 + 8;
+		boolean essential = dev.lmg.client.feature.EssentialLink.installed();
+		int columnHeight = 34 + 8 + 14 + 16 + BUTTON_GAP * (essential ? 8 : 7) + 8;
 		columnTop = height / 2 - columnHeight / 2;
 
 		int y = columnTop + 34 + 8 + 14 + 16;
@@ -55,6 +56,12 @@ public class LmgTitleScreen extends Screen {
 		y += BUTTON_GAP;
 		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.translatable("menu.multiplayer"), t + 60,
 				() -> minecraft.gui.setScreen(new JoinMultiplayerScreen(this))));
+		if (essential) {
+			// Essential: host your world and invite friends (its own buttons only show on Minecraft's title screen)
+			y += BUTTON_GAP;
+			addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Play with friends"), t + 90,
+					() -> dev.lmg.client.feature.EssentialLink.openFriends()));
+		}
 		y += BUTTON_GAP + 8; // small gap between "play" and "settings" groups
 		addRenderableWidget(new MenuTextButton(x, y, BUTTON_W, BUTTON_H, Component.literal("Minecraft Settings"), t + 120,
 				() -> minecraft.gui.setScreen(new OptionsScreen(this, minecraft.options))));

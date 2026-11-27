@@ -225,6 +225,10 @@ namespace LmgLauncher
                 var mod = mods[i];
                 string file = Str(mod, "file"), dest = Path.Combine(Paths.Mods, file), sha1 = Str(mod, "sha1");
                 double p = 0.2 + 0.7 * i / mods.Count;
+                // was this mod switched off (in any version)? then its new version stays off too
+                bool switchedOff = Str(mod, "name") != "Lmg Client" && !repair
+                    && Directory.GetFiles(Paths.Mods, Str(mod, "pattern") + ".disabled").Length > 0
+                    && Directory.GetFiles(Paths.Mods, Str(mod, "pattern")).Length == 0;
                 // remove older versions of the same mod (also switched-off ones)
                 foreach (var old in Directory.GetFiles(Paths.Mods, Str(mod, "pattern")))
                     if (!Path.GetFileName(old).Equals(file, StringComparison.OrdinalIgnoreCase)) TryDelete(old);
@@ -249,6 +253,11 @@ namespace LmgLauncher
                     if (total <= 0) return;
                     progress(label + "  ·  " + Mb(done) + " / " + Mb(total), p + (next - p) * done / total);
                 });
+                if (switchedOff)
+                {
+                    TryDelete(dest + ".disabled");
+                    File.Move(dest, dest + ".disabled");
+                }
             }
 
             // ---- launcher profile ----

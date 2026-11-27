@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.38", "<b>Play with friends (Essential).</b> The app now installs Essential too, so you can host your single-player world and invite friends, or join theirs, without a server. The title screen has a Play with friends button that opens Essential's friends list, and the pause menu has Essential's invite button. Essential asks you to accept its own terms the first time. Don't want it? Switch it off in the app's Mods tab and it stays off, even when it updates. App 1.3.2."],
   ["0.37.1", "<b>Share codes stay yours.</b> Config codes and uploaded configs no longer carry your personal settings (your UID, friend nicknames, friends and sharing switches, menu position, crash-report choice). Old codes still work."],
   ["0.37", "<b>Crash reports.</b> If the game crashes, the next time it starts it asks if you'd like to send the crash report so it gets fixed: Send, Always send, or Don't send. Your name, account ID, folder names and IP are taken out first. Change it any time in Menu &gt; Help &gt; Crash reports. The app (1.3.1) has a <b>Just update</b> button next to Play, for updating without starting the game."],
   ["0.36.2", "<b>Skeet menu drags properly.</b> Moving the menu by its top bar in the Skeet style now takes the grey group boxes along with everything else (they used to stay behind). The \"Accent on Skeet/Neverlose\" switch is now called \"Use my accent\" so it fits in its box."],
@@ -289,10 +290,10 @@ async function pageDownload() {
       <div>
         <div class="label" id="version">java edition</div>
         <h1 style="margin-top:8px">Get Lmg Client</h1>
-        <p class="muted">A small app (under 1 MB). It installs Fabric, Lmg Client, Sodium, Lithium and Iris, keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
+        <p class="muted">A small app (under 1 MB). It installs Fabric, Lmg Client, Sodium, Lithium, Iris and Essential (for playing with friends), keeps all of them - and itself - up to date, and opens the Minecraft Launcher with Lmg picked. You still sign in with the normal Minecraft Launcher; the app never sees your password. Your normal Minecraft isn't touched.</p>
         <a class="btn primary" href="${INSTALLER_URL}">Download the app</a>
         <p class="muted small" style="margin-top:14px">Windows may say "Windows protected your PC" because the app isn't signed yet &mdash; click <i>More info &rarr; Run anyway</i>.</p>
-        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>a0243b45ae4dd226f52af5e7fed5a5d7728553b96bba1e35448c25ca77be7c51</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
+        <details class="small" style="margin-top:10px"><summary>Check the file</summary><p class="muted small">Its SHA-256 is <code>7f6f773f675bd8105670ed610f21264863f8b0a31447bfaadfa63447e16c5678</code> (run <code>Get-FileHash Lmg-Client-Installer.zip</code> in PowerShell). Prefer the old way? <a href="https://github.com/lmgoffical/Lmg-Client/raw/claude/modest-cray-bg98zr/installer/Install-Lmg-Client.bat">Install-Lmg-Client.bat</a> still works.</p></details>
         <img class="app-shot" src="img/app.png" alt="The Lmg Client app: a greeting with your skin, a Play button and the changelog" width="940" height="580">
       </div>
       <div class="card">
@@ -760,6 +761,7 @@ const LEGAL = {
     <ul>
       <li><b>Fabric Loader</b> and <b>Fabric API</b>, Apache License 2.0.</li>
       <li><b>Sodium</b>, <b>Lithium</b> and <b>Iris</b>, GNU Lesser General Public License v3.0 (LGPL-3.0).</li>
+      <li><b>Essential</b>, downloaded from Modrinth, all rights reserved by its makers. It has its own <a href="https://essential.gg/terms-of-use" target="_blank" rel="noopener">terms</a> and <a href="https://essential.gg/privacy-policy" target="_blank" rel="noopener">privacy policy</a>, which it asks you to accept the first time it starts. You can remove it from the app's Mods tab.</li>
     </ul>
     <p>The full list, with links, is in <a href="https://github.com/lmgoffical/Lmg-Client/blob/claude/modest-cray-bg98zr/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES.md</a>.</p>
     <h3>Minecraft</h3>

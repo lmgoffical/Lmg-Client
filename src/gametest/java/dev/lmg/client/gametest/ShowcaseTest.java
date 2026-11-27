@@ -37,6 +37,26 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.getInput().resizeWindow(1280, 720);
 		ctx.waitTicks(5);
 		if (want("crash")) crashPrompt(ctx);
+		if (want("essential")) {
+			// with Essential installed next to Lmg: what the menus look like
+			ctx.waitTicks(100);
+			ctx.runOnClient(mc -> System.out.println("LMGESS mods: essential=" + net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("essential")
+					+ " screen=" + (mc.gui.screen() == null ? "none" : mc.gui.screen().getClass().getName())));
+			ctx.takeScreenshot("ess-startup");
+			ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.LmgTitleScreen(false)));
+			ctx.waitTicks(40);
+			ctx.takeScreenshot("ess-lmg-title");
+			ctx.runOnClient(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.TitleScreen()));
+			ctx.waitTicks(40);
+			ctx.runOnClient(mc -> System.out.println("LMGESS vanilla title became: " + mc.gui.screen().getClass().getName()));
+			ctx.takeScreenshot("ess-vanilla-title");
+			ctx.runOnClient(mc -> mc.gui.setScreen(new dev.lmg.client.screen.LmgTitleScreen(false)));
+			ctx.waitTicks(20);
+			ctx.runOnClient(mc -> System.out.println("LMGESS friends opened: " + dev.lmg.client.feature.EssentialLink.openFriends()));
+			ctx.waitTicks(60);
+			ctx.runOnClient(mc -> System.out.println("LMGESS now showing: " + (mc.gui.screen() == null ? "none" : mc.gui.screen().getClass().getName())));
+			ctx.takeScreenshot("ess-friends");
+		}
 		if (want("welcome")) {
 			int[][] sizes = {{1280, 720}, {1920, 1080}, {854, 480}, {1024, 600}};
 			for (int[] sz : sizes) {
@@ -106,6 +126,15 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("cosmetics")) cosmetics(ctx);
 			if (want("newcos")) newCosmetics(ctx, world);
 			if (want("cosclick")) cosmeticsClicks(ctx);
+			if (want("essential")) {
+				ctx.runOnClient(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)));
+				ctx.waitTicks(40);
+				ctx.runOnClient(mc -> System.out.println("LMGESS pause screen: " + mc.gui.screen().getClass().getName()));
+				ctx.takeScreenshot("ess-pause");
+				ctx.setScreen(() -> null);
+				ctx.waitTicks(20);
+				ctx.takeScreenshot("ess-ingame");
+			}
 			if (want("zoom")) zoomTest(ctx, world);
 			if (want("home")) homeTest(ctx, world);
 			if (want("anicape")) animatedCapes(ctx, world);

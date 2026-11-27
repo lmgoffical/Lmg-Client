@@ -1,9 +1,30 @@
 {
   "_comment": "Extra mods the installer puts next to Lmg Client. Pinned to exact Modrinth version IDs that were checked to work together (e.g. Iris 1.11.7 needs Sodium 0.9.2; newer Sodium breaks it). Run tools/release.py after changing this.",
   "mods": [
-    {"name": "Fabric API", "pattern": "fabric-api-*.jar", "modrinthVersion": "lPHkrIVF"},
-    {"name": "Sodium",     "pattern": "sodium-*.jar",     "modrinthVersion": "bAZQdGpg"},
-    {"name": "Lithium",    "pattern": "lithium-*.jar",    "modrinthVersion": "Lal8mJGR"},
-    {"name": "Iris",       "pattern": "iris-*.jar",       "modrinthVersion": "vTN4NRGW"}
+    {
+      "name": "Fabric API",
+      "pattern": "fabric-api-*.jar",
+      "modrinthVersion": "lPHkrIVF"
+    },
+    {
+      "name": "Sodium",
+      "pattern": "sodium-*.jar",
+      "modrinthVersion": "bAZQdGpg"
+    },
+    {
+      "name": "Lithium",
+      "pattern": "lithium-*.jar",
+      "modrinthVersion": "Lal8mJGR"
+    },
+    {
+      "name": "Iris",
+      "pattern": "iris-*.jar",
+      "modrinthVersion": "vTN4NRGW"
+    },
+    {
+      "name": "Essential",
+      "pattern": "Essential_*.jar",
+      "modrinthVersion": "zwAMiQ2J"
+    }
   ]
 }

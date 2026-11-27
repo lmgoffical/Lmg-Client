@@ -11,6 +11,7 @@ keeps its own licence. Links go to each project's licence and source.
 | Sodium | Faster rendering | GNU LGPL v3.0 | https://github.com/CaffeineMC/sodium-fabric |
 | Lithium | Faster game logic | GNU LGPL v3.0 | https://github.com/CaffeineMC/lithium-fabric |
 | Iris | Shader support | GNU LGPL v3.0 | https://github.com/IrisShaders/Iris |
+| Essential | Playing with friends (hosting worlds, invites, friends list) | All rights reserved by its makers; own terms at https://essential.gg/terms-of-use | https://modrinth.com/mod/essential |
 
 Downloaded only when you pick them (Cinematic tab → Shaders), from Modrinth, unchanged:
 
