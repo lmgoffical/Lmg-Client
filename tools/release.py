@@ -11,6 +11,7 @@ Windows installer and the in-game update check read.
 import hashlib
 import json
 import re
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -28,12 +29,26 @@ def prop(name: str) -> str:
 def resolve_modpack(minecraft: str) -> list:
     """Looks up the pinned Modrinth versions in tools/modpack.json (file name, URL, SHA-1)."""
     pack = json.loads((ROOT / "tools" / "modpack.json").read_text())
+    # what the last release resolved, in case Modrinth is down (the pinned versions don't change)
+    previous = {}
+    try:
+        previous = {m["name"]: m for m in json.loads((ROOT / "download" / "manifest.json").read_text())["mods"]}
+    except Exception:
+        pass
     mods = []
     for mod in pack["mods"]:
         url = f"https://api.modrinth.com/v2/version/{mod['modrinthVersion']}"
         request = urllib.request.Request(url, headers={"User-Agent": "lmg-client-release-tool"})
-        with urllib.request.urlopen(request, timeout=60) as response:
-            version = json.load(response)
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                version = json.load(response)
+        except (urllib.error.URLError, TimeoutError) as e:
+            old = previous.get(mod["name"])
+            if old and f"/versions/{mod['modrinthVersion']}/" in old.get("url", ""):
+                mods.append({**old, "pattern": mod["pattern"]})
+                print(f"  {mod['name']}: {old['file']} (Modrinth unreachable: {e}; reused the last release's entry)")
+                continue
+            raise
         if minecraft not in version["game_versions"]:
             raise SystemExit(f"{mod['name']} {version['version_number']} is not for Minecraft {minecraft}")
         file = next((f for f in version["files"] if f["primary"]), version["files"][0])
