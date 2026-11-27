@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.35.5", "<b>Zoom your way.</b> Game &gt; Tools now has a Zoom amount slider (1.5x to 30x closer) and a Zoom speed slider (1 very slow to 10 very fast). It starts on 3, slower than before, so it glides in instead of jumping. Scrolling while zooming still takes you further, on top of your amount."],
   ["0.35.4", "<b>Left clicks fixed everywhere.</b> Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."],
   ["0.35.3", "<b>Small fixes.</b> Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."],
   ["0.35.2", "<b>\"Before you start\" fixed.</b> The Got it and Privacy policy buttons no longer sit on top of the text: the card now fits its text, the buttons have proper boxes, and on small windows the text scrolls while the buttons stay put."],
@@ -198,7 +199,7 @@ async function pageHome() {
         <div><h3>Your character</h3><p>Over 50 capes, wings, hats, glasses, ears, tails and auras, each in any colour. Or bring your own skin and Blockbench models.</p></div>
         <div><h3>Pets</h3><p>A cat on your shoulder, a fox at your heels, or a tiny version of your friend. Name them whatever you want.</p></div>
         <div><h3>PvP stuff</h3><p>A glow on whoever's close, a different colour once you can actually hit them, and smaller swords.</p></div>
-        <div><h3>Maps and keys</h3><p>A minimap, a world map with waypoints, zoom, freecam, and every key can be changed.</p></div>
+        <div><h3>Maps and keys</h3><p>A minimap, a world map with waypoints, zoom with your own amount and speed, freecam, and every key can be changed.</p></div>
         <div><h3>Cinematic</h3><p>Golden-hour shaders in one click and a film mode with black bars, for when you're recording.</p></div>
         <div><h3>The menu itself</h3><p>Keep the Lmg look or switch it to a Skeet or Neverlose style. Same settings, different look.</p></div>
         <div><h3>Sharing</h3><p>Save a setup and send it as <code>LMG-ABC234</code>. Your friend types it in and has your look.</p></div>

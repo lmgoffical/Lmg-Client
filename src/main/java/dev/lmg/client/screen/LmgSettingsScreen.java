@@ -962,12 +962,14 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				}
 			}
 			case "Tools" -> {
-				r.add(SettingRow.choice("Zoom amount", () -> LmgConfig.ZOOM_LABELS[c.zoomLevel],
-						() -> c.zoomLevel = step(c.zoomLevel, LmgConfig.ZOOM_LEVELS.length, 1),
-						() -> c.zoomLevel = step(c.zoomLevel, LmgConfig.ZOOM_LEVELS.length, -1))
-						.withHint("Scroll while zooming to go further."));
+				r.add(SettingRow.slider("Zoom amount", () -> c.zoomAmount > 0 ? c.zoomAmount : LmgConfig.ZOOM_LEVELS[c.zoomLevel], v -> c.zoomAmount = (float) v, 1.5, 30, 0.5,
+						v -> (v == Math.floor(v) ? String.valueOf((int) v) : String.format(java.util.Locale.ROOT, "%.1f", v)) + "x closer")
+						.withHint("How far the zoom key zooms. Scroll while zooming to go further.").keywords("optifine zoom far distance"));
 				r.add(SettingRow.toggle("Smooth zoom", () -> c.smoothZoom, v -> c.smoothZoom = v)
 						.withHint("Glides in instead of snapping."));
+				r.add(SettingRow.slider("Zoom speed", () -> c.zoomSpeed, v -> c.zoomSpeed = (int) Math.round(v), 1, 10, 1,
+						v -> dev.lmg.client.feature.Zoom.speedLabel((int) Math.round(v)))
+						.withHint("How fast it glides in and out (with Smooth zoom on). Lower is slower.").keywords("optifine zoom slow fast smooth"));
 				r.add(SettingRow.choice("Freecam speed", () -> LmgConfig.FREECAM_SPEED_LABELS[c.freecamSpeed],
 						() -> c.freecamSpeed = step(c.freecamSpeed, LmgConfig.FREECAM_SPEEDS.length, 1),
 						() -> c.freecamSpeed = step(c.freecamSpeed, LmgConfig.FREECAM_SPEEDS.length, -1))

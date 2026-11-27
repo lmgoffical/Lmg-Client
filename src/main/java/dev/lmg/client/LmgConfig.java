@@ -490,6 +490,8 @@ public final class LmgConfig {
 	public static final String[] FREECAM_SPEED_LABELS = {"Slow", "Normal", "Fast", "Very fast"};
 	public int zoomLevel = 1;
 	public boolean smoothZoom = true;
+	public float zoomAmount = -1f;              // how many times closer the zoom key gets you (-1 = from zoomLevel, for old configs)
+	public int zoomSpeed = 3;                   // 1 very slow .. 10 very fast (how quickly smooth zoom glides)
 	public int freecamSpeed = 1;
 	/** On multiplayer servers, keep the visual helpers that some servers ban (freecam, ore glow) off. */
 	public boolean serverSafe = true;
@@ -753,6 +755,9 @@ public final class LmgConfig {
 		if (fpsBoostSaved == null) fpsBoostSaved = new java.util.HashMap<>();
 		barSize = clampIndex(barSize, BAR_SIZES.length, d.barSize);
 		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
+		if (!(zoomAmount > 0)) zoomAmount = ZOOM_LEVELS[zoomLevel];
+		zoomAmount = Math.max(1.5f, Math.min(30f, zoomAmount));
+		zoomSpeed = Math.max(1, Math.min(10, zoomSpeed));
 		freecamSpeed = clampIndex(freecamSpeed, FREECAM_SPEEDS.length, d.freecamSpeed);
 		minimapSize = clampIndex(minimapSize, MINIMAP_SIZES.length, d.minimapSize);
 		minimapZoom = clampIndex(minimapZoom, MINIMAP_ZOOMS.length, d.minimapZoom);

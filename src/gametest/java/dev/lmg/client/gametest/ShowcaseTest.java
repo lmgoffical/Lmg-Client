@@ -105,6 +105,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("cosmetics")) cosmetics(ctx);
 			if (want("newcos")) newCosmetics(ctx, world);
 			if (want("cosclick")) cosmeticsClicks(ctx);
+			if (want("zoom")) zoomTest(ctx, world);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -995,6 +996,44 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
 		ctx.setScreen(() -> null);
+	}
+
+	/** Zoom amount + speed: the Tools page, then how far the zoom gets in a quarter second at two speeds. */
+	private void zoomTest(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		page(6, 1);   // Game > Tools
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(30);
+		ctx.takeScreenshot("zoom-settings");
+		ctx.setScreen(() -> null);
+		ctx.waitTicks(5);
+		for (int speed : new int[]{3, 7}) {
+			ctx.runOnClient(mc -> {
+				LmgConfig.get().smoothZoom = true;
+				LmgConfig.get().zoomAmount = 8f;
+				LmgConfig.get().zoomSpeed = speed;
+				dev.lmg.client.feature.LmgKeys.ZOOM.setDown(true);
+			});
+			ctx.waitTicks(5);
+			float f = ctx.computeOnClient(mc -> currentZoom());
+			ctx.waitTicks(40);
+			float end = ctx.computeOnClient(mc -> currentZoom());
+			System.out.println("LMGZOOM speed " + speed + ": after 0.25s " + f + "x, after 2.25s " + end + "x (target 8x)");
+			if (speed == 3) ctx.takeScreenshot("zoom-8x");
+			ctx.runOnClient(mc -> dev.lmg.client.feature.LmgKeys.ZOOM.setDown(false));
+			ctx.waitTicks(60);
+		}
+	}
+
+	private static float currentZoom() {
+		try {
+			var f = dev.lmg.client.feature.Zoom.class.getDeclaredField("current");
+			f.setAccessible(true);
+			return f.getFloat(null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/** Real mouse clicks on the Cosmetics screen: a side tab, then a card's + button. */

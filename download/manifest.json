@@ -1,9 +1,9 @@
 {
-  "version": "0.35.4",
+  "version": "0.35.5",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.35.4.jar",
-    "sha1": "f8207ddbc315f27dda73e7377617ae9e8fe92eef"
+    "file": "lmg-client-0.35.5.jar",
+    "sha1": "147b39b7587fe6a075e06a55ebf02cee3671505e"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.35.5",
+      "text": "Zoom your way. Game &gt; Tools now has a Zoom amount slider (1.5x to 30x closer) and a Zoom speed slider (1 very slow to 10 very fast). It starts on 3, slower than before, so it glides in instead of jumping. Scrolling while zooming still takes you further, on top of your amount."
+    },
+    {
       "version": "0.35.4",
       "text": "Left clicks fixed everywhere. Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.35",
       "text": "34 new cosmetics and a new Tails tab. Tails: cat, fox, bunny, devil, dragon and robot, and they swish as you walk. Hats: witch, cowboy, party, flower crown, frog, headphones and a star crown. Glasses: heart, round, star, snow goggles and a monocle. Ears: bear, devil horns, bug antennae and elf. Wings: fairy, dragon and crystal. Auras: heart orbit, planet rings, leaf swirl and spirit flames. Capes: Moonlit Sea, Inferno, Rainbow, Night Forest and Racer. Shared tails show for other Lmg players too."
-    },
-    {
-      "version": "0.34",
-      "text": "Pets climb on you. One setting: You &gt; Outfit &gt; Pets climb on me. Your pets on Follow hop up onto your head and shoulders one after another, sit there a while, then hop down and walk about. Players climbing on each other is gone: the Climbing page, its key and the asking are all removed, and so is everything the server kept for it."
     }
   ],
   "launcher": {
