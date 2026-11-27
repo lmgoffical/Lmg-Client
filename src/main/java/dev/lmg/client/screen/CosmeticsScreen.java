@@ -580,8 +580,15 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (super.mouseClicked(event, doubleClick)) return true;
+		boolean widget = super.mouseClicked(event, doubleClick);
 		double mx = event.x(), my = event.y();
+		// one line per click so a "nothing happens" report can be checked against latest.log
+		Hit at = null;
+		for (Hit h : hits) if (h.has(mx, my)) at = h;
+		LmgClient.LOGGER.info("Cosmetics click at {},{} button {} on {} (gui {}x{}, panel {},{} {}x{}, {} spots){}",
+				(int) mx, (int) my, event.button(), at == null ? "nothing" : (at.tab() ? "tab " : "card ") + at.id(),
+				width, height, x0, y0, W, H, hits.size(), widget ? " - taken by a button" : "");
+		if (widget) return true;
 		if (event.button() != 0) return false;
 
 		// what was drawn last frame (tabs and cards)

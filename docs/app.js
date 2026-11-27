@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.35.3", "<b>Small fixes.</b> Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."],
   ["0.35.2", "<b>\"Before you start\" fixed.</b> The Got it and Privacy policy buttons no longer sit on top of the text: the card now fits its text, the buttons have proper boxes, and on small windows the text scrolls while the buttons stay put."],
   ["0.35.1", "<b>Cosmetics clicks fixed.</b> The tabs down the side and the + buttons now react to exactly where they're drawn. And if you were matching your partner's outfit, picking something yourself now stops matching (it used to put their outfit back on you every couple of seconds, so it looked like the buttons did nothing). Turn matching back on with the button at the top."],
   ["0.35", "<b>34 new cosmetics and a new Tails tab.</b> Tails: cat, fox, bunny, devil, dragon and robot, and they swish as you walk. Hats: witch, cowboy, party, flower crown, frog, headphones and a star crown. Glasses: heart, round, star, snow goggles and a monocle. Ears: bear, devil horns, bug antennae and elf. Wings: fairy, dragon and crystal. Auras: heart orbit, planet rings, leaf swirl and spirit flames. Capes: Moonlit Sea, Inferno, Rainbow, Night Forest and Racer. Shared tails show for other Lmg players too."],

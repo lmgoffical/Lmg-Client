@@ -1,9 +1,9 @@
 {
-  "version": "0.35.2",
+  "version": "0.35.3",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.35.2.jar",
-    "sha1": "77fabb33583593a16958d15e2a097eff79acfe38"
+    "file": "lmg-client-0.35.3.jar",
+    "sha1": "f272bd7324af331c9da519f2694f7795199bb4b4"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.35.3",
+      "text": "Small fixes. Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."
+    },
+    {
       "version": "0.35.2",
       "text": "\"Before you start\" fixed. The Got it and Privacy policy buttons no longer sit on top of the text: the card now fits its text, the buttons have proper boxes, and on small windows the text scrolls while the buttons stay put."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.33",
       "text": "No more asking - and pets play too. Climbing is a setting now: Social &gt; Climbing &gt; Who can climb on me (nobody, your partner, friends or everyone). Pets can be set to Play around me, and pets on Follow come and play when you stand still: hopping round you, bouncing, nuzzling up, then sitting beside you."
-    },
-    {
-      "version": "0.32",
-      "text": "Climb on anyone (who says yes). You don't need to be friends or partners any more: look at someone with Lmg and climb - they get a little card asking, and press Y (yes for 2 hours), U (always) or N (no). See who can climb on you, clear it, or stop people asking, in Social &gt; Climbing."
     }
   ],
   "launcher": {

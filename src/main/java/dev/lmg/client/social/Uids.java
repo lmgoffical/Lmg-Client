@@ -137,6 +137,9 @@ public final class Uids {
 		long now = System.currentTimeMillis();
 		// everyone near you, plus anyone something asked about (friends list)
 		for (Player p : mc.level.players()) if (p != mc.player) ASKED.putIfAbsent(p.getUUID(), 0L);
+		// and yourself, so a number that changed on the server (e.g. moved to a lower one) shows here too
+		UUID self = mc.getUser() != null ? mc.getUser().getProfileId() : null;
+		if (self != null && LmgConfig.get().myUid > 0) ASKED.putIfAbsent(self, 0L);
 		List<UUID> want = new ArrayList<>();
 		for (var e : ASKED.entrySet()) {
 			if (now - e.getValue() > 5 * 60_000) want.add(e.getKey());
@@ -159,7 +162,15 @@ public final class Uids {
 				for (UUID id : want) KNOWN.putIfAbsent(id, 0);
 				for (JsonElement el : JsonParser.parseString(res.body()).getAsJsonArray()) {
 					JsonObject o = el.getAsJsonObject();
-					KNOWN.put(UUID.fromString(o.get("uuid").getAsString()), o.get("uid").getAsInt());
+					UUID id = UUID.fromString(o.get("uuid").getAsString());
+					int uid = o.get("uid").getAsInt();
+					KNOWN.put(id, uid);
+					if (id.equals(self) && uid > 0 && uid != LmgConfig.get().myUid) {
+						mc.execute(() -> {
+							LmgConfig.get().myUid = uid;
+							LmgConfig.save();
+						});
+					}
 				}
 			} catch (Exception ex) {
 				LmgClient.LOGGER.debug("Bad UID list", ex);
