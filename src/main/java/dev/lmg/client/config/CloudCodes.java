@@ -42,15 +42,22 @@ public final class CloudCodes {
 	/**
 	 * Uploads a long code; completes with the short code, e.g. "LMG-ABC234". Each share gets a
 	 * random secret kept only on this computer, so "Delete all my Lmg data" can remove it later.
+	 * Personal settings are taken out of the code first, whoever made it.
 	 */
 	public static CompletableFuture<String> share(String name, String longCode) {
+		String clean;
+		try {
+			clean = ConfigProfiles.scrub(longCode);
+		} catch (IllegalArgumentException e) {
+			return CompletableFuture.failedFuture(e);
+		}
 		byte[] raw = new byte[32];
 		new java.security.SecureRandom().nextBytes(raw);
 		String owner = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
 		rememberKey(owner);
 		JsonObject body = new JsonObject();
 		body.addProperty("p_name", name);
-		body.addProperty("p_data", longCode);
+		body.addProperty("p_data", clean);
 		body.addProperty("p_owner", owner);
 		return call("share_config", body).thenApply(json -> "LMG-" + json.getAsString());
 	}

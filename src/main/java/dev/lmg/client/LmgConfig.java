@@ -606,27 +606,50 @@ public final class LmgConfig {
 	/**
 	 * Things that belong to you, not to a "look": your UID, the tour, what you share and with
 	 * whom. Loading a config (yours, a friend's, or a profile) never changes these, so importing
-	 * someone's code can't switch on sharing or give you their number.
+	 * someone's code can't switch on sharing or give you their number - and they're taken out of
+	 * every share code before it leaves this computer (see {@link #toShareableJsonTree()}).
+	 *
+	 * This one list drives both directions. Each name must be a field of this class (also its JSON
+	 * key); a typo fails at startup instead of silently leaking or overwriting something.
 	 */
+	public static final java.util.List<String> PERSONAL_FIELDS = java.util.List.of(
+			"menuOffsetX", "menuOffsetY",
+			"myUid",
+			"tourDone", "welcomeSeen",
+			"shareAvatar",
+			"friendsEnabled", "friendsShowServer", "friendsAppearOffline", "friendsToasts",
+			"matchPartner",
+			"friendNicknames",
+			"activeProfile",
+			"lowEnd", "lowEndBackup",
+			"crashReports", "crashesCheckedUpTo");
+
+	private static final java.lang.reflect.Field[] PERSONAL = PERSONAL_FIELDS.stream().map(name -> {
+		try {
+			return LmgConfig.class.getField(name);
+		} catch (NoSuchFieldException e) {
+			throw new IllegalStateException("LmgConfig.PERSONAL_FIELDS names a missing field: " + name, e);
+		}
+	}).toArray(java.lang.reflect.Field[]::new);
+
 	private static void keepPersonal(LmgConfig other) {
 		LmgConfig me = instance;
-		other.menuOffsetX = me.menuOffsetX;
-		other.menuOffsetY = me.menuOffsetY;
-		other.myUid = me.myUid;
-		other.tourDone = me.tourDone;
-		other.welcomeSeen = me.welcomeSeen;
-		other.shareAvatar = me.shareAvatar;
-		other.friendsEnabled = me.friendsEnabled;
-		other.friendsShowServer = me.friendsShowServer;
-		other.friendsAppearOffline = me.friendsAppearOffline;
-		other.friendsToasts = me.friendsToasts;
-		other.matchPartner = me.matchPartner;
-		other.friendNicknames = me.friendNicknames;
-		other.activeProfile = me.activeProfile;
-		other.lowEnd = me.lowEnd;
-		other.lowEndBackup = me.lowEndBackup;
-		other.crashReports = me.crashReports;
-		other.crashesCheckedUpTo = me.crashesCheckedUpTo;
+		try {
+			for (java.lang.reflect.Field f : PERSONAL) f.set(other, f.get(me));
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** Removes the {@link #PERSONAL_FIELDS} from settings JSON (in place) and returns it. */
+	public static com.google.gson.JsonObject stripPersonal(com.google.gson.JsonObject json) {
+		for (String name : PERSONAL_FIELDS) json.remove(name);
+		return json;
+	}
+
+	/** The current settings as JSON without anything personal - for share codes and uploads. */
+	public static com.google.gson.JsonObject toShareableJsonTree() {
+		return stripPersonal(toJsonTree().getAsJsonObject());
 	}
 
 	/** A copy of the current settings as JSON (used for saved configs and share codes). */
