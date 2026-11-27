@@ -123,15 +123,23 @@ final class TestDriver {
 			case 9:
 				shot("front");
 				mc.gameSettings.thirdPersonView = 1;
+				c.cape = "cape_inferno";
 				waitTicks(30);
 				break;
 			case 10:
 				shot("back");
+				step = 100;   // one more back shot, a moment later
+				waitTicks(9);
+				return;
+			case 100:
+				shot("back2");
+				c.cape = "cape_cherry";
+				step = 11;
 				mc.gameSettings.thirdPersonView = 0;
 				c.zoomAmount = 6f;
 				KeyBinding.setKeyBindState(Keys.ZOOM.getKeyCode(), true);
 				waitTicks(30);
-				break;
+				return;
 			case 11:
 				shot("zoom");
 				KeyBinding.setKeyBindState(Keys.ZOOM.getKeyCode(), false);

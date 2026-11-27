@@ -213,6 +213,7 @@ public class HomeScreen extends GuiScreen {
 						() -> c.cape = CapeLayer.CAPES[(CapeLayer.index(c.cape) + 1) % CapeLayer.CAPES.length],
 						() -> c.cape = CapeLayer.CAPES[(CapeLayer.index(c.cape) + CapeLayer.CAPES.length - 1) % CapeLayer.CAPES.length])
 						.hint("Shows if you don't already have a Minecraft cape. Only you see it."));
+				r.add(Row.toggle("Animated cape", () -> c.animatedCape, () -> c.animatedCape ^= true).hint("Lights shimmer, flames flicker, petals fall."));
 				r.add(Row.toggle("Halo", () -> c.halo, () -> c.halo ^= true));
 				r.add(Row.toggle("China hat", () -> c.chinaHat, () -> c.chinaHat ^= true));
 				r.add(Row.toggle("Cat ears", () -> c.catEars, () -> c.catEars ^= true));

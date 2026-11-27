@@ -44,6 +44,7 @@ public final class Config {
 	// ---- cosmetics (only on your own player) ----
 	public String cape = "cape";                   // file in textures/capes, "" = none
 	public boolean halo = false, chinaHat = false, catEars = false;
+	public boolean animatedCape = true;
 	public int cosmeticColor = 5;
 
 	// ---- menu ----

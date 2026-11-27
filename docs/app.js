@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.36.1", "<b>Capes that move.</b> Every Lmg cape is animated now: the aurora ripples, the galaxy turns, flames flicker and embers rise, petals fall, waves roll, fireflies blink, the synthwave grid scrolls, clouds drift and the racing flag moves. Other Lmg players see yours move too. Don't want it? You &gt; Outfit &gt; Animated capes. The 1.8.9 edition (1.0.1) gets moving capes as well."],
   ["0.36", "<b>A new home for the menu.</b> Right Shift now opens big tiles: Cosmetics, Pets, Friends and Edit HUD up top, then one tile for each group, plus Search and Minecraft settings. Click a tile to open that group; Back takes you to the tiles again. Like the old sidebar better? Menu &gt; Look &gt; Menu home &gt; Sidebar, or the Sidebar menu button top right."],
   ["0.35.5", "<b>Zoom your way.</b> Game &gt; Tools now has a Zoom amount slider (1.5x to 30x closer) and a Zoom speed slider (1 very slow to 10 very fast). It starts on 3, slower than before, so it glides in instead of jumping. Scrolling while zooming still takes you further, on top of your amount."],
   ["0.35.4", "<b>Left clicks fixed everywhere.</b> Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."],
@@ -311,7 +312,7 @@ async function pageDownload() {
           <div class="label" id="v189">minecraft 1.8.9 · forge</div>
           <h3 style="margin-top:8px">1.8.9 PvP edition</h3>
           <p class="muted">A smaller Lmg Client for 1.8.9: the Right Shift menu, a HUD you can drag around (FPS, CPS, keystrokes, armour, potions, coordinates, ping, clock), zoom with your own amount and speed, a custom crosshair, toggle sprint, fullbright, the Lmg capes, a halo, China hat and cat ears, and the Lmg title screen. Visual only, nothing that plays for you.</p>
-          <a class="btn primary" id="dl189" href="${REPO_RAW}/download/lmg-client-1.8.9-1.0.0.jar">Download for 1.8.9</a>
+          <a class="btn primary" id="dl189" href="${REPO_RAW}/download/lmg-client-1.8.9-1.0.1.jar">Download for 1.8.9</a>
           <p class="muted small" style="margin-top:12px">Friends, emotes and pets are only in the main version. On 1.8.9, only you see your cape and cosmetics.</p>
         </div>
         <div class="card">

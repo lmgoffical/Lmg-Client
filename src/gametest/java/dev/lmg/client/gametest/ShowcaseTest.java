@@ -107,6 +107,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("cosclick")) cosmeticsClicks(ctx);
 			if (want("zoom")) zoomTest(ctx, world);
 			if (want("home")) homeTest(ctx, world);
+			if (want("anicape")) animatedCapes(ctx, world);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -997,6 +998,26 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
 		ctx.setScreen(() -> null);
+	}
+
+	/** Animated capes: the same cape from behind, a moment apart, for a few capes. */
+	private void animatedCapes(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		System.out.println("LMGANIM capes animated: " + ctx.computeOnClient(mc -> dev.lmg.client.cosmetic.AnimatedCapes.count()));
+		for (String cape : new String[]{"cape_inferno", "cape_void", "cape_sunset", "cape_racer"}) {
+			ctx.runOnClient(mc -> {
+				LmgConfig.get().equipped.clear();
+				LmgConfig.get().equipped.put("capes", cape);
+				LmgConfig.get().animatedCapes = true;
+				mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+			});
+			ctx.waitTicks(20);
+			ctx.takeScreenshot("anicape-" + cape + "-a");
+			ctx.waitTicks(9);
+			ctx.takeScreenshot("anicape-" + cape + "-b");
+		}
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
 	}
 
 	/** The tile home: screenshot, click the Combat tile, Back returns to the tiles, and the Sidebar setting skips it. */

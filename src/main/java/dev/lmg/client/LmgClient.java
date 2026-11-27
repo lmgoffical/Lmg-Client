@@ -118,6 +118,7 @@ public class LmgClient implements ClientModInitializer {
 		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+			dev.lmg.client.cosmetic.AnimatedCapes.tick(mc);
 			Effects.tick(mc);
 			Combat.tick(mc);
 			Targeting.tick(mc);

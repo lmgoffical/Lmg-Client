@@ -1,9 +1,9 @@
 {
-  "version": "0.36.0",
+  "version": "0.36.1",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.36.0.jar",
-    "sha1": "c53eac893700a282099841e01e6e55348a8a7c64"
+    "file": "lmg-client-0.36.1.jar",
+    "sha1": "7d8a6ac4f1e00223b469859a6132dd523bbb759d"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.36.1",
+      "text": "Capes that move. Every Lmg cape is animated now: the aurora ripples, the galaxy turns, flames flicker and embers rise, petals fall, waves roll, fireflies blink, the synthwave grid scrolls, clouds drift and the racing flag moves. Other Lmg players see yours move too. Don't want it? You &gt; Outfit &gt; Animated capes. The 1.8.9 edition (1.0.1) gets moving capes as well."
+    },
+    {
       "version": "0.36",
       "text": "A new home for the menu. Right Shift now opens big tiles: Cosmetics, Pets, Friends and Edit HUD up top, then one tile for each group, plus Search and Minecraft settings. Click a tile to open that group; Back takes you to the tiles again. Like the old sidebar better? Menu &gt; Look &gt; Menu home &gt; Sidebar, or the Sidebar menu button top right."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.35.2",
       "text": "\"Before you start\" fixed. The Got it and Privacy policy buttons no longer sit on top of the text: the card now fits its text, the buttons have proper boxes, and on small windows the text scrolls while the buttons stay put."
-    },
-    {
-      "version": "0.35.1",
-      "text": "Cosmetics clicks fixed. The tabs down the side and the + buttons now react to exactly where they're drawn. And if you were matching your partner's outfit, picking something yourself now stops matching (it used to put their outfit back on you every couple of seconds, so it looked like the buttons did nothing). Turn matching back on with the button at the top."
     }
   ],
   "editions": [
@@ -66,9 +66,9 @@
       "name": "PvP edition",
       "minecraft": "1.8.9",
       "loader": "Forge 1.8.9-11.15.1.2318",
-      "version": "1.0.0",
-      "file": "lmg-client-1.8.9-1.0.0.jar",
-      "sha1": "5687aa9cef6d521a4f8a4092e4494db17cf792f2"
+      "version": "1.0.1",
+      "file": "lmg-client-1.8.9-1.0.1.jar",
+      "sha1": "ed91aeacb4300a29dd8ee6ece758168535cf3bc5"
     }
   ],
   "launcher": {

@@ -27,6 +27,7 @@ public class Events {
 		if (e.phase != TickEvent.Phase.START) return;
 		Minecraft mc = Minecraft.getMinecraft();
 		PvpTweaks.tick();
+		dev.lmg.legacy.render.AnimatedCape.tick();
 		while (Keys.MENU.isPressed()) if (mc.currentScreen == null) mc.displayGuiScreen(new HomeScreen(null));
 		while (Keys.HUD_EDITOR.isPressed()) if (mc.currentScreen == null) mc.displayGuiScreen(new HudEditor(null));
 		TestDriver.tick();

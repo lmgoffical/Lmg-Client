@@ -667,6 +667,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("You and your pet, beside the menu. Drag to spin."));
 				r.add(SettingRow.toggle("Hide cosmetics", () -> c.hideCosmetics, v -> c.hideCosmetics = v)
 						.withHint("Your plain skin, nothing else."));
+				r.add(SettingRow.toggle("Animated capes", () -> c.animatedCapes, v -> c.animatedCapes = v)
+						.withHint("Lmg capes move: lights shimmer, flames flicker, petals fall.").keywords("cape animation moving"));
 			}
 			case "Trails" -> {
 				r.add(enumRow("Trail", LmgConfig.Trail.values(), () -> c.trail, v -> c.trail = v, v -> v.label)
