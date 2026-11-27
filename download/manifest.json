@@ -1,9 +1,9 @@
 {
-  "version": "0.36.2",
+  "version": "0.37.0",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.36.2.jar",
-    "sha1": "ba703f80ebeeaec0d934ca87102bd8dcbe825427"
+    "file": "lmg-client-0.37.0.jar",
+    "sha1": "f616ddbe5c52499d4d85dd905dd903565ab359f5"
   },
   "mods": [
     {
@@ -37,6 +37,10 @@
   ],
   "changelog": [
     {
+      "version": "0.37",
+      "text": "Crash reports. If the game crashes, the next time it starts it asks if you'd like to send the crash report so it gets fixed: Send, Always send, or Don't send. Your name, account ID, folder names and IP are taken out first. Change it any time in Menu &gt; Help &gt; Crash reports."
+    },
+    {
       "version": "0.36.2",
       "text": "Skeet menu drags properly. Moving the menu by its top bar in the Skeet style now takes the grey group boxes along with everything else (they used to stay behind). The \"Accent on Skeet/Neverlose\" switch is now called \"Use my accent\" so it fits in its box."
     },
@@ -55,10 +59,6 @@
     {
       "version": "0.35.4",
       "text": "Left clicks fixed everywhere. Minecraft 26.3 numbers mouse buttons differently, and Lmg was still using the old numbers. That's why the Cosmetics tabs and items ignored left clicks. It also broke a few other things: a left click stepped settings backwards, erased in the crosshair editor, reset held-item sliders and HUD panels, and did the wrong thing on the world map. Clicking your character in the Right Shift menu opens Cosmetics again, and the CPS counter counts left and right clicks correctly."
-    },
-    {
-      "version": "0.35.3",
-      "text": "Small fixes. Your own UID now updates if it changes on the server (it used to stay as the first number you got). The Cosmetics screen writes a line to the game log for each click, to help track down clicks that don't seem to do anything."
     }
   ],
   "editions": [

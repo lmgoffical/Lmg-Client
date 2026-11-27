@@ -572,7 +572,9 @@ public final class LmgConfig {
 	// ---- pets (up to 3) ----
 	public java.util.List<dev.lmg.client.pet.PetConfig> pets = new java.util.ArrayList<>();
 	public boolean hideCosmetics = false;
-	public boolean animatedCapes = true;        // capes move (frames from textures/cosmetic/anim)
+	public boolean animatedCapes = true;
+	public dev.lmg.client.crash.CrashReports.Mode crashReports = dev.lmg.client.crash.CrashReports.Mode.ASK;
+	public long crashesCheckedUpTo = 0;         // crash-reports newer than this are "new" (ms since 1970)        // capes move (frames from textures/cosmetic/anim)
 
 	// ---- maps ----
 	public static final int[] MINIMAP_SIZES = {64, 84, 104, 128};
@@ -623,6 +625,8 @@ public final class LmgConfig {
 		other.activeProfile = me.activeProfile;
 		other.lowEnd = me.lowEnd;
 		other.lowEndBackup = me.lowEndBackup;
+		other.crashReports = me.crashReports;
+		other.crashesCheckedUpTo = me.crashesCheckedUpTo;
 	}
 
 	/** A copy of the current settings as JSON (used for saved configs and share codes). */
@@ -757,6 +761,7 @@ public final class LmgConfig {
 		if (fpsBoostSaved == null) fpsBoostSaved = new java.util.HashMap<>();
 		barSize = clampIndex(barSize, BAR_SIZES.length, d.barSize);
 		zoomLevel = clampIndex(zoomLevel, ZOOM_LEVELS.length, d.zoomLevel);
+		if (crashReports == null) crashReports = dev.lmg.client.crash.CrashReports.Mode.ASK;
 		if (!(zoomAmount > 0)) zoomAmount = ZOOM_LEVELS[zoomLevel];
 		zoomAmount = Math.max(1.5f, Math.min(30f, zoomAmount));
 		zoomSpeed = Math.max(1, Math.min(10, zoomSpeed));

@@ -47,6 +47,7 @@ public class LmgClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LmgConfig.load();
+		dev.lmg.client.crash.CrashReports.scan();
 		dev.lmg.client.cosmetic.CosmeticRegistry.loadBuiltIn();
 		// Blockbench models need the texture manager, so load them once the game is up.
 		ClientLifecycleEvents.CLIENT_STARTED.register(mc -> dev.lmg.client.cosmetic.CustomModels.reload());
@@ -119,6 +120,7 @@ public class LmgClient implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			dev.lmg.client.cosmetic.AnimatedCapes.tick(mc);
+			dev.lmg.client.crash.CrashReports.tick(mc);
 			Effects.tick(mc);
 			Combat.tick(mc);
 			Targeting.tick(mc);

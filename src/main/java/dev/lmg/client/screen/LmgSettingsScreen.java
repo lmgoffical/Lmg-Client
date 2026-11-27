@@ -985,6 +985,11 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 						.withHint("Your skin on the menu turns slowly."));
 			}
 			case "Help" -> {
+				r.add(SettingRow.choice("Crash reports", () -> dev.lmg.client.crash.CrashReports.MODE_LABELS[c.crashReports.ordinal()],
+						() -> c.crashReports = dev.lmg.client.crash.CrashReports.Mode.values()[(c.crashReports.ordinal() + 1) % 3],
+						() -> c.crashReports = dev.lmg.client.crash.CrashReports.Mode.values()[(c.crashReports.ordinal() + 2) % 3])
+						.withHint("After a crash: send the report so it gets fixed. Your name, folders and IP are taken out first.")
+						.keywords("crash report bug send error"));
 				r.add(SettingRow.button("Show me around", "Start", () -> startTour())
 						.withHint("The quick tour of this menu again."));
 				r.add(SettingRow.button("Starting looks", "Pick", this::openLooks)

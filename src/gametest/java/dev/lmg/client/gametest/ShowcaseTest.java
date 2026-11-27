@@ -36,6 +36,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.getInput().resizeWindow(1280, 720);
 		ctx.waitTicks(5);
+		if (want("crash")) crashPrompt(ctx);
 		if (want("welcome")) {
 			int[][] sizes = {{1280, 720}, {1920, 1080}, {854, 480}, {1024, 600}};
 			for (int[] sz : sizes) {
@@ -998,6 +999,64 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.waitTicks(40);
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
+		ctx.setScreen(() -> null);
+	}
+
+	/** A crash report from "last time": the prompt shows on the title screen and Send uploads a cleaned copy. */
+	private void crashPrompt(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			try {
+				var dir = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("crash-reports");
+				java.nio.file.Files.createDirectories(dir);
+				String name = mc.getUser().getName();
+				String home = System.getProperty("user.home");
+				String report = "---- Minecraft Crash Report ----\n// TEST REPORT from the Lmg gametest - please ignore\n\n"
+						+ "Description: Rendering screen\n\njava.lang.IllegalStateException: Lmg gametest crash\n"
+						+ "\tat dev.lmg.client.screen.LmgHomeScreen.extractRenderState(LmgHomeScreen.java:1)\n"
+						+ "\tat net.minecraft.client.gui.screens.Screen.render(Screen.java:1)\n\n"
+						+ "-- System Details --\n\tPlayer: " + name + " " + mc.getUser().getProfileId() + "\n"
+						+ "\tGame directory: " + home + "/.minecraft\n\tServer: 198.51.100.7:25565\n";
+				java.nio.file.Files.writeString(dir.resolve("crash-2026-11-28_lmgtest-client.txt"), report);
+				LmgConfig.get().crashesCheckedUpTo = System.currentTimeMillis() - 60_000;
+				LmgConfig.get().crashReports = dev.lmg.client.crash.CrashReports.Mode.ASK;
+				System.out.println("LMGCRASH cleaned sample: " + dev.lmg.client.crash.CrashReports.clean(report).replace("\n", " | "));
+				dev.lmg.client.crash.CrashReports.scan();
+				var f = dev.lmg.client.crash.CrashReports.class.getDeclaredField("handled");
+				f.setAccessible(true);
+				f.setBoolean(null, false);
+				mc.gui.setScreen(new dev.lmg.client.screen.LmgTitleScreen(false));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		ctx.waitTicks(30);
+		System.out.println("LMGCRASH screen: " + ctx.computeOnClient(mc -> mc.gui.screen().getClass().getSimpleName()));
+		ctx.takeScreenshot("crash-prompt");
+		// press Send with the real mouse
+		int[] pos = ctx.computeOnClient(mc -> {
+			var s = mc.gui.screen();
+			for (var c : s.children()) {
+				if (c instanceof net.minecraft.client.gui.components.AbstractWidget w && w.getMessage().getString().equals("Send")) {
+					double sc = mc.getWindow().getGuiScale();
+					return new int[]{(int) ((w.getX() + w.getWidth() / 2) * sc), (int) ((w.getY() + w.getHeight() / 2) * sc)};
+				}
+			}
+			return new int[]{0, 0};
+		});
+		ctx.getInput().setCursorPos(pos[0], pos[1]);
+		ctx.waitTicks(2);
+		ctx.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+		ctx.waitTicks(100);
+		ctx.takeScreenshot("crash-sent");
+		System.out.println("LMGCRASH after send: " + ctx.computeOnClient(mc -> {
+			try {
+				var f = dev.lmg.client.crash.CrashPromptScreen.class.getDeclaredField("message");
+				f.setAccessible(true);
+				return String.valueOf(f.get(mc.gui.screen()));
+			} catch (Exception e) {
+				return mc.gui.screen().getClass().getSimpleName();
+			}
+		}));
 		ctx.setScreen(() -> null);
 	}
 
