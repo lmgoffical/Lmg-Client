@@ -38,6 +38,14 @@ public final class MenuSkin {
 		groups = list;
 	}
 
+	/** Moves the group boxes with the menu while it's being dragged. */
+	public static void moveGroups(int dx, int dy) {
+		if (dx == 0 && dy == 0) return;
+		java.util.List<Group> moved = new java.util.ArrayList<>(groups.size());
+		for (Group g : groups) moved.add(new Group(g.x0() + dx, g.y0() + dy, g.x1() + dx, g.y1() + dy, g.title()));
+		groups = moved;
+	}
+
 	private MenuSkin() {}
 
 	public static MenuStyle style() {

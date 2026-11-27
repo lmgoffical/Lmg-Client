@@ -108,6 +108,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("zoom")) zoomTest(ctx, world);
 			if (want("home")) homeTest(ctx, world);
 			if (want("anicape")) animatedCapes(ctx, world);
+			if (want("skeetdrag")) skeetDrag(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
 	}
@@ -997,6 +998,83 @@ public class ShowcaseTest implements FabricClientGameTest {
 			ctx.waitTicks(40);
 			ctx.takeScreenshot("newcos-tab-" + tab[0]);
 		}
+		ctx.setScreen(() -> null);
+	}
+
+	/** Skeet style: drag the menu by its top bar with the real mouse; the group boxes must come along. */
+	private void skeetDrag(ClientGameTestContext ctx) {
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().menuStyle = LmgConfig.MenuStyle.SKEET;
+			LmgConfig.get().menuOffsetX = 0;
+			LmgConfig.get().menuOffsetY = 0;
+			LmgConfig.get().menuAvatar = false;
+		});
+		page(5, 0);   // Menu > Look (two group boxes)
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(30);
+		ctx.takeScreenshot("skeet-before");
+		int[] grab = ctx.computeOnClient(mc -> {
+			try {
+				var s = mc.gui.screen();
+				var fx = LmgSettingsScreen.class.getDeclaredField("panelX");
+				var fy = LmgSettingsScreen.class.getDeclaredField("panelY");
+				fx.setAccessible(true);
+				fy.setAccessible(true);
+				double sc = mc.getWindow().getGuiScale();
+				// a spot on the top bar between Back and the title
+				return new int[]{(int) ((fx.getInt(s) + 120) * sc), (int) ((fy.getInt(s) + 3) * sc), (int) sc};
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+		var in = ctx.getInput();
+		in.setCursorPos(grab[0], grab[1]);
+		ctx.waitTicks(2);
+		in.holdMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+		for (int i = 1; i <= 10; i++) {
+			in.setCursorPos(grab[0] - i * 12, grab[1] + i * 6);
+			ctx.waitTicks(1);
+		}
+		in.releaseMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+		ctx.waitTicks(10);
+		String result = ctx.computeOnClient(mc -> {
+			try {
+				var s = mc.gui.screen();
+				var fx = LmgSettingsScreen.class.getDeclaredField("panelX");
+				fx.setAccessible(true);
+				var g = dev.lmg.client.screen.MenuSkin.class.getDeclaredField("groups");
+				g.setAccessible(true);
+				var groups = (java.util.List<?>) g.get(null);
+				var first = (dev.lmg.client.screen.MenuSkin.Group) groups.get(0);
+				return "panelX " + fx.getInt(s) + ", first box x " + first.x0() + " (gap " + (first.x0() - fx.getInt(s)) + ")";
+			} catch (Exception e) {
+				return e.toString();
+			}
+		});
+		System.out.println("LMGSKEET after drag: " + result);
+		ctx.takeScreenshot("skeet-after");
+		// reopen: the gap must be the same as a fresh layout
+		ctx.setScreen(() -> new LmgSettingsScreen(null));
+		ctx.waitTicks(20);
+		String fresh = ctx.computeOnClient(mc -> {
+			try {
+				var s = mc.gui.screen();
+				var fx = LmgSettingsScreen.class.getDeclaredField("panelX");
+				fx.setAccessible(true);
+				var g = dev.lmg.client.screen.MenuSkin.class.getDeclaredField("groups");
+				g.setAccessible(true);
+				var first = (dev.lmg.client.screen.MenuSkin.Group) ((java.util.List<?>) g.get(null)).get(0);
+				return "panelX " + fx.getInt(s) + ", first box x " + first.x0() + " (gap " + (first.x0() - fx.getInt(s)) + ")";
+			} catch (Exception e) {
+				return e.toString();
+			}
+		});
+		System.out.println("LMGSKEET fresh layout: " + fresh);
+		ctx.runOnClient(mc -> {
+			LmgConfig.get().menuStyle = LmgConfig.MenuStyle.LMG;
+			LmgConfig.get().menuOffsetX = 0;
+			LmgConfig.get().menuOffsetY = 0;
+		});
 		ctx.setScreen(() -> null);
 	}
 

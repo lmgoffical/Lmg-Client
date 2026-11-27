@@ -951,8 +951,8 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 				r.add(SettingRow.color("Accent colour", c::accentRgb, null, () -> picker("Accent colour", c.accentRgb(),
 						v -> c.accentRgb = v, () -> c.accentRgb = -1, null, null))
 						.withHint("Switches, HUD and minimap use it."));
-				r.add(SettingRow.toggle("Accent on Skeet/Neverlose", () -> c.menuUseAccent, v -> c.menuUseAccent = v)
-						.withHint("Off keeps their own green/blue."));
+				r.add(SettingRow.toggle("Use my accent", () -> c.menuUseAccent, v -> c.menuUseAccent = v)
+						.withHint("Skeet and Neverlose in your accent colour. Off keeps their own green/blue.").keywords("accent skeet neverlose colour"));
 				r.add(SettingRow.choice("Menu weather", () -> c.weather() == MenuSnow.Weather.AUTO
 								? "Seasonal (" + MenuSnow.Weather.AUTO.resolved().label.toLowerCase(java.util.Locale.ROOT) + ")" : c.weather().label,
 						() -> c.menuWeather = cycle(MenuSnow.Weather.values(), c.weather(), 1),
@@ -1463,6 +1463,14 @@ public class LmgSettingsScreen extends Screen implements dev.lmg.client.render.W
 			int mx = panelX - oldX, my = panelY - oldY;
 			for (GuiEventListener child : children()) {
 				if (child instanceof AbstractWidget w) w.setPosition(w.getX() + mx, w.getY() + my);
+			}
+			// everything else that remembers where it is: Skeet's group boxes and the header/search spots
+			MenuSkin.moveGroups(mx, my);
+			for (int[] r : new int[][]{searchTabRect, searchRect, friendsRect, hudRect}) {
+				r[0] += mx;
+				r[2] += mx;
+				r[1] += my;
+				r[3] += my;
 			}
 			return true;
 		}

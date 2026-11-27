@@ -116,6 +116,7 @@ function renderUserbox() {
 
 // Real release history, newest first (keep this updated when you release).
 const CHANGELOG = [
+  ["0.36.2", "<b>Skeet menu drags properly.</b> Moving the menu by its top bar in the Skeet style now takes the grey group boxes along with everything else (they used to stay behind). The \"Accent on Skeet/Neverlose\" switch is now called \"Use my accent\" so it fits in its box."],
   ["0.36.1", "<b>Capes that move.</b> Every Lmg cape is animated now: the aurora ripples, the galaxy turns, flames flicker and embers rise, petals fall, waves roll, fireflies blink, the synthwave grid scrolls, clouds drift and the racing flag moves. Other Lmg players see yours move too. Don't want it? You &gt; Outfit &gt; Animated capes. The 1.8.9 edition (1.0.1) gets moving capes as well."],
   ["0.36", "<b>A new home for the menu.</b> Right Shift now opens big tiles: Cosmetics, Pets, Friends and Edit HUD up top, then one tile for each group, plus Search and Minecraft settings. Click a tile to open that group; Back takes you to the tiles again. Like the old sidebar better? Menu &gt; Look &gt; Menu home &gt; Sidebar, or the Sidebar menu button top right."],
   ["0.35.5", "<b>Zoom your way.</b> Game &gt; Tools now has a Zoom amount slider (1.5x to 30x closer) and a Zoom speed slider (1 very slow to 10 very fast). It starts on 3, slower than before, so it glides in instead of jumping. Scrolling while zooming still takes you further, on top of your amount."],
