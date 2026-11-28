@@ -192,3 +192,15 @@ export function disc(part, cx, cy, r, z0, z1, col, tint = 1, segs = 16, edge = c
   }
   return part;
 }
+
+// closed outline of 2D points at depth z as flat strips (2 quads per edge, seen from both sides) -
+// cheaper than outline() for thin glowing rims on flat shapes
+export function flatOutline(part, pts2, z, w, col, tint = 1) {
+  for (let i = 0; i < pts2.length; i++) {
+    const a = pts2[i], b = pts2[(i + 1) % pts2.length];
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len * w / 2, ny = dx / len * w / 2;
+    dquad(part, [a[0] + nx, a[1] + ny, z, 0, 0], [b[0] + nx, b[1] + ny, z, 1, 0], [b[0] - nx, b[1] - ny, z, 1, 1], [a[0] - nx, a[1] - ny, z, 0, 1], col, col, tint);
+  }
+  return part;
+}

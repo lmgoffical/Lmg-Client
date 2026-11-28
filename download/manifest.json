@@ -1,9 +1,9 @@
 {
-  "version": "0.38.0",
+  "version": "0.38.1",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.38.0.jar",
-    "sha1": "ba490927553970f9fb275b1370f2d60322b87629"
+    "file": "lmg-client-0.38.1.jar",
+    "sha1": "7b33276e0d0514eaadcb2ba080eaf178e2953b5c"
   },
   "mods": [
     {
@@ -44,6 +44,10 @@
   ],
   "changelog": [
     {
+      "version": "0.38.1",
+      "text": "Smoother. With everything switched on, Lmg now uses about a third less of the game's time: cosmetics work out their lighting once instead of every frame, settling snow skips what's behind you, animated capes only update when someone can see them, the fairy wings are half as heavy with the same look, and the minimap stops re-mapping land it mapped a moment ago."
+    },
+    {
       "version": "0.38",
       "text": "Play with friends (Essential). The app now installs Essential too, so you can host your single-player world and invite friends, or join theirs, without a server. The title screen has a Play with friends button that opens Essential's friends list, and the pause menu has Essential's invite button. Essential asks you to accept its own terms the first time. Don't want it? Switch it off in the app's Mods tab and it stays off, even when it updates. App 1.3.2."
     },
@@ -62,10 +66,6 @@
     {
       "version": "0.36.1",
       "text": "Capes that move. Every Lmg cape is animated now: the aurora ripples, the galaxy turns, flames flicker and embers rise, petals fall, waves roll, fireflies blink, the synthwave grid scrolls, clouds drift and the racing flag moves. Other Lmg players see yours move too. Don't want it? You > Outfit > Animated capes. The 1.8.9 edition (1.0.1) gets moving capes as well."
-    },
-    {
-      "version": "0.36",
-      "text": "A new home for the menu. Right Shift now opens big tiles: Cosmetics, Pets, Friends and Edit HUD up top, then one tile for each group, plus Search and Minecraft settings. Click a tile to open that group; Back takes you to the tiles again. Like the old sidebar better? Menu > Look > Menu home > Sidebar, or the Sidebar menu button top right."
     }
   ],
   "editions": [

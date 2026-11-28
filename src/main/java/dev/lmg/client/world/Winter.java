@@ -163,7 +163,11 @@ public final class Winter {
 	public static void render(LevelRenderContext ctx) {
 		List<int[]> list = columns;
 		if (list.isEmpty()) return;
-		Vec3 cam = ctx.levelState().cameraRenderState.pos;
+		var camState = ctx.levelState().cameraRenderState;
+		Vec3 cam = camState.pos;
+		// which way the camera looks, so snow behind you isn't built at all
+		org.joml.Vector3f fwd = new org.joml.Quaternionf(camState.orientation).transform(new org.joml.Vector3f(0, 0, -1));
+		float fx = fwd.x, fy = fwd.y, fz = fwd.z;
 		PoseStack pose = ctx.poseStack();
 		// a layer about 1.5 pixels thick (2 when it's fully settled)
 		float thick = (1f + Math.min(1f, cover) * 1.2f) * LmgConfig.WINTER_DEPTHS[LmgConfig.get().winterDepth] / 16f;
@@ -171,6 +175,8 @@ public final class Winter {
 			for (int[] c : list) {
 				float x0 = (float) (c[0] - cam.x), z0 = (float) (c[2] - cam.z);
 				float y0 = (float) (c[1] / 16.0 - cam.y) + 0.002f, y1 = y0 + thick;
+				// behind the camera by more than a block and a half: can't be seen
+				if ((x0 + 0.5f) * fx + y0 * fy + (z0 + 0.5f) * fz < -1.5f) continue;
 				float x1 = x0 + 1, z1 = z0 + 1;
 				// each block's snow is turned and shaded a little differently, so there's no grid
 				int h = (int) (hash(c[0] * 31 + 7, c[2] * 17 + 3) * 65535);
@@ -205,11 +211,13 @@ public final class Winter {
 	/** A flat square of snow, its texture turned by {@code rot} quarter turns (and maybe mirrored). */
 	private static void top(com.mojang.blaze3d.vertex.VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float size,
 							float u, float v, float uvSize, int rot, boolean flip, int argb, int light) {
-		float[][] uv = {{u, v}, {u + uvSize, v}, {u + uvSize, v + uvSize}, {u, v + uvSize}};
-		float[][] at = {{x, z + size}, {x + size, z + size}, {x + size, z}, {x, z}};
+		// corners go (x, z+size) (x+size, z+size) (x+size, z) (x, z); uv corners (u,v) (u+s,v) (u+s,v+s) (u,v+s).
+		// Worked out inline (this runs thousands of times a frame, so no arrays).
 		for (int k = 0; k < 4; k++) {
 			int i = flip ? (3 - k + rot) & 3 : (k + rot) & 3;
-			Quads.vertex(vc, p, at[k][0], y, at[k][1], uv[i][0], uv[i][1], argb, light, 0, 1, 0);
+			float ax = k == 0 || k == 3 ? x : x + size, az = k <= 1 ? z + size : z;
+			float tu = i == 0 || i == 3 ? u : u + uvSize, tv = i <= 1 ? v : v + uvSize;
+			Quads.vertex(vc, p, ax, y, az, tu, tv, argb, light, 0, 1, 0);
 		}
 	}
 

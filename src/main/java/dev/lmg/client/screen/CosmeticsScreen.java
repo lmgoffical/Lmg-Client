@@ -3,6 +3,7 @@ package dev.lmg.client.screen;
 import com.mojang.blaze3d.Blaze3D;
 import dev.lmg.client.LmgClient;
 import dev.lmg.client.LmgConfig;
+import dev.lmg.client.cosmetic.AnimatedCapes;
 import dev.lmg.client.cosmetic.CosmeticModel;
 import dev.lmg.client.cosmetic.CosmeticRegistry;
 import dev.lmg.client.cosmetic.CustomModels;
@@ -140,6 +141,7 @@ public class CosmeticsScreen extends Screen implements dev.lmg.client.render.Wor
 		CosmeticModel cape = CosmeticRegistry.get(LmgConfig.get().equipped.get("capes"));
 		ClientAsset.Texture capeTex = base.cape();
 		if (cape != null && cape.capeTexture != null) {
+			AnimatedCapes.touch(cape.capeTexture);
 			capeTex = new ClientAsset.ResourceTexture(LmgClient.id("cosmetic/" + cape.capeTexture), LmgClient.id("textures/cosmetic/" + cape.capeTexture));
 		}
 		return PlayerSkin.insecure(body, capeTex, base.elytra(), model);

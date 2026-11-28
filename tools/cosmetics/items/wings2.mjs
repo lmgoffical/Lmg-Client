@@ -1,4 +1,4 @@
-import { Cosmetic, argb, shade, wave, fan, outline, ellipsePts, bar, polar, dquad } from "../lib.mjs";
+import { Cosmetic, argb, shade, wave, fan, flatOutline, ellipsePts, bar, polar, dquad } from "../lib.mjs";
 
 // Body space: neck at (0,0,0), back of the body at z = +2. Wings hang off the upper back.
 
@@ -17,7 +17,7 @@ function fairy() {
     const lower = ellipsePts(sgn * 3.6, 3.4, 3.4, 2.1, sgn * 40, 22);
     for (const [pts, cx, cy] of [[upper, sgn * 5.4, -4.2], [lower, sgn * 3.6, 3.4]]) {
       fan(film, pts.map(q => [q[0], q[1], 0]), [cx * 0.35, cy * 0.35, 0], argb(0.25, 0xffffff), argb(0.62, 0xffffff), 1);
-      outline(glow, pts, 0, 0.18, 0.12, argb(0.95, 0xffffff), 1);
+      flatOutline(glow, pts, 0.01, 0.2, argb(0.95, 0xffffff), 1);
     }
     for (const deg of [-58, -40, -22, 30, 50]) {   // veins from the root
       const len = deg < 0 ? 8.5 : 5.2;

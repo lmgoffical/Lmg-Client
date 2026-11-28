@@ -26,6 +26,7 @@ public final class AnimatedCapes {
 		final DynamicTexture texture;
 		final int frames, w, h;
 		int shown = -1;
+		long seenAt;   // last time something drew this cape (ms)
 
 		Anim(NativeImage strip, DynamicTexture texture, int w, int h) {
 			this.strip = strip;
@@ -47,7 +48,10 @@ public final class AnimatedCapes {
 		if (!loaded) load(mc);
 		ticks++;
 		boolean on = LmgConfig.get().animatedCapes;
+		long now = net.minecraft.util.Util.getMillis();
 		for (Anim a : ANIMS.values()) {
+			// only capes something is drawing right now (you, a nearby player or pet, the Cosmetics preview)
+			if (now - a.seenAt > 2000 && a.shown >= 0) continue;
 			int frame = on ? (int) ((ticks / TICKS_PER_FRAME) % a.frames) : 0;
 			if (frame == a.shown) continue;
 			NativeImage px = a.texture.getPixels();
@@ -82,6 +86,12 @@ public final class AnimatedCapes {
 			}
 		}
 		LmgClient.LOGGER.info("Animated {} capes", ANIMS.size());
+	}
+
+	/** Called wherever a cape texture is used for drawing, so only capes on screen get animated. */
+	public static void touch(String capeTexture) {
+		Anim a = ANIMS.get(capeTexture);
+		if (a != null) a.seenAt = net.minecraft.util.Util.getMillis();
 	}
 
 	public static int count() {

@@ -44,6 +44,7 @@ public final class CosmeticModel {
 		transient int[] top, bottom;
 		transient boolean[] tint;
 		transient float cx, cy, cz;         // centre, for outward normals
+		transient float[] normals;          // per quad: nx, ny, nz (worked out once, pointing away from the centre)
 		transient Identifier textureId;
 	}
 
@@ -81,6 +82,8 @@ public final class CosmeticModel {
 				p.cy = (float) (sy / count);
 				p.cz = (float) (sz / count);
 			}
+			p.normals = new float[n * 3];
+			for (int i = 0; i < n; i++) CosmeticRenderer.normal(p.verts[i], p.cx, p.cy, p.cz, p.normals, i * 3);
 			if (customTexture != null) p.textureId = customTexture;
 			else p.textureId = LmgClient.id("textures/cosmetic/" + (p.texture == null ? "white.png" : p.texture));
 			if (p.anim == null) p.anim = new ArrayList<>();

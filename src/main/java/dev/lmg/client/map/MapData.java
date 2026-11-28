@@ -41,6 +41,9 @@ public final class MapData {
 
 	// ---- per tick --------------------------------------------------------------------------------
 
+	/** Far chunks the sweep mapped, and when (in ticks), so it doesn't keep redoing them. */
+	private static final java.util.Map<Long, Integer> SWEPT = new java.util.HashMap<>();
+
 	public static void tick(Minecraft mc) {
 		ClientLevel level = mc.level;
 		if (level == null || mc.player == null) {
@@ -67,11 +70,20 @@ public final class MapData {
 			int[] o = spiral[i];
 			scanChunk(level, pcx + o[0], pcz + o[1]);
 		}
-		for (int i = 0; i < LmgConfig.SCAN_SWEEP[cfg.mapScan]; i++) {
+		// the sweep skips far chunks mapped in the last 30 seconds (they rarely change), so once the area
+		// around you is mapped it costs almost nothing; a handful of skips per tick keeps it moving
+		int budget = LmgConfig.SCAN_SWEEP[cfg.mapScan];
+		for (int tries = 0; budget > 0 && tries < budget * 8; tries++) {
 			int[] o = spiral[cursor];
 			cursor = (cursor + 1) % spiral.length;
+			long chunkKey = (((long) (pcx + o[0])) << 32) ^ ((pcz + o[1]) & 0xFFFFFFFFL);
+			Integer last = SWEPT.get(chunkKey);
+			if (last != null && ticks - last < 600) continue;
+			SWEPT.put(chunkKey, ticks);
 			scanChunk(level, pcx + o[0], pcz + o[1]);
+			budget--;
 		}
+		if (ticks % 1200 == 0) SWEPT.values().removeIf(t -> ticks - t > 1200);
 		ticks++;
 		if (ticks % 4 == 0) for (MapRegion r : REGIONS.values()) r.upload();
 		if (ticks % 1200 == 0) saveAll();
@@ -255,6 +267,7 @@ public final class MapData {
 		Waypoints.save();
 		for (MapRegion r : REGIONS.values()) r.close();
 		REGIONS.clear();
+		SWEPT.clear();
 		lastRegion = null;
 		FILE_CACHE.clear();
 		worldKey = null;

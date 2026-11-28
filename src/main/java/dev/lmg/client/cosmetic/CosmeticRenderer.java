@@ -82,7 +82,7 @@ public final class CosmeticRenderer {
 				for (int q = 0; q < part.verts.length; q++) {
 					int top = part.tint[q] ? tint(part.top[q], tintRgb) : part.top[q];
 					int bottom = part.tint[q] ? tint(part.bottom[q], tintRgb) : part.bottom[q];
-					quad(vc, p, part.verts[q], top, bottom, partLight, part.cx, part.cy, part.cz);
+					quad(vc, p, part.verts[q], top, bottom, partLight, part.normals, q * 3);
 				}
 			});
 			pose.popPose();
@@ -110,9 +110,8 @@ public final class CosmeticRenderer {
 		return (argb & 0xFF000000) | (r << 16) | (g << 8) | b;
 	}
 
-	/** One quad with its normal from the corners, flipped to point away from the part's centre. */
-	private static void quad(VertexConsumer vc, PoseStack.Pose p, float[] v, int top, int bottom, int light,
-							 float cx, float cy, float cz) {
+	/** A quad's normal from its corners, flipped to point away from the part's centre (done once, at load). */
+	static void normal(float[] v, float cx, float cy, float cz, float[] out, int at) {
 		float ax = v[0], ay = v[1], az = v[2], bx = v[5], by = v[6], bz = v[7];
 		float qx = v[10], qy = v[11], qz = v[12], dx = v[15], dy = v[16], dz = v[17];
 		float ux = qx - ax, uy = qy - ay, uz = qz - az, wx = dx - bx, wy = dy - by, wz = dz - bz;
@@ -133,10 +132,18 @@ public final class CosmeticRenderer {
 			ny = -ny;
 			nz = -nz;
 		}
-		vertex(vc, p, ax, ay, az, v[3], v[4], top, light, nx, ny, nz);
-		vertex(vc, p, bx, by, bz, v[8], v[9], top, light, nx, ny, nz);
-		vertex(vc, p, qx, qy, qz, v[13], v[14], bottom, light, nx, ny, nz);
-		vertex(vc, p, dx, dy, dz, v[18], v[19], bottom, light, nx, ny, nz);
+		out[at] = nx;
+		out[at + 1] = ny;
+		out[at + 2] = nz;
+	}
+
+	/** One quad, with the normal worked out at load time. */
+	private static void quad(VertexConsumer vc, PoseStack.Pose p, float[] v, int top, int bottom, int light, float[] normals, int at) {
+		float nx = normals[at], ny = normals[at + 1], nz = normals[at + 2];
+		vertex(vc, p, v[0], v[1], v[2], v[3], v[4], top, light, nx, ny, nz);
+		vertex(vc, p, v[5], v[6], v[7], v[8], v[9], top, light, nx, ny, nz);
+		vertex(vc, p, v[10], v[11], v[12], v[13], v[14], bottom, light, nx, ny, nz);
+		vertex(vc, p, v[15], v[16], v[17], v[18], v[19], bottom, light, nx, ny, nz);
 	}
 
 	private static void vertex(VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float u, float v,

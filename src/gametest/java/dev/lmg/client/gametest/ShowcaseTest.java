@@ -138,6 +138,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("zoom")) zoomTest(ctx, world);
 			if (want("home")) homeTest(ctx, world);
 			if (want("anicape")) animatedCapes(ctx, world);
+			if (want("perf")) perf(ctx, world);
 			if (want("skeetdrag")) skeetDrag(ctx);
 		}
 		ctx.runOnClient(mc -> LmgConfig.get().welcomeSeen = true);
@@ -1165,6 +1166,64 @@ public class ShowcaseTest implements FabricClientGameTest {
 		});
 		ctx.setScreen(() -> null);
 	}
+
+	/** Everything on at once, standing still in third person for a while, for profiling (LMG_PERF_OFF=1: Lmg extras off). */
+	private void perf(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		boolean off = System.getenv("LMG_PERF_OFF") != null;
+		ctx.runOnClient(mc -> {
+			var c = LmgConfig.get();
+			c.equipped.clear();
+			c.pets.clear();
+			if (!off) {
+				c.equipped.put("capes", "cape_aurora");
+				c.equipped.put("wings", "wings_fairy");
+				c.equipped.put("hats", "hat_flowers");
+				c.equipped.put("tails", "tail_fox");
+				c.equipped.put("auras", "aura_leaves");
+				c.equipped.put("glasses", "glasses_heart");
+				for (String type : new String[]{"FOX", "CAT", "PARROT"}) {
+					var pet = new dev.lmg.client.pet.PetConfig();
+					pet.type = type;
+					c.pets.add(pet);
+				}
+				c.petsClimb = true;
+				c.trail = LmgConfig.Trail.SPARKLE;
+				c.ambient = LmgConfig.Ambient.FIREFLIES;
+				c.aurora = LmgConfig.Aurora.RAINBOW;
+				c.winter = dev.lmg.client.world.Winter.Mode.ALWAYS;
+				c.minimap = true;
+				c.pvpHud = true;
+				c.armourHud = true;
+				c.potionHud = true;
+				c.targetHud = true;
+				c.damageNumbers = true;
+				c.animatedCapes = true;
+			} else {
+				c.trail = LmgConfig.Trail.OFF;
+				c.ambient = LmgConfig.Ambient.OFF;
+				c.aurora = LmgConfig.Aurora.OFF;
+				c.winter = dev.lmg.client.world.Winter.Mode.OFF;
+				c.minimap = false;
+				c.hudEnabled = false;
+				c.animatedCapes = false;
+			}
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		});
+		ctx.waitTicks(100);   // warm up
+		long sum = 0;
+		int n = 0;
+		for (int i = 0; i < 20; i++) {
+			ctx.waitTicks(20);
+			sum += ctx.computeOnClient(mc -> mc.getFps());
+			n++;
+		}
+		System.out.println("LMGPERF " + (off ? "OFF" : "ON") + ": average " + (sum / n) + " fps over 20 seconds (software rendering here, so only the difference matters)");
+		ctx.takeScreenshot("perf-" + (off ? "off" : "on"));
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+	}
+
 
 	/** Animated capes: the same cape from behind, a moment apart, for a few capes. */
 	private void animatedCapes(ClientGameTestContext ctx, TestSingleplayerContext world) {

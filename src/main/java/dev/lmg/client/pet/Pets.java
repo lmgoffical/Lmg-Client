@@ -542,6 +542,7 @@ public final class Pets {
 		ClientAsset.Texture cape = base.cape();
 		CosmeticModel c = CosmeticRegistry.get(LmgConfig.get().equipped.get("capes"));
 		if (c != null && c.capeTexture != null && !LmgConfig.get().hideCosmetics) {
+			dev.lmg.client.cosmetic.AnimatedCapes.touch(c.capeTexture);
 			cape = new ClientAsset.ResourceTexture(LmgClient.id("cosmetic/" + c.capeTexture), LmgClient.id("textures/cosmetic/" + c.capeTexture));
 		}
 		return PlayerSkin.insecure(body, cape, base.elytra(), model);

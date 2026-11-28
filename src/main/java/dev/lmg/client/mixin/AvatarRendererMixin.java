@@ -70,6 +70,7 @@ public abstract class AvatarRendererMixin {
 			if (shared == null) return;
 			dev.lmg.client.cosmetic.CosmeticModel theirs = dev.lmg.client.cosmetic.CosmeticRegistry.get(shared.equipped().get("capes"));
 			if (theirs == null || theirs.capeTexture == null) return;
+			dev.lmg.client.cosmetic.AnimatedCapes.touch(theirs.capeTexture);
 			ClientAsset.Texture tex = lmg$capes.computeIfAbsent(theirs.capeTexture, t -> new ClientAsset.ResourceTexture(
 					LmgClient.id("cosmetic/" + t), LmgClient.id("textures/cosmetic/" + t)));
 			state.skin = new PlayerSkin(state.skin.body(), tex, state.skin.elytra(), state.skin.model(), state.skin.secure());
@@ -84,6 +85,7 @@ public abstract class AvatarRendererMixin {
 		dev.lmg.client.cosmetic.CosmeticModel cape = dev.lmg.client.cosmetic.CosmeticRegistry.get(LmgConfig.get().equipped.get("capes"));
 		ClientAsset.Texture capeTex = skin.cape();
 		if (cape != null && cape.capeTexture != null && !LmgConfig.get().hideCosmetics) {
+			dev.lmg.client.cosmetic.AnimatedCapes.touch(cape.capeTexture);
 			capeTex = lmg$capes.computeIfAbsent(cape.capeTexture, tex -> new ClientAsset.ResourceTexture(
 					LmgClient.id("cosmetic/" + tex), LmgClient.id("textures/cosmetic/" + tex)));
 		}
