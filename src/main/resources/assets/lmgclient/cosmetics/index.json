@@ -58,6 +58,22 @@
    "defaultColor": "#6BB8FF"
   },
   {
+   "id": "aura_swords",
+   "name": "Orbiting Blades",
+   "category": "auras",
+   "description": "Three enchanted swords circle you, bobbing as they go.",
+   "tintable": true,
+   "defaultColor": "#7FE3FF"
+  },
+  {
+   "id": "aura_runes",
+   "name": "Rune Circle",
+   "category": "auras",
+   "description": "A turning circle of glowing runes under your feet, with rune stones floating around you.",
+   "tintable": true,
+   "defaultColor": "#B36BFF"
+  },
+  {
    "id": "cape_lmg",
    "name": "Lmg Cape",
    "category": "capes",
@@ -149,7 +165,7 @@
    "id": "ears_cat",
    "name": "Cat Ears",
    "category": "ears",
-   "description": "Soft cat ears that twitch every now and then.",
+   "description": "Chunky cat ears with pink insides. They twitch every now and then.",
    "tintable": true,
    "defaultColor": "#2B2530"
   },
@@ -165,9 +181,9 @@
    "id": "ears_bunny",
    "name": "Bunny Ears",
    "category": "ears",
-   "description": "Long bunny ears - the left one flops over.",
+   "description": "Tall soft bunny ears. One flops over and bounces when you move.",
    "tintable": true,
-   "defaultColor": "#F2EEF4"
+   "defaultColor": "#F4F1EE"
   },
   {
    "id": "ears_bear",
@@ -197,9 +213,25 @@
    "id": "ears_elf",
    "name": "Elf Ears",
    "category": "ears",
-   "description": "Long pointy elf ears. Pick your skin tone with the colour.",
+   "description": "Long pointed elf ears with a little gold cuff. Pick your skin colour.",
    "tintable": true,
-   "defaultColor": "#E9B894"
+   "defaultColor": "#E3AE8A"
+  },
+  {
+   "id": "ears_antlers",
+   "name": "Antlers",
+   "category": "ears",
+   "description": "Branching deer antlers with a few tiny glowing mushrooms growing on them.",
+   "tintable": false,
+   "defaultColor": "#C9A57A"
+  },
+  {
+   "id": "ears_axolotl",
+   "name": "Axolotl Gills",
+   "category": "ears",
+   "description": "Three frilly axolotl gills on each side of your head. They wave gently.",
+   "tintable": true,
+   "defaultColor": "#FF8FC2"
   },
   {
    "id": "glasses_aviator",
@@ -272,6 +304,14 @@
    "description": "A gold monocle on a little chain. Quite right.",
    "tintable": false,
    "defaultColor": "#E2B851"
+  },
+  {
+   "id": "glasses_hud",
+   "name": "Holo HUD",
+   "category": "glasses",
+   "description": "A side-mounted emitter that projects a holographic display over your right eye.",
+   "tintable": true,
+   "defaultColor": "#3BFFB0"
   },
   {
    "id": "hat_crown",
@@ -362,10 +402,34 @@
    "defaultColor": "#FFE27A"
   },
   {
+   "id": "hat_viking",
+   "name": "Viking Helmet",
+   "category": "hats",
+   "description": "Riveted steel helmet with a bronze band, nose guard and big curved horns.",
+   "tintable": true,
+   "defaultColor": "#AEB6C2"
+  },
+  {
+   "id": "hat_astronaut",
+   "name": "Astronaut Helmet",
+   "category": "hats",
+   "description": "A glass space helmet with a padded collar and a blinking antenna.",
+   "tintable": true,
+   "defaultColor": "#8FD3FF"
+  },
+  {
+   "id": "hat_pirate",
+   "name": "Pirate Tricorn",
+   "category": "hats",
+   "description": "A three-cornered captain's hat with gold trim, a skull badge and a red plume.",
+   "tintable": true,
+   "defaultColor": "#2A2230"
+  },
+  {
    "id": "tail_cat",
    "name": "Cat Tail",
    "category": "tails",
-   "description": "A long cat tail that swishes and curls up when you walk. Goes with Cat Ears.",
+   "description": "A long, thick cat tail that curls up into a hook and swishes as you move.",
    "tintable": true,
    "defaultColor": "#2B2530"
   },
@@ -381,9 +445,9 @@
    "id": "tail_bunny",
    "name": "Bunny Tail",
    "category": "tails",
-   "description": "A round cotton puff that wiggles now and then. Goes with Bunny Ears.",
+   "description": "A big fluffy cotton puff that wiggles now and then.",
    "tintable": true,
-   "defaultColor": "#F2EEF4"
+   "defaultColor": "#F4F1EE"
   },
   {
    "id": "tail_devil",
@@ -408,6 +472,22 @@
    "description": "Metal links with glowing joints and a blinking light on the end.",
    "tintable": true,
    "defaultColor": "#45E0FF"
+  },
+  {
+   "id": "tail_kitsune",
+   "name": "Kitsune Tails",
+   "category": "tails",
+   "description": "Three huge fluffy fox-spirit tails fanned out behind you, with white tips.",
+   "tintable": true,
+   "defaultColor": "#F08A3C"
+  },
+  {
+   "id": "tail_scorpion",
+   "name": "Scorpion Tail",
+   "category": "tails",
+   "description": "An armoured scorpion tail that arches over your head, with a glowing venom stinger.",
+   "tintable": true,
+   "defaultColor": "#7A4630"
   },
   {
    "id": "wings_angel",
@@ -464,6 +544,22 @@
    "description": "Floating glowing crystal shards that drift in and out.",
    "tintable": true,
    "defaultColor": "#7FE7FF"
+  },
+  {
+   "id": "wings_phoenix",
+   "name": "Phoenix Wings",
+   "category": "wings",
+   "description": "Layered fire feathers with glowing tips. Big slow flaps that speed up when you run.",
+   "tintable": false,
+   "defaultColor": "#FF7A1A"
+  },
+  {
+   "id": "wings_mech",
+   "name": "Mech Wings",
+   "category": "wings",
+   "description": "Armoured jet wings on a back-mounted reactor. The thrusters flicker and the lights take your colour.",
+   "tintable": true,
+   "defaultColor": "#36E2FF"
   }
  ]
 }
