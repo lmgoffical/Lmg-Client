@@ -1,9 +1,9 @@
 {
-  "version": "0.39",
+  "version": "0.40",
   "minecraft": "26.3",
   "lmgClient": {
-    "file": "lmg-client-0.39.jar",
-    "sha1": "d031b2e2bb334dab9aac8906a33ae53a6dba49a0"
+    "file": "lmg-client-0.40.jar",
+    "sha1": "974ad34df463ab748be6df8c5f6408f4475309d9"
   },
   "mods": [
     {
@@ -43,6 +43,10 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.40",
+      "text": "25 more cosmetics. New hats: Propeller Cap (it spins faster when you run), Santa Hat, Wizard Hat, Chef Hat, Mushroom Cap and Samurai Kabuto. Laser Eyes, a Masquerade Mask and a Ninja Band with flowing tails. Unicorn Horn, Wolf Ears and Mouse Ears. A Peacock Fan and a Mermaid Fin. Bee, Void and Leaf Wings. Snowfall, Music Notes, Bubbles and Storm auras. And four more moving capes: Snowy Village, Equalizer, Lava Lamp and Fireworks."
+    },
     {
       "version": "0.39",
       "text": "Every cosmetic, remade. All 47 3D cosmetics are rebuilt from scratch with more detail and better movement: proper crowns and cowboy hats, feathered angel wings, bat-wing demons and dragons, fluffy tails, blinking frog eyes and a lot more. Plus 12 new ones: Viking Helmet, Astronaut Helmet, Pirate Tricorn, Phoenix Wings, Mech Wings, Orbiting Blades, Rune Circle, Kitsune Tails, Scorpion Tail, Antlers, Axolotl Gills and a Holo HUD. And five new moving capes: Thunderstorm, Code Rain, Hyperspace, Koi Pond and Phoenix."

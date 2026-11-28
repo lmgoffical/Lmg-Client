@@ -74,6 +74,38 @@
    "defaultColor": "#B36BFF"
   },
   {
+   "id": "aura_snow",
+   "name": "Snowfall",
+   "category": "auras",
+   "description": "Big glittering snowflakes drift and spin around you.",
+   "tintable": true,
+   "defaultColor": "#BFE6FF"
+  },
+  {
+   "id": "aura_notes",
+   "name": "Music Notes",
+   "category": "auras",
+   "description": "Glowing music notes bounce around you to a beat only you can hear.",
+   "tintable": true,
+   "defaultColor": "#FF7AE0"
+  },
+  {
+   "id": "aura_bubbles",
+   "name": "Bubbles",
+   "category": "auras",
+   "description": "See-through soap bubbles float up and around you, catching the light.",
+   "tintable": true,
+   "defaultColor": "#9FE8FF"
+  },
+  {
+   "id": "aura_lightning",
+   "name": "Storm Aura",
+   "category": "auras",
+   "description": "Crackling lightning bolts whip around you, flickering as they go.",
+   "tintable": true,
+   "defaultColor": "#7FD4FF"
+  },
+  {
    "id": "cape_lmg",
    "name": "Lmg Cape",
    "category": "capes",
@@ -202,6 +234,38 @@
    "defaultColor": "#FFFFFF"
   },
   {
+   "id": "cape_village",
+   "name": "Snowy Village",
+   "category": "capes",
+   "description": "Snow falling on a little village at night, with flickering windows and chimney smoke.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_equalizer",
+   "name": "Equalizer",
+   "category": "capes",
+   "description": "Neon music bars bouncing to the beat.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_lavalamp",
+   "name": "Lava Lamp",
+   "category": "capes",
+   "description": "Warm blobs rising, stretching and melting together.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_fireworks",
+   "name": "Fireworks",
+   "category": "capes",
+   "description": "Fireworks bursting over a city skyline.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
    "id": "ears_cat",
    "name": "Cat Ears",
    "category": "ears",
@@ -272,6 +336,30 @@
    "description": "Three frilly axolotl gills on each side of your head. They wave gently.",
    "tintable": true,
    "defaultColor": "#FF8FC2"
+  },
+  {
+   "id": "ears_unicorn",
+   "name": "Unicorn Horn",
+   "category": "ears",
+   "description": "A spiralled glowing unicorn horn with sparkles swirling round it.",
+   "tintable": true,
+   "defaultColor": "#F6C6FF"
+  },
+  {
+   "id": "ears_wolf",
+   "name": "Wolf Ears",
+   "category": "ears",
+   "description": "Tall pointed wolf ears with fluffy grey tufts. They perk up and flick.",
+   "tintable": true,
+   "defaultColor": "#8A8F99"
+  },
+  {
+   "id": "ears_mouse",
+   "name": "Mouse Ears",
+   "category": "ears",
+   "description": "Big round mouse ears with pink insides. Squeak.",
+   "tintable": true,
+   "defaultColor": "#4A4A52"
   },
   {
    "id": "glasses_aviator",
@@ -352,6 +440,30 @@
    "description": "A side-mounted emitter that projects a holographic display over your right eye.",
    "tintable": true,
    "defaultColor": "#3BFFB0"
+  },
+  {
+   "id": "glasses_lasers",
+   "name": "Laser Eyes",
+   "category": "glasses",
+   "description": "Glowing eyes that fire pulsing laser beams straight ahead.",
+   "tintable": true,
+   "defaultColor": "#FF2B2B"
+  },
+  {
+   "id": "glasses_masquerade",
+   "name": "Masquerade Mask",
+   "category": "glasses",
+   "description": "An ornate masquerade mask with gold trim, a gem and a plume of feathers.",
+   "tintable": true,
+   "defaultColor": "#6A2BB8"
+  },
+  {
+   "id": "glasses_ninja",
+   "name": "Ninja Band",
+   "category": "glasses",
+   "description": "A ninja headband with a metal plate. The long tails at the back flow behind you.",
+   "tintable": true,
+   "defaultColor": "#C8202A"
   },
   {
    "id": "hat_crown",
@@ -466,6 +578,54 @@
    "defaultColor": "#2A2230"
   },
   {
+   "id": "hat_propeller",
+   "name": "Propeller Cap",
+   "category": "hats",
+   "description": "A quartered beanie cap with a little visor and a propeller that spins faster when you run.",
+   "tintable": true,
+   "defaultColor": "#3A7BFF"
+  },
+  {
+   "id": "hat_santa",
+   "name": "Santa Hat",
+   "category": "hats",
+   "description": "A floppy red Santa hat with a fluffy white trim and a pom-pom that swings.",
+   "tintable": true,
+   "defaultColor": "#D62A2A"
+  },
+  {
+   "id": "hat_wizard",
+   "name": "Wizard Hat",
+   "category": "hats",
+   "description": "A tall starry wizard hat with a wide brim and sparkles that drift around it.",
+   "tintable": true,
+   "defaultColor": "#2E3A9E"
+  },
+  {
+   "id": "hat_chef",
+   "name": "Chef Hat",
+   "category": "hats",
+   "description": "A tall puffy chef's toque. Bon appetit.",
+   "tintable": true,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "hat_mushroom",
+   "name": "Mushroom Cap",
+   "category": "hats",
+   "description": "A big spotted toadstool cap with frilly gills underneath. The spots glow a little at night.",
+   "tintable": true,
+   "defaultColor": "#E0302E"
+  },
+  {
+   "id": "hat_samurai",
+   "name": "Samurai Kabuto",
+   "category": "hats",
+   "description": "A lacquered samurai helmet with a flared neck guard and a golden crest.",
+   "tintable": true,
+   "defaultColor": "#2A2A34"
+  },
+  {
    "id": "tail_cat",
    "name": "Cat Tail",
    "category": "tails",
@@ -528,6 +688,22 @@
    "description": "An armoured scorpion tail that arches over your head, with a glowing venom stinger.",
    "tintable": true,
    "defaultColor": "#7A4630"
+  },
+  {
+   "id": "tail_peacock",
+   "name": "Peacock Fan",
+   "category": "tails",
+   "description": "A shimmering fan of peacock feathers with glowing eye spots. It sways as you walk.",
+   "tintable": false,
+   "defaultColor": "#1FA88A"
+  },
+  {
+   "id": "tail_mermaid",
+   "name": "Mermaid Fin",
+   "category": "tails",
+   "description": "A shimmering scaled fish tail that curls behind you and flicks its big fin.",
+   "tintable": true,
+   "defaultColor": "#2EC4B6"
   },
   {
    "id": "wings_angel",
@@ -600,6 +776,30 @@
    "description": "Armoured jet wings on a back-mounted reactor. The thrusters flicker and the lights take your colour.",
    "tintable": true,
    "defaultColor": "#36E2FF"
+  },
+  {
+   "id": "wings_bee",
+   "name": "Bee Wings",
+   "category": "wings",
+   "description": "Little see-through bee wings with dark veins that buzz super fast.",
+   "tintable": true,
+   "defaultColor": "#FFD23F"
+  },
+  {
+   "id": "wings_void",
+   "name": "Void Wings",
+   "category": "wings",
+   "description": "Dark wings with glowing purple veins, trailing little bits of the void.",
+   "tintable": true,
+   "defaultColor": "#B05CFF"
+  },
+  {
+   "id": "wings_leaf",
+   "name": "Leaf Wings",
+   "category": "wings",
+   "description": "Wings made of layered leaves that rustle as they flap.",
+   "tintable": true,
+   "defaultColor": "#5DBB4A"
   }
  ]
 }
