@@ -125,6 +125,7 @@ public class ShowcaseTest implements FabricClientGameTest {
 			if (want("v29photo")) v29photo(ctx, world);
 			if (want("cosmetics")) cosmetics(ctx);
 			if (want("newcos")) newCosmetics(ctx, world);
+			if (want("remade")) remadeCosmetics(ctx, world);
 			if (want("cosclick")) cosmeticsClicks(ctx);
 			if (want("essential")) {
 				ctx.runOnClient(mc -> mc.gui.setScreen(new net.minecraft.client.gui.screens.PauseScreen(true)));
@@ -972,6 +973,45 @@ public class ShowcaseTest implements FabricClientGameTest {
 		ctx.waitTicks(30);
 		ctx.takeScreenshot("cosmetics-colour");
 		ctx.setScreen(() -> null);
+	}
+
+	/** The v0.39 remake: every 3D cosmetic and cape, worn in rotating outfits, front and back. */
+	private void remadeCosmetics(ClientGameTestContext ctx, TestSingleplayerContext world) {
+		scene(world);
+		world.getServer().runCommand("tp @a 0.5 -60 0.5 0 0");
+		String[] cats = {"hats", "glasses", "ears", "tails", "wings", "auras", "capes"};
+		int outfits = ctx.computeOnClient(mc -> {
+			int most = 0;
+			for (String cat : cats) most = Math.max(most, dev.lmg.client.cosmetic.CosmeticRegistry.inCategory(cat).size());
+			System.out.println("LMGREMADE catalog: " + java.util.Arrays.stream(cats)
+					.map(cat -> cat + "=" + dev.lmg.client.cosmetic.CosmeticRegistry.inCategory(cat).size()).toList());
+			return most;
+		});
+		for (int n = 0; n < outfits; n++) {
+			final int i = n;
+			ctx.runOnClient(mc -> {
+				var c = LmgConfig.get();
+				c.equipped.clear();
+				c.pets.clear();
+				StringBuilder worn = new StringBuilder();
+				for (String cat : cats) {
+					var list = dev.lmg.client.cosmetic.CosmeticRegistry.inCategory(cat);
+					// wings and capes fight for the same space, so only wear a cape on every other outfit
+					if (list.isEmpty() || (cat.equals("capes") && c.equipped.containsKey("wings") && i % 2 == 0)) continue;
+					String id = list.get(i % list.size()).id;
+					c.equipped.put(cat, id);
+					worn.append(id).append(' ');
+				}
+				System.out.println("LMGREMADE outfit " + i + ": " + worn);
+				mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+			});
+			ctx.waitTicks(30);
+			ctx.takeScreenshot("remade-" + i + "-front");
+			ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));
+			ctx.waitTicks(20);
+			ctx.takeScreenshot("remade-" + i + "-back");
+		}
+		ctx.runOnClient(mc -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
 	}
 
 	/** The v0.35 batch: four outfits made only of new pieces, front and back, and the Tails tab. */

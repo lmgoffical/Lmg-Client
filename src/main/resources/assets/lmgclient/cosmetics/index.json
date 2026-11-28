@@ -5,7 +5,7 @@
    "id": "aura_halo",
    "name": "Halo",
    "category": "auras",
-   "description": "A glowing halo that floats above your head.",
+   "description": "A glowing halo that floats above your head, with a soft shine around it.",
    "tintable": true,
    "defaultColor": "#FFE08A"
   },
@@ -13,7 +13,7 @@
    "id": "aura_shield",
    "name": "Energy Shield",
    "category": "auras",
-   "description": "A turning cage of glowing hex panels.",
+   "description": "A turning bubble of glowing hex panels around you, with a shimmer that sweeps over it.",
    "tintable": true,
    "defaultColor": "#4FC3FF"
   },
@@ -21,7 +21,7 @@
    "id": "aura_stars",
    "name": "Star Orbit",
    "category": "auras",
-   "description": "Three glowing Stars of David orbit around you.",
+   "description": "Three glowing Stars of David orbit around you, leaving soft trails behind them.",
    "tintable": true,
    "defaultColor": "#6AA8FF"
   },
@@ -29,7 +29,7 @@
    "id": "aura_hearts",
    "name": "Heart Orbit",
    "category": "auras",
-   "description": "Four glowing hearts float around you.",
+   "description": "Four puffy hearts float around you, bobbing and glowing.",
    "tintable": true,
    "defaultColor": "#FF5C8A"
   },
@@ -37,7 +37,7 @@
    "id": "aura_rings",
    "name": "Planet Rings",
    "category": "auras",
-   "description": "Two tilted rings spin around you, with a tiny moon riding along.",
+   "description": "Two banded rings spin around you at different tilts, with a tiny moon riding along.",
    "tintable": true,
    "defaultColor": "#9AD7FF"
   },
@@ -45,7 +45,7 @@
    "id": "aura_leaves",
    "name": "Leaf Swirl",
    "category": "auras",
-   "description": "Leaves spiral round you like a tiny whirlwind.",
+   "description": "A whirlwind of leaves spiralling round you, each one tumbling as it goes.",
    "tintable": true,
    "defaultColor": "#6CCB5F"
   },
@@ -53,9 +53,25 @@
    "id": "aura_flames",
    "name": "Spirit Flames",
    "category": "auras",
-   "description": "Flickering ghost-fire licks around your feet.",
+   "description": "A ring of flickering ghost-fire around your feet, with embers drifting up.",
    "tintable": true,
    "defaultColor": "#6BB8FF"
+  },
+  {
+   "id": "aura_swords",
+   "name": "Orbiting Blades",
+   "category": "auras",
+   "description": "Three enchanted swords circle you, bobbing as they go.",
+   "tintable": true,
+   "defaultColor": "#7FE3FF"
+  },
+  {
+   "id": "aura_runes",
+   "name": "Rune Circle",
+   "category": "auras",
+   "description": "A turning circle of glowing runes under your feet, with rune stones floating around you.",
+   "tintable": true,
+   "defaultColor": "#B36BFF"
   },
   {
    "id": "cape_lmg",
@@ -146,10 +162,50 @@
    "defaultColor": "#FFFFFF"
   },
   {
+   "id": "cape_storm",
+   "name": "Thunderstorm",
+   "category": "capes",
+   "description": "Rain sweeping down, rolling clouds and a lightning strike every couple of seconds.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_matrix",
+   "name": "Code Rain",
+   "category": "capes",
+   "description": "Green code pouring down a black screen.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_warp",
+   "name": "Hyperspace",
+   "category": "capes",
+   "description": "Stars streaking past as you jump to light speed.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_koi",
+   "name": "Koi Pond",
+   "category": "capes",
+   "description": "Two koi swimming laps under lily pads, with ripples on the water.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
+   "id": "cape_phoenix",
+   "name": "Phoenix",
+   "category": "capes",
+   "description": "A fire bird beating its wings over rising embers. Goes with the Phoenix Wings.",
+   "tintable": false,
+   "defaultColor": "#FFFFFF"
+  },
+  {
    "id": "ears_cat",
    "name": "Cat Ears",
    "category": "ears",
-   "description": "Soft cat ears that twitch every now and then.",
+   "description": "Chunky cat ears with pink insides. They twitch every now and then.",
    "tintable": true,
    "defaultColor": "#2B2530"
   },
@@ -157,7 +213,7 @@
    "id": "ears_fox",
    "name": "Fox Ears",
    "category": "ears",
-   "description": "Tall fox ears with dark tips and fluffy insides.",
+   "description": "Tall fox ears with dark tips and fluffy white insides.",
    "tintable": true,
    "defaultColor": "#E8752C"
   },
@@ -165,15 +221,15 @@
    "id": "ears_bunny",
    "name": "Bunny Ears",
    "category": "ears",
-   "description": "Long bunny ears - the left one flops over.",
+   "description": "Tall soft bunny ears. One flops over and bounces when you move.",
    "tintable": true,
-   "defaultColor": "#F2EEF4"
+   "defaultColor": "#F4F1EE"
   },
   {
    "id": "ears_bear",
    "name": "Bear Ears",
    "category": "ears",
-   "description": "Round fuzzy bear ears. They wiggle a little.",
+   "description": "Round fuzzy bear ears with soft insides. They wiggle a little.",
    "tintable": true,
    "defaultColor": "#7A5234"
   },
@@ -181,7 +237,7 @@
    "id": "ears_horns",
    "name": "Devil Horns",
    "category": "ears",
-   "description": "Curved little devil horns. Goes with the Devil Tail.",
+   "description": "Ridged curved devil horns that fade to black at the tips. Goes with the Devil Tail.",
    "tintable": true,
    "defaultColor": "#C2183A"
   },
@@ -189,7 +245,7 @@
    "id": "ears_antennae",
    "name": "Bug Antennae",
    "category": "ears",
-   "description": "Wobbly antennae with glowing tips.",
+   "description": "Wobbly segmented antennae with glowing tips.",
    "tintable": true,
    "defaultColor": "#FFD23F"
   },
@@ -197,15 +253,31 @@
    "id": "ears_elf",
    "name": "Elf Ears",
    "category": "ears",
-   "description": "Long pointy elf ears. Pick your skin tone with the colour.",
+   "description": "Long pointed elf ears with a little gold cuff. Pick your skin colour.",
    "tintable": true,
-   "defaultColor": "#E9B894"
+   "defaultColor": "#E3AE8A"
+  },
+  {
+   "id": "ears_antlers",
+   "name": "Antlers",
+   "category": "ears",
+   "description": "Branching deer antlers with a few tiny glowing mushrooms growing on them.",
+   "tintable": false,
+   "defaultColor": "#C9A57A"
+  },
+  {
+   "id": "ears_axolotl",
+   "name": "Axolotl Gills",
+   "category": "ears",
+   "description": "Three frilly axolotl gills on each side of your head. They wave gently.",
+   "tintable": true,
+   "defaultColor": "#FF8FC2"
   },
   {
    "id": "glasses_aviator",
    "name": "Aviators",
    "category": "glasses",
-   "description": "Gold aviators - the colour sets the lens tint.",
+   "description": "Gold aviators with a double bridge. The colour sets the lens tint.",
    "tintable": true,
    "defaultColor": "#3A2A1A"
   },
@@ -213,7 +285,7 @@
    "id": "glasses_pixel",
    "name": "Pixel Shades",
    "category": "glasses",
-   "description": "Deal with it.",
+   "description": "Deal with it. Now with a shine that sweeps across.",
    "tintable": true,
    "defaultColor": "#101014"
   },
@@ -221,7 +293,7 @@
    "id": "glasses_3d",
    "name": "3D Glasses",
    "category": "glasses",
-   "description": "Retro cinema red/cyan glasses.",
+   "description": "Retro cinema glasses: white card frame, red and cyan lenses.",
    "tintable": false,
    "defaultColor": "#FFFFFF"
   },
@@ -229,7 +301,7 @@
    "id": "glasses_visor",
    "name": "Cyber Visor",
    "category": "glasses",
-   "description": "Glowing wrap-around visor with a sweeping scan line.",
+   "description": "A glowing wrap-around visor with a sweeping scan line and side emitters.",
    "tintable": true,
    "defaultColor": "#FF3B6B"
   },
@@ -245,7 +317,7 @@
    "id": "glasses_round",
    "name": "Round Specs",
    "category": "glasses",
-   "description": "Thin round wire glasses with clear lenses. Smart look.",
+   "description": "Thin round wire glasses with clear lenses and little nose pads. Smart look.",
    "tintable": true,
    "defaultColor": "#2A2A2E"
   },
@@ -253,7 +325,7 @@
    "id": "glasses_star",
    "name": "Star Shades",
    "category": "glasses",
-   "description": "Glowing star-shaped lenses. They light up at night.",
+   "description": "Glowing star-shaped lenses with twinkling sparkles. They light up at night.",
    "tintable": true,
    "defaultColor": "#FFD23F"
   },
@@ -261,7 +333,7 @@
    "id": "glasses_goggles",
    "name": "Snow Goggles",
    "category": "glasses",
-   "description": "Big mirrored snow goggles. The colour sets the mirror.",
+   "description": "Big mirrored snow goggles on a thick strap. The colour sets the mirror.",
    "tintable": true,
    "defaultColor": "#FF8A3D"
   },
@@ -269,15 +341,23 @@
    "id": "glasses_monocle",
    "name": "Monocle",
    "category": "glasses",
-   "description": "A gold monocle on a little chain. Quite right.",
+   "description": "A gold monocle with a dangling chain that sways. Quite right.",
    "tintable": false,
    "defaultColor": "#E2B851"
+  },
+  {
+   "id": "glasses_hud",
+   "name": "Holo HUD",
+   "category": "glasses",
+   "description": "A side-mounted emitter that projects a holographic display over your right eye.",
+   "tintable": true,
+   "defaultColor": "#3BFFB0"
   },
   {
    "id": "hat_crown",
    "name": "Royal Crown",
    "category": "hats",
-   "description": "Gold crown with gems and a velvet cap.",
+   "description": "A gold crown with fleur points, big gems and a velvet cap.",
    "tintable": false,
    "defaultColor": "#E7B43C"
   },
@@ -285,7 +365,7 @@
    "id": "hat_top",
    "name": "Top Hat",
    "category": "hats",
-   "description": "A tall classy top hat - the band stays red.",
+   "description": "A tall classy top hat with a curled brim, a red band and a playing card tucked in.",
    "tintable": true,
    "defaultColor": "#1E1E26"
   },
@@ -293,7 +373,7 @@
    "id": "hat_china",
    "name": "China Hat",
    "category": "hats",
-   "description": "The classic see-through PvP cone.",
+   "description": "The classic see-through PvP cone, now with a woven rim. It spins slowly.",
    "tintable": true,
    "defaultColor": "#E8C77A"
   },
@@ -301,7 +381,7 @@
    "id": "hat_beanie",
    "name": "Beanie",
    "category": "hats",
-   "description": "Cosy knitted beanie with a pom-pom.",
+   "description": "Cosy knitted beanie with a folded cuff and a bouncy pom-pom.",
    "tintable": true,
    "defaultColor": "#D94848"
   },
@@ -309,7 +389,7 @@
    "id": "hat_witch",
    "name": "Witch Hat",
    "category": "hats",
-   "description": "Wide brim, crooked tip, orange band. The tip flops when you move.",
+   "description": "Wide wavy brim, crooked tip, orange band with a buckle and a little moon. The tip flops when you move.",
    "tintable": true,
    "defaultColor": "#3B2A5A"
   },
@@ -317,7 +397,7 @@
    "id": "hat_cowboy",
    "name": "Cowboy Hat",
    "category": "hats",
-   "description": "Curled brim, pinched crown, leather band. Yeehaw.",
+   "description": "Curled brim, pinched crown, leather band with a silver concho. Yeehaw.",
    "tintable": true,
    "defaultColor": "#9A6434"
   },
@@ -325,7 +405,7 @@
    "id": "hat_party",
    "name": "Party Hat",
    "category": "hats",
-   "description": "Striped party cone with a pom-pom. Every day is a party.",
+   "description": "A tilted striped party cone with a fluffy pom-pom and a party horn noise you can only imagine.",
    "tintable": true,
    "defaultColor": "#FF5FA2"
   },
@@ -333,7 +413,7 @@
    "id": "hat_flowers",
    "name": "Flower Crown",
    "category": "hats",
-   "description": "A vine of little flowers and leaves. The colour picks the flowers.",
+   "description": "A braided vine of flowers and leaves. The colour picks the main flowers.",
    "tintable": true,
    "defaultColor": "#FF9BC8"
   },
@@ -341,7 +421,7 @@
    "id": "hat_frog",
    "name": "Frog Hat",
    "category": "hats",
-   "description": "A bucket hat with frog eyes that blink every so often.",
+   "description": "A floppy green bucket hat with big frog eyes that blink, and little pink cheeks.",
    "tintable": true,
    "defaultColor": "#6BCB5A"
   },
@@ -349,7 +429,7 @@
    "id": "hat_headphones",
    "name": "Headphones",
    "category": "hats",
-   "description": "Chunky headphones with glowing rings on the cups.",
+   "description": "Chunky over-ear headphones. The rings on the cups glow and pulse.",
    "tintable": true,
    "defaultColor": "#7A5CFF"
   },
@@ -357,15 +437,39 @@
    "id": "hat_starcrown",
    "name": "Star Crown",
    "category": "hats",
-   "description": "Tiny glowing stars that circle above your head.",
+   "description": "A ring of glowing stars that circles above your head on a thin halo.",
    "tintable": true,
    "defaultColor": "#FFE27A"
+  },
+  {
+   "id": "hat_viking",
+   "name": "Viking Helmet",
+   "category": "hats",
+   "description": "Riveted steel helmet with a bronze band, nose guard and big curved horns.",
+   "tintable": true,
+   "defaultColor": "#AEB6C2"
+  },
+  {
+   "id": "hat_astronaut",
+   "name": "Astronaut Helmet",
+   "category": "hats",
+   "description": "A glass space helmet with a padded collar and a blinking antenna.",
+   "tintable": true,
+   "defaultColor": "#8FD3FF"
+  },
+  {
+   "id": "hat_pirate",
+   "name": "Pirate Tricorn",
+   "category": "hats",
+   "description": "A three-cornered captain's hat with gold trim, a skull badge and a red plume.",
+   "tintable": true,
+   "defaultColor": "#2A2230"
   },
   {
    "id": "tail_cat",
    "name": "Cat Tail",
    "category": "tails",
-   "description": "A long cat tail that swishes and curls up when you walk. Goes with Cat Ears.",
+   "description": "A long, thick cat tail that curls up into a hook and swishes as you move.",
    "tintable": true,
    "defaultColor": "#2B2530"
   },
@@ -373,7 +477,7 @@
    "id": "tail_fox",
    "name": "Fox Tail",
    "category": "tails",
-   "description": "Big fluffy fox tail with a white tip. Goes with Fox Ears.",
+   "description": "One huge fluffy fox tail with a white tip. Goes with Fox Ears.",
    "tintable": true,
    "defaultColor": "#E8752C"
   },
@@ -381,15 +485,15 @@
    "id": "tail_bunny",
    "name": "Bunny Tail",
    "category": "tails",
-   "description": "A round cotton puff that wiggles now and then. Goes with Bunny Ears.",
+   "description": "A big fluffy cotton puff that wiggles now and then.",
    "tintable": true,
-   "defaultColor": "#F2EEF4"
+   "defaultColor": "#F4F1EE"
   },
   {
    "id": "tail_devil",
    "name": "Devil Tail",
    "category": "tails",
-   "description": "A thin, twitchy tail with a spade on the end. Goes with Devil Horns.",
+   "description": "A thin, twitchy whip of a tail with a sharp spade on the end. Goes with Devil Horns.",
    "tintable": true,
    "defaultColor": "#C2183A"
   },
@@ -397,7 +501,7 @@
    "id": "tail_dragon",
    "name": "Dragon Tail",
    "category": "tails",
-   "description": "A heavy scaled tail with spikes down its back. It drags low and sways slowly.",
+   "description": "A heavy scaled tail with bone spikes down its back and a fin on the tip. It drags low and sways slowly.",
    "tintable": true,
    "defaultColor": "#3A8A5C"
   },
@@ -405,15 +509,31 @@
    "id": "tail_robot",
    "name": "Robo Tail",
    "category": "tails",
-   "description": "Metal links with glowing joints and a blinking light on the end.",
+   "description": "Steel links joined by glowing rings, ending in a little claw with a blinking light.",
    "tintable": true,
    "defaultColor": "#45E0FF"
+  },
+  {
+   "id": "tail_kitsune",
+   "name": "Kitsune Tails",
+   "category": "tails",
+   "description": "Three huge fluffy fox-spirit tails fanned out behind you, with white tips.",
+   "tintable": true,
+   "defaultColor": "#F08A3C"
+  },
+  {
+   "id": "tail_scorpion",
+   "name": "Scorpion Tail",
+   "category": "tails",
+   "description": "An armoured scorpion tail that arches over your head, with a glowing venom stinger.",
+   "tintable": true,
+   "defaultColor": "#7A4630"
   },
   {
    "id": "wings_angel",
    "name": "Angel Wings",
    "category": "wings",
-   "description": "Feathered wings that fold at the wrist when they flap.",
+   "description": "Big layered feather wings that fold at the wrist when they flap, with a soft glow on the tips.",
    "tintable": true,
    "defaultColor": "#F6F6FF"
   },
@@ -421,7 +541,7 @@
    "id": "wings_demon",
    "name": "Demon Wings",
    "category": "wings",
-   "description": "Bat-style wings with bones, claws and a stretched membrane.",
+   "description": "Bat-style wings with dark bones, hooked claws and a see-through stretched membrane.",
    "tintable": true,
    "defaultColor": "#5E1828"
   },
@@ -429,7 +549,7 @@
    "id": "wings_butterfly",
    "name": "Butterfly Wings",
    "category": "wings",
-   "description": "Fluttering patterned wings - pick any colour.",
+   "description": "Fluttering patterned wings on a fuzzy little body with curly antennae - pick any colour.",
    "tintable": true,
    "defaultColor": "#4FB6FF"
   },
@@ -437,7 +557,7 @@
    "id": "wings_neon",
    "name": "Neon Wings",
    "category": "wings",
-   "description": "Blades of light that glow in the dark.",
+   "description": "Blades of pure light with bright cores and soft halos. They glow in the dark.",
    "tintable": true,
    "defaultColor": "#45E0FF"
   },
@@ -445,7 +565,7 @@
    "id": "wings_fairy",
    "name": "Fairy Wings",
    "category": "wings",
-   "description": "See-through glittery wings that flutter fast.",
+   "description": "See-through shimmering wings with glowing veins and drifting sparkles. They flutter fast.",
    "tintable": true,
    "defaultColor": "#B98CFF"
   },
@@ -453,7 +573,7 @@
    "id": "wings_dragon",
    "name": "Dragon Wings",
    "category": "wings",
-   "description": "Huge scaled dragon wings with slow, heavy flaps. Goes with the Dragon Tail.",
+   "description": "Huge scaled dragon wings with bone spikes and slow, heavy flaps. Goes with the Dragon Tail.",
    "tintable": true,
    "defaultColor": "#3A8A5C"
   },
@@ -461,9 +581,25 @@
    "id": "wings_crystal",
    "name": "Crystal Wings",
    "category": "wings",
-   "description": "Floating glowing crystal shards that drift in and out.",
+   "description": "Floating glowing crystal shards in the shape of wings. Each one drifts on its own.",
    "tintable": true,
    "defaultColor": "#7FE7FF"
+  },
+  {
+   "id": "wings_phoenix",
+   "name": "Phoenix Wings",
+   "category": "wings",
+   "description": "Layered fire feathers with glowing tips. Big slow flaps that speed up when you run.",
+   "tintable": false,
+   "defaultColor": "#FF7A1A"
+  },
+  {
+   "id": "wings_mech",
+   "name": "Mech Wings",
+   "category": "wings",
+   "description": "Armoured jet wings on a back-mounted reactor. The thrusters flicker and the lights take your colour.",
+   "tintable": true,
+   "defaultColor": "#36E2FF"
   }
  ]
 }
